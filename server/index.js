@@ -306,26 +306,39 @@ app.put("/api/users/:id", async (req, res) => {
   }
 });
 
-const startServer = async () => {
-  try {
-    console.log("[SERVER][BOOT] Conectando con MongoDB...", {
-      uri: MONGODB_URI.replace(/:\/\/([^@]+)@/, "://***:***@"),
-    });
+const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
-    await mongoose.connect(MONGODB_URI, {
-      dbName: "travelmatch",
-      serverSelectionTimeoutMS: 5000,
-    });
+const connectMongoWithRetry = async () => {
+  let attempt = 0;
 
-    app.listen(PORT, () => {
-      console.log(`🚀 API de TravelMatch escuchando en http://localhost:${PORT}`);
-    });
-  } catch (err) {
-    console.error("❌ No se pudo iniciar la API por fallo de MongoDB", {
-      message: err?.message,
-    });
-    process.exit(1);
+  while (true) {
+    attempt += 1;
+    try {
+      console.log("[SERVER][BOOT] Conectando con MongoDB...", {
+        attempt,
+        uri: MONGODB_URI.replace(/:\/\/([^@]+)@/, "://***:***@"),
+      });
+
+      await mongoose.connect(MONGODB_URI, {
+        dbName: "travelmatch",
+        serverSelectionTimeoutMS: 5000,
+      });
+      return;
+    } catch (err) {
+      console.error("[SERVER][BOOT] Fallo conectando MongoDB, reintentando", {
+        attempt,
+        message: err?.message,
+      });
+      await sleep(3000);
+    }
   }
+};
+
+const startServer = async () => {
+  await connectMongoWithRetry();
+  app.listen(PORT, () => {
+    console.log(`🚀 API de TravelMatch escuchando en http://localhost:${PORT}`);
+  });
 };
 
 startServer();
