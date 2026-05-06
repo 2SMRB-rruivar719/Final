@@ -82,23 +82,49 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     ? {
         profile: 'Profile',
         settings: 'Settings',
+        editProfile: 'Edit profile',
+        saveChanges: 'Save changes',
+        saving: 'Saving...',
+        nextDestination: 'Next destination',
+        budget: 'Budget',
+        bio: 'Bio',
+        interests: 'Interests',
+        tripDates: 'Travel dates',
+        outbound: 'Outbound',
+        return: 'Return',
         appearanceLanguage: 'Appearance and language',
         language: 'Language',
         darkMode: 'Dark mode',
         activate: 'Enable',
         deactivate: 'Disable',
         accountSecurity: 'Account and security',
+        profilePicture: 'Profile picture',
+        applyPhoto: 'Apply photo',
+        scheduledDeletion: 'Scheduled deletion',
         logout: 'Log out',
       }
     : {
         profile: 'Perfil',
         settings: 'Configuración',
+        editProfile: 'Editar perfil',
+        saveChanges: 'Guardar cambios',
+        saving: 'Guardando...',
+        nextDestination: 'Próximo destino',
+        budget: 'Presupuesto',
+        bio: 'Bio',
+        interests: 'Intereses',
+        tripDates: 'Fechas del viaje',
+        outbound: 'Ida',
+        return: 'Vuelta',
         appearanceLanguage: 'Apariencia e idioma',
         language: 'Idioma',
         darkMode: 'Modo oscuro',
         activate: 'Activar',
         deactivate: 'Desactivar',
         accountSecurity: 'Cuenta y seguridad',
+        profilePicture: 'Foto de perfil',
+        applyPhoto: 'Aplicar foto',
+        scheduledDeletion: 'Borrado programado',
         logout: 'Cerrar sesión',
       };
 
@@ -238,7 +264,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <button type="button" onClick={handleCancel} className="p-2 hover:bg-gray-100 rounded-full">
             <ChevronLeft size={22} className="text-gray-600" />
           </button>
-          <h2 className="text-2xl font-bold text-travel-dark">Editar perfil</h2>
+          <h2 className="text-2xl font-bold text-travel-dark">{t.editProfile}</h2>
         </div>
 
         <div className="space-y-6">
@@ -327,10 +353,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Fechas del viaje</label>
+            <label className="text-sm font-medium text-gray-600">{t.tripDates}</label>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="text-xs text-gray-500 block mb-1">Ida</span>
+                <span className="text-xs text-gray-500 block mb-1">{t.outbound}</span>
                 <input
                   type="date"
                   value={formData.tripStartDate || ''}
@@ -341,7 +367,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
               </div>
               <div>
-                <span className="text-xs text-gray-500 block mb-1">Vuelta</span>
+                <span className="text-xs text-gray-500 block mb-1">{t.return}</span>
                 <input
                   type="date"
                   value={formData.tripEndDate || ''}
@@ -355,7 +381,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <Button onClick={handleSave} fullWidth className="mt-6" disabled={saving}>
-            <Save size={18} /> {saving ? 'Guardando...' : 'Guardar cambios'}
+            <Save size={18} /> {saving ? t.saving : t.saveChanges}
           </Button>
         </div>
       </div>
@@ -433,7 +459,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
           <span className="flex items-center gap-2">
             <CalendarClock size={18} />
-            Borrado programado: {formatDeletionDate(currentUser.deletionScheduledAt)}
+            {t.scheduledDeletion}: {formatDeletionDate(currentUser.deletionScheduledAt)}
           </span>
           <Button type="button" variant="outline" className="shrink-0 py-1.5 text-xs" onClick={handleCancelDeletion} disabled={saving}>
             Cancelar borrado
@@ -444,7 +470,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {activeTab === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
           <div className="bg-gray-50 p-4 rounded-xl">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Próximo destino</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.nextDestination}</h3>
             <div className="flex items-center gap-2 text-travel-dark font-semibold">
               <Plane size={18} className="text-travel-primary shrink-0" />
               <span>
@@ -462,17 +488,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Presupuesto</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.budget}</h3>
             <p className="font-medium text-travel-dark">{currentUser.budget}</p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl lg:col-span-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Bio</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.bio}</h3>
             <p className="text-gray-600 text-sm leading-relaxed">{currentUser.bio}</p>
           </div>
 
           <div className="bg-gray-50 p-4 rounded-xl lg:col-span-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">Intereses</h3>
+            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.interests}</h3>
             <div className="flex flex-wrap gap-2">
               {(currentUser.interests || []).map((i) => (
                 <span key={i} className="bg-white px-3 py-1 rounded-full text-sm shadow-sm text-gray-600">
@@ -534,7 +560,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="bg-gray-50 p-4 rounded-xl space-y-3">
             <h3 className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2 mb-1">
               <ImageIcon size={14} />
-              Foto de perfil
+              {t.profilePicture}
             </h3>
             <p className="text-xs text-gray-500">Pega una URL de imagen (por ahora sin subida de archivos).</p>
             <input
@@ -545,7 +571,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               placeholder="https://..."
             />
             <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
-              Aplicar foto
+              {t.applyPhoto}
             </Button>
           </div>
 
