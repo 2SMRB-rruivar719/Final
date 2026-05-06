@@ -1,20 +1,24 @@
 import React from 'react';
 import { Home, MessageCircle, Map, User } from 'lucide-react';
-import { UserProfile } from '../types';
+import { LanguageCode, UserProfile } from '../types';
 import { Logo } from './Logo';
 
 interface NavigationProps {
   currentView: string;
   onChangeView: (view: string) => void;
   currentUser?: UserProfile | null;
+  language: LanguageCode;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language }) => {
+  const t = language === 'en'
+    ? { profile: 'Profile', explore: 'Explore', trip: 'Trip', chat: 'Chat', subtitle: 'Find your next travel buddy', desktopTip: 'Desktop mode optimized for quick swipes.' }
+    : { profile: 'Perfil', explore: 'Explorar', trip: 'Viaje', chat: 'Chat', subtitle: 'Encuentra tu próximo compañero de viaje', desktopTip: 'Modo desktop optimizado para swipes rápidos.' };
   const navItems = [
-    { id: 'profile', icon: User, label: 'Perfil' },
-    { id: 'match', icon: Home, label: 'Explorar' },
-    { id: 'itinerary', icon: Map, label: 'Viaje' },
-    { id: 'chat', icon: MessageCircle, label: 'Chat' },
+    { id: 'profile', icon: User, label: t.profile },
+    { id: 'match', icon: Home, label: t.explore },
+    { id: 'itinerary', icon: Map, label: t.trip },
+    { id: 'chat', icon: MessageCircle, label: t.chat },
   ];
 
   return (
@@ -22,7 +26,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
       <aside className="hidden lg:flex fixed left-0 top-0 h-screen w-72 border-r border-white/60 bg-white/80 backdrop-blur-xl z-50 flex-col px-5 py-6 shadow-xl">
         <div className="mb-8 px-2">
           <Logo className="w-auto" variant="text" />
-          <p className="text-xs text-gray-500 mt-1">Encuentra tu próximo compañero de viaje</p>
+          <p className="text-xs text-gray-500 mt-1">{t.subtitle}</p>
         </div>
 
         <nav className="space-y-2">
@@ -59,7 +63,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
                 <p className="text-xs text-gray-600 truncate">{currentUser.destination}</p>
               </div>
             </div>
-            <p className="text-[11px] text-gray-500">Modo desktop optimizado para swipes rápidos.</p>
+            <p className="text-[11px] text-gray-500">{t.desktopTip}</p>
           </div>
         )}
       </aside>

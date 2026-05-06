@@ -1,14 +1,38 @@
 import React, { useState } from 'react';
-import { UserProfile, Itinerary } from '../types';
+import { UserProfile, Itinerary, LanguageCode } from '../types';
 import { generateItinerary } from '../services/aiService';
 import { Button } from './Button';
 import { Map, Clock, MapPin, Sparkles, Share2 } from 'lucide-react';
 
 interface ItineraryBuilderProps {
   currentUser: UserProfile;
+  language: LanguageCode;
 }
 
-export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser }) => {
+export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser, language }) => {
+  const t = language === 'en'
+    ? {
+        title: 'AI Planner',
+        subtitle: `Create the perfect trip to ${currentUser.destination} based on your preferences.`,
+        duration: 'Duration (days)',
+        generating: 'Generating...',
+        generate: 'Generate Route',
+        yourItinerary: 'Your Itinerary',
+        share: 'Share',
+        newRoute: 'Generate New Route',
+        empty: 'Configure your trip and let AI plan it for you.',
+      }
+    : {
+        title: 'Planificador IA',
+        subtitle: `Crea el viaje perfecto a ${currentUser.destination} basado en tus gustos.`,
+        duration: 'Duración (días)',
+        generating: 'Generando...',
+        generate: 'Generar Ruta',
+        yourItinerary: 'Tu Itinerario',
+        share: 'Compartir',
+        newRoute: 'Generar Nueva Ruta',
+        empty: 'Configura tu viaje y deja que la IA planifique por ti.',
+      };
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(false);
   const [duration, setDuration] = useState(3);
@@ -28,12 +52,12 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser 
   return (
     <div className="p-4 max-w-5xl mx-auto mb-24 lg:mb-8 lg:py-8">
       <div className="mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl text-white shadow-lg">
-        <h2 className="text-2xl font-bold mb-2">Planificador IA</h2>
-        <p className="opacity-90 mb-4 text-sm">Crea el viaje perfecto a {currentUser.destination} basado en tus gustos.</p>
+        <h2 className="text-2xl font-bold mb-2">{t.title}</h2>
+        <p className="opacity-90 mb-4 text-sm">{t.subtitle}</p>
         
         {!itinerary && (
           <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-            <label className="block text-xs font-medium mb-2 uppercase tracking-wide">Duración (días)</label>
+            <label className="block text-xs font-medium mb-2 uppercase tracking-wide">{t.duration}</label>
             <div className="flex items-center gap-4">
               <input 
                 type="range" 
@@ -52,9 +76,9 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser 
               className="mt-4 bg-travel-secondary text-travel-dark hover:bg-white border-none shadow-none"
             >
               {loading ? (
-                <span className="flex items-center gap-2"><Sparkles className="animate-spin" size={18} /> Generando...</span>
+                <span className="flex items-center gap-2"><Sparkles className="animate-spin" size={18} /> {t.generating}</span>
               ) : (
-                <span className="flex items-center gap-2"><Sparkles size={18} /> Generar Ruta</span>
+                <span className="flex items-center gap-2"><Sparkles size={18} /> {t.generate}</span>
               )}
             </Button>
           </div>
@@ -64,9 +88,9 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser 
       {itinerary && (
         <div className="space-y-6 animate-fade-in-up">
            <div className="flex justify-between items-center">
-             <h3 className="text-xl font-bold text-travel-dark">Tu Itinerario</h3>
+             <h3 className="text-xl font-bold text-travel-dark">{t.yourItinerary}</h3>
              <button className="text-travel-accent flex items-center gap-1 text-sm font-medium hover:text-travel-primary">
-               <Share2 size={16} /> Compartir
+               <Share2 size={16} /> {t.share}
              </button>
            </div>
 
@@ -103,7 +127,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser 
            </div>
            
            <Button onClick={() => setItinerary(null)} variant="outline" fullWidth>
-             Generar Nueva Ruta
+            {t.newRoute}
            </Button>
         </div>
       )}
@@ -111,7 +135,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser 
       {!itinerary && !loading && (
         <div className="text-center p-8 bg-white border border-dashed border-gray-300 rounded-3xl">
           <Map className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">Configura tu viaje y deja que la IA planifique por ti.</p>
+          <p className="text-gray-500">{t.empty}</p>
         </div>
       )}
     </div>

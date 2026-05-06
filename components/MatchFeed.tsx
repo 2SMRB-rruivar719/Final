@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserProfile } from '../types';
+import { LanguageCode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
 import { Button } from './Button';
 import { X, Heart, MessageCircle, MapPin, Calendar, Wallet } from 'lucide-react';
@@ -7,9 +7,39 @@ import { X, Heart, MessageCircle, MapPin, Calendar, Wallet } from 'lucide-react'
 interface MatchFeedProps {
   currentUser: UserProfile;
   onStartChat: (user: UserProfile) => void;
+  language: LanguageCode;
 }
 
-export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }) => {
+export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language }) => {
+  const t = language === 'en'
+    ? {
+        loading: 'AI is looking for your ideal travel buddies...',
+        seenAll: 'You have seen all profiles!',
+        comeBack: `Come back later to see new travelers in ${currentUser.destination}.`,
+        reviewAgain: 'Review again',
+        yourTrip: 'Your trip',
+        lookingFor: 'Looking for profiles similar to:',
+        currentProfile: 'Current profile',
+        matchInsight: 'Match insight',
+        highlighted: 'Top compatibility',
+        insightText: 'Destination, style and budget match. Great to build a joint plan quickly.',
+        firstMessage: 'Send first message',
+        tip: 'Tip: use the center button to break the ice instantly.',
+      }
+    : {
+        loading: 'La IA está buscando a tus compañeros ideales...',
+        seenAll: '¡Has visto todos los perfiles!',
+        comeBack: `Vuelve más tarde para ver nuevos viajeros en ${currentUser.destination}.`,
+        reviewAgain: 'Revisar de nuevo',
+        yourTrip: 'Tu viaje',
+        lookingFor: 'Buscando perfiles afines a:',
+        currentProfile: 'Perfil actual',
+        matchInsight: 'Match insight',
+        highlighted: 'Compatibilidad destacada',
+        insightText: 'Coinciden en destino, estilo y presupuesto. Ideal para armar plan conjunto rápidamente.',
+        firstMessage: 'Enviar primer mensaje',
+        tip: 'Tip: usa el botón central para romper el hielo al instante.',
+      };
   const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -38,7 +68,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
     return (
       <div className="flex flex-col items-center justify-center h-[60vh] text-center p-6 lg:h-[70vh]">
         <div className="w-16 h-16 border-4 border-travel-secondary border-t-travel-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-travel-dark font-medium">La IA está buscando a tus compañeros ideales...</p>
+        <p className="text-travel-dark font-medium">{t.loading}</p>
       </div>
     );
   }
@@ -49,9 +79,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
         <div className="bg-travel-secondary/30 p-6 rounded-full mb-4">
           <Heart className="h-12 w-12 text-travel-primary" />
         </div>
-        <h3 className="text-xl font-bold text-travel-dark mb-2">¡Has visto todos los perfiles!</h3>
-        <p className="text-gray-500 mb-6">Vuelve más tarde para ver nuevos viajeros en {currentUser.destination}.</p>
-        <Button onClick={() => setCurrentIndex(0)} variant="outline">Revisar de nuevo</Button>
+        <h3 className="text-xl font-bold text-travel-dark mb-2">{t.seenAll}</h3>
+        <p className="text-gray-500 mb-6">{t.comeBack}</p>
+        <Button onClick={() => setCurrentIndex(0)} variant="outline">{t.reviewAgain}</Button>
       </div>
     );
   }
@@ -60,11 +90,11 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
       <div className="mx-auto w-full max-w-6xl grid gap-6 lg:grid-cols-[250px_minmax(420px,540px)_290px] lg:items-start">
         <aside className="hidden lg:block bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Tu viaje</p>
+          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.yourTrip}</p>
           <h3 className="text-xl font-bold text-travel-dark mb-1">{currentUser.destination}</h3>
           <p className="text-sm text-gray-500 mb-4">{currentUser.dates}</p>
           <div className="space-y-2 mb-4">
-            <p className="text-xs text-gray-500">Buscando perfiles afines a:</p>
+            <p className="text-xs text-gray-500">{t.lookingFor}</p>
             <div className="flex flex-wrap gap-2">
               {currentUser.travelStyle.slice(0, 4).map((style) => (
                 <span key={style} className="px-2.5 py-1 rounded-full bg-travel-secondary/50 text-travel-dark text-xs font-semibold">
@@ -74,7 +104,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
             </div>
           </div>
           <div className="rounded-2xl bg-gray-50 border border-gray-100 p-3">
-            <p className="text-xs text-gray-500 mb-1">Perfil actual</p>
+            <p className="text-xs text-gray-500 mb-1">{t.currentProfile}</p>
             <p className="text-sm font-semibold text-gray-800">{currentIndex + 1} de {candidates.length}</p>
           </div>
         </aside>
@@ -150,10 +180,10 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
         </div>
 
         <aside className="hidden lg:block bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-5 shadow-sm">
-          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">Match insight</p>
-          <h4 className="font-bold text-gray-800 mb-2">Compatibilidad destacada</h4>
+          <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.matchInsight}</p>
+          <h4 className="font-bold text-gray-800 mb-2">{t.highlighted}</h4>
           <p className="text-sm text-gray-600 mb-4">
-            Coinciden en destino, estilo y presupuesto. Ideal para armar plan conjunto rápidamente.
+            {t.insightText}
           </p>
           <div className="space-y-2 mb-5">
             {currentCandidate.interests.slice(0, 4).map((interest) => (
@@ -164,9 +194,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat }
             ))}
           </div>
           <Button fullWidth onClick={() => onStartChat(currentCandidate)}>
-            Enviar primer mensaje
+            {t.firstMessage}
           </Button>
-          <p className="text-[11px] text-gray-500 mt-3">Tip: usa el botón central para romper el hielo al instante.</p>
+          <p className="text-[11px] text-gray-500 mt-3">{t.tip}</p>
         </aside>
       </div>
     </div>

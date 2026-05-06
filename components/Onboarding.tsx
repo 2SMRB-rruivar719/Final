@@ -12,6 +12,41 @@ interface OnboardingProps {
 }
 
 export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, language }) => {
+  const t = language === 'en'
+    ? {
+        back: 'Back',
+        aboutYou: 'Tell us about you',
+        name: 'Name',
+        whereTo: 'Where do you want to go?',
+        travelDates: 'Travel dates',
+        outbound: 'Outbound',
+        return: 'Return',
+        accountType: 'Account type',
+        client: 'Client',
+        company: 'Company',
+        next: 'Next',
+        interests: 'Interests',
+        travelStyle: 'Your travel style',
+        begin: 'Start Adventure',
+        creating: 'Creating account...',
+      }
+    : {
+        back: 'Volver',
+        aboutYou: 'Cuéntanos sobre ti',
+        name: 'Nombre',
+        whereTo: '¿A dónde quieres ir?',
+        travelDates: 'Fechas del viaje',
+        outbound: 'Ida',
+        return: 'Vuelta',
+        accountType: 'Tipo de cuenta',
+        client: 'Cliente',
+        company: 'Empresa',
+        next: 'Siguiente',
+        interests: 'Intereses',
+        travelStyle: 'Tu estilo de viaje',
+        begin: 'Comenzar Aventura',
+        creating: 'Creando cuenta...',
+      };
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<UserProfile>>({
     travelStyle: [],
@@ -238,7 +273,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         className="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-travel-primary text-left"
       >
         <ChevronLeft size={18} />
-        <span>Volver</span>
+        <span>{t.back}</span>
       </button>
       <div className="flex-1">
         {/* Progress Bar */}
@@ -251,11 +286,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 1 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">Cuéntanos sobre ti</h2>
+            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.aboutYou}</h2>
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <User size={16} /> Nombre
+                <User size={16} /> {t.name}
               </label>
               <input
                 type="text"
@@ -268,7 +303,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <MapPin size={16} /> ¿A dónde quieres ir?
+                <MapPin size={16} /> {t.whereTo}
               </label>
               <input
                 type="text"
@@ -281,11 +316,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Calendar size={16} /> Fechas del viaje
+                <Calendar size={16} /> {t.travelDates}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-xs text-gray-500 block mb-1">Ida</span>
+                  <span className="text-xs text-gray-500 block mb-1">{t.outbound}</span>
                   <input
                     type="date"
                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
@@ -294,7 +329,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                   />
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 block mb-1">Vuelta</span>
+                  <span className="text-xs text-gray-500 block mb-1">{t.return}</span>
                   <input
                     type="date"
                     className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
@@ -371,7 +406,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <span className="text-sm font-medium text-gray-600">Tipo de cuenta</span>
+              <span className="text-sm font-medium text-gray-600">{t.accountType}</span>
               <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
                 <button
                   type="button"
@@ -380,7 +415,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     role === 'cliente' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-500'
                   }`}
                 >
-                  Cliente
+                  {t.client}
                 </button>
                 <button
                   type="button"
@@ -389,7 +424,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     role === 'empresa' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-500'
                   }`}
                 >
-                  Empresa
+                  {t.company}
                 </button>
               </div>
             </div>
@@ -398,7 +433,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 2 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">Tu estilo de viaje</h2>
+            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.travelStyle}</h2>
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
@@ -446,7 +481,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 3 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">Intereses</h2>
+            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.interests}</h2>
             <p className="text-gray-500 text-center text-sm">Escribe tus intereses separados por comas para mejorar el matching con IA.</p>
             
             <textarea
@@ -474,13 +509,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             onClick={handleNext}
             disabled={loading}
           >
-            Siguiente
+            {t.next}
           </Button>
         ) : (
           <Button fullWidth onClick={handleComplete} disabled={loading}>
-            {loading ? 'Creando cuenta...' : (
+            {loading ? t.creating : (
               <>
-                <Check className="mr-2 h-5 w-5" /> Comenzar Aventura
+                <Check className="mr-2 h-5 w-5" /> {t.begin}
               </>
             )}
           </Button>

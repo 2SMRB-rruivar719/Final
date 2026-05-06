@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { UserProfile, ChatThreadType, Message } from '../types';
+import { UserProfile, ChatThreadType, Message, LanguageCode } from '../types';
 import { ChevronLeft, Send, Phone, Video } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
 
 interface ChatInterfaceProps {
   currentUser: UserProfile;
+  language: LanguageCode;
 }
 
 const INITIAL_CHATS: ChatThreadType[] = [
@@ -51,7 +52,26 @@ const INITIAL_CHATS: ChatThreadType[] = [
   },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language }) => {
+  const t = language === 'en'
+    ? {
+        messages: 'Messages',
+        activeChats: 'active chats',
+        online: 'Online',
+        inputPlaceholder: 'Write a message...',
+        sent: 'Message sent.',
+        openingChat: 'Opening chat with',
+        now: 'Now',
+      }
+    : {
+        messages: 'Mensajes',
+        activeChats: 'chats activos',
+        online: 'En línea',
+        inputPlaceholder: 'Escribe un mensaje...',
+        sent: 'Mensaje enviado.',
+        openingChat: 'Abriendo chat con',
+        now: 'Ahora',
+      };
   const [chats, setChats] = useState<ChatThreadType[]>(INITIAL_CHATS);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
@@ -71,14 +91,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
         return {
           ...chat,
           lastMessage: newMessage,
-          lastMessageTime: 'Ahora',
+          lastMessageTime: t.now,
           messages: [
             ...chat.messages,
             {
               id: `msg-${Date.now()}`,
               text: newMessage,
               sender: 'me',
-              timestamp: 'Ahora'
+              timestamp: t.now
             }
           ]
         };
@@ -86,7 +106,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
       return chat;
     }));
     setNewMessage('');
-    showToast('Mensaje enviado.', 'info');
+    showToast(t.sent, 'info');
   };
 
   return (
@@ -94,8 +114,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
       <div className="hidden lg:grid lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-4rem)] p-6">
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
           <div className="p-5 border-b border-gray-100 bg-white">
-            <h1 className="text-2xl font-bold text-travel-dark">Mensajes</h1>
-            <p className="text-sm text-gray-500">{currentUser.destination} · {chats.length} chats activos</p>
+            <h1 className="text-2xl font-bold text-travel-dark">{t.messages}</h1>
+            <p className="text-sm text-gray-500">{currentUser.destination} · {chats.length} {t.activeChats}</p>
           </div>
           <div className="h-[calc(100%-92px)] overflow-y-auto">
             {chats.map((chat) => {
@@ -141,7 +161,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
               <img src={desktopActiveChat.avatarUrl} alt={desktopActiveChat.name} className="w-10 h-10 rounded-full object-cover" />
               <div className="flex-1">
                 <h3 className="font-bold text-gray-800">{desktopActiveChat.name}</h3>
-                <span className="text-xs text-green-500 font-medium">En línea</span>
+                <span className="text-xs text-green-500 font-medium">{t.online}</span>
               </div>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
@@ -170,7 +190,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                placeholder="Escribe un mensaje..."
+                placeholder={t.inputPlaceholder}
                 className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm"
               />
               <button
@@ -194,7 +214,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
             <img src={activeChat.avatarUrl} alt={activeChat.name} className="w-10 h-10 rounded-full object-cover" />
             <div className="flex-1">
               <h3 className="font-bold text-gray-800">{activeChat.name}</h3>
-              <span className="text-xs text-green-500 font-medium">En línea</span>
+              <span className="text-xs text-green-500 font-medium">{t.online}</span>
             </div>
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
@@ -223,7 +243,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-              placeholder="Escribe un mensaje..."
+              placeholder={t.inputPlaceholder}
               className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm"
             />
             <button
@@ -238,7 +258,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
       ) : (
         <div className="lg:hidden flex flex-col h-full bg-white max-w-2xl mx-auto shadow-sm min-h-screen">
           <div className="p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-            <h1 className="text-2xl font-bold text-travel-dark">Mensajes</h1>
+            <h1 className="text-2xl font-bold text-travel-dark">{t.messages}</h1>
           </div>
 
           <div className="flex-1 overflow-y-auto pb-24">
@@ -247,7 +267,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser }) => 
                 key={chat.id}
                 onClick={() => {
                   console.log('[FLOW] Abrir conversación', { chatId: chat.id, name: chat.name });
-                  showToast(`Abriendo chat con ${chat.name}`, 'info');
+                  showToast(`${t.openingChat} ${chat.name}`, 'info');
                   setActiveChatId(chat.id);
                 }}
                 className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 cursor-pointer"

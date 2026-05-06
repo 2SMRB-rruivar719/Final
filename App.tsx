@@ -130,6 +130,7 @@ const AppInner: React.FC = () => {
               <Login
                 onLoginSuccess={handleLoginSuccess}
                 onBackToLanding={() => setAuthView('landing')}
+                language={language}
               />
             </div>
           </div>
@@ -194,11 +195,11 @@ const AppInner: React.FC = () => {
 
     switch (currentView) {
       case 'match':
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} />;
+        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} />;
       case 'itinerary':
-        return <ItineraryBuilder currentUser={currentUser} />;
+        return <ItineraryBuilder currentUser={currentUser} language={language} />;
       case 'chat':
-        return <ChatInterface currentUser={currentUser} />;
+        return <ChatInterface currentUser={currentUser} language={language} />;
       case 'profile':
         return (
           <ProfileView
@@ -213,7 +214,7 @@ const AppInner: React.FC = () => {
           />
         );
       default:
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} />;
+        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} />;
     }
   };
 
@@ -242,6 +243,7 @@ const AppInner: React.FC = () => {
           currentView={currentView}
           onChangeView={setCurrentView}
           currentUser={currentUser}
+          language={language}
         />
       )}
     </div>

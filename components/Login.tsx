@@ -1,16 +1,30 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
 import { loginUser, recoverAccount } from '../services/api';
-import { UserProfile } from '../types';
+import { LanguageCode, UserProfile } from '../types';
 import { ChevronLeft } from 'lucide-react';
 import { useToast } from './ToastProvider';
 
 interface LoginProps {
   onLoginSuccess: (user: UserProfile) => void;
   onBackToLanding: () => void;
+  language: LanguageCode;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding }) => {
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, language }) => {
+  const t = language === 'en'
+    ? {
+        back: 'Back', title: 'Sign in', email: 'Email', password: 'Password', login: 'Sign in', loggingIn: 'Signing in...',
+        recover: 'Recover account', cancelRecover: 'Cancel recovery', recoverTitle: 'Recover account',
+        accountEmail: 'Account email', newPassword: 'New password', repeatPassword: 'Repeat new password',
+        updatePassword: 'Update password', updating: 'Updating...', loginToast: 'Signing in...', loginOk: 'Signed in successfully.',
+      }
+    : {
+        back: 'Volver', title: 'Iniciar sesión', email: 'Email', password: 'Contraseña', login: 'Iniciar sesión', loggingIn: 'Entrando...',
+        recover: 'Recuperar cuenta', cancelRecover: 'Cancelar recuperación', recoverTitle: 'Recuperar cuenta',
+        accountEmail: 'Email de la cuenta', newPassword: 'Nueva contraseña', repeatPassword: 'Repite la nueva contraseña',
+        updatePassword: 'Actualizar contraseña', updating: 'Actualizando...', loginToast: 'Iniciando sesión...', loginOk: 'Sesión iniciada correctamente.',
+      };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showRecover, setShowRecover] = useState(false);
@@ -46,11 +60,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding })
 
     try {
       setLoading(true);
-      showToast('Iniciando sesión...', 'info');
+      showToast(t.loginToast, 'info');
       console.log('[API] Enviando petición de login a backend');
       const user = await loginUser(email, password);
       console.log('[API] Login correcto, usuario recibido', user);
-      showToast('Sesión iniciada correctamente.', 'success');
+      showToast(t.loginOk, 'success');
       onLoginSuccess(user);
     } catch (err: any) {
       let msg = err?.message || 'Credenciales incorrectas o error al iniciar sesión.';
@@ -117,12 +131,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding })
         className="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-travel-primary text-left"
       >
         <ChevronLeft size={18} />
-        <span>Volver</span>
+        <span>{t.back}</span>
       </button>
-      <h2 className="text-2xl font-bold text-travel-dark text-center mb-6">Iniciar sesión</h2>
+      <h2 className="text-2xl font-bold text-travel-dark text-center mb-6">{t.title}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Email</label>
+          <label className="text-sm font-medium text-gray-600">{t.email}</label>
           <input
             type="email"
             className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
@@ -132,7 +146,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding })
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">Contraseña</label>
+          <label className="text-sm font-medium text-gray-600">{t.password}</label>
           <input
             type="password"
             className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
@@ -147,7 +161,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding })
           </p>
         )}
         <Button type="submit" fullWidth disabled={loading}>
-          {loading ? 'Entrando...' : 'Iniciar sesión'}
+          {loading ? t.loggingIn : t.login}
         </Button>
       </form>
       <button
@@ -162,34 +176,34 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding })
           }
         }}
       >
-        {showRecover ? 'Cancelar recuperación' : 'Recuperar cuenta'}
+        {showRecover ? t.cancelRecover : t.recover}
       </button>
       {showRecover && (
         <form onSubmit={handleRecover} className="mt-4 space-y-3 border-t border-gray-200 pt-4">
-          <h3 className="text-sm font-semibold text-gray-700">Recuperar cuenta</h3>
+          <h3 className="text-sm font-semibold text-gray-700">{t.recoverTitle}</h3>
           <input
             type="email"
             className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
-            placeholder="Email de la cuenta"
+            placeholder={t.accountEmail}
             value={recoverEmail}
             onChange={(e) => setRecoverEmail(e.target.value)}
           />
           <input
             type="password"
             className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
-            placeholder="Nueva contraseña"
+            placeholder={t.newPassword}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
           <input
             type="password"
             className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
-            placeholder="Repite la nueva contraseña"
+            placeholder={t.repeatPassword}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
           />
           <Button type="submit" fullWidth disabled={recoverLoading}>
-            {recoverLoading ? 'Actualizando...' : 'Actualizar contraseña'}
+            {recoverLoading ? t.updating : t.updatePassword}
           </Button>
         </form>
       )}
