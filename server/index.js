@@ -281,6 +281,41 @@ app.post("/api/auth/login", async (req, res) => {
   }
 });
 
+// Recuperar cuenta (reset básico por email)
+app.post("/api/auth/recover", async (req, res) => {
+  try {
+    const { email, newPassword } = req.body;
+    const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
+
+    if (!normalizedEmail || !normalizedEmail.includes("@")) {
+      return res.status(400).json({ error: "Email inválido." });
+    }
+
+    if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "La nueva contraseña debe tener al menos 6 caracteres." });
+    }
+
+    const user = await User.findOne({ email: normalizedEmail });
+    if (!user) {
+      return res.status(404).json({ error: "No existe una cuenta con ese email." });
+    }
+
+    const passwordHash = await bcrypt.hash(newPassword, 10);
+    user.passwordHash = passwordHash;
+    await user.save();
+
+    return res.json({ message: "Cuenta recuperada. Ya puedes iniciar sesión." });
+  } catch (err) {
+    console.error("[SERVER][RECOVER] Error al recuperar cuenta", {
+      message: err?.message,
+      stack: err?.stack,
+    });
+    return res.status(500).json({ error: "Error al recuperar la cuenta." });
+  }
+});
+
 // Actualizar usuario (incluye idioma)
 app.put("/api/users/:id", async (req, res) => {
   try {

@@ -162,6 +162,43 @@ export async function loginUser(
   return data as UserProfile;
 }
 
+export async function recoverAccount(
+  email: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE_URL}/auth/recover`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, newPassword }),
+  });
+
+  const rawBody = await res.text();
+  let data: any = null;
+  let fallbackText: string | null = null;
+
+  if (rawBody) {
+    try {
+      data = JSON.parse(rawBody);
+    } catch {
+      fallbackText = rawBody;
+    }
+  }
+
+  if (!res.ok) {
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      fallbackText ||
+      "No se pudo recuperar la cuenta";
+    throw new Error(message);
+  }
+
+  return {
+    message:
+      (data && typeof data === "object" && data.message) ||
+      "Contraseña actualizada correctamente.",
+  };
+}
+
 export async function updateUserProfile(
   id: string,
   profile: Partial<UserProfile>
