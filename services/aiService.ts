@@ -48,16 +48,17 @@ const buildName = (index: number) => `${firstNameList[index % firstNameList.leng
 export const generatePotentialMatches = async (userProfile: UserProfile): Promise<UserProfile[]> => {
   await new Promise((resolve) => setTimeout(resolve, 450));
 
-  const baseStyles = userProfile.travelStyle.length
-    ? userProfile.travelStyle
-    : [TravelStyle.CULTURAL, TravelStyle.ADVENTURE];
+  const baseStyles =
+    userProfile.travelStyle && userProfile.travelStyle.length
+      ? userProfile.travelStyle
+      : [TravelStyle.CULTURAL, TravelStyle.ADVENTURE];
 
   return Array.from({ length: 8 }).map((_, index) => {
     const seed = Date.now() + index * 41;
     const styles = pickMany(Object.values(TravelStyle), 2, seed + 9);
     const mergedStyles = Array.from(new Set([...baseStyles.slice(0, 1), ...styles])).slice(0, 3);
     const interests = pickMany(
-      Array.from(new Set([...userProfile.interests, ...interestPool])),
+      Array.from(new Set([...(userProfile.interests || []), ...interestPool])),
       4,
       seed + 17
     );
@@ -77,6 +78,8 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       avatarUrl: `https://picsum.photos/seed/${name.replace(' ', '')}/600/600`,
       destination: userProfile.destination,
       dates: userProfile.dates,
+      tripStartDate: userProfile.tripStartDate,
+      tripEndDate: userProfile.tripEndDate,
       role: 'cliente',
       language: userProfile.language || 'es',
       theme: userProfile.theme || 'light',

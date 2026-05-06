@@ -33,6 +33,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
     name: formData.name,
     destination: formData.destination,
     dates: formData.dates,
+    tripStartDate: formData.tripStartDate,
+    tripEndDate: formData.tripEndDate,
     email,
     emailLength: email.length,
     passwordLength: password.length,
@@ -137,6 +139,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         role: role || undefined,
         destination: formData.destination?.trim() || undefined,
         dates: formData.dates?.trim() || undefined,
+        tripStartDate: formData.tripStartDate?.trim() || undefined,
+        tripEndDate: formData.tripEndDate?.trim() || undefined,
         age: formData.age,
         country: formData.country?.trim() || undefined,
         bio: formData.bio?.trim() || undefined,
@@ -277,14 +281,28 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
-                <Calendar size={16} /> ¿Cuándo?
+                <Calendar size={16} /> Fechas del viaje
               </label>
-              <input
-                type="date"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
-                value={formData.dates || ''}
-                onChange={e => setFormData({...formData, dates: e.target.value})}
-              />
+              <div className="grid grid-cols-2 gap-2">
+                <div>
+                  <span className="text-xs text-gray-500 block mb-1">Ida</span>
+                  <input
+                    type="date"
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                    value={formData.tripStartDate || ''}
+                    onChange={e => setFormData({ ...formData, tripStartDate: e.target.value })}
+                  />
+                </div>
+                <div>
+                  <span className="text-xs text-gray-500 block mb-1">Vuelta</span>
+                  <input
+                    type="date"
+                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                    value={formData.tripEndDate || ''}
+                    onChange={e => setFormData({ ...formData, tripEndDate: e.target.value })}
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="space-y-2">

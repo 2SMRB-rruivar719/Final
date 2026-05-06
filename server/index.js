@@ -67,6 +67,9 @@ const userSchema = new mongoose.Schema(
     avatarUrl: { type: String, default: "https://picsum.photos/seed/me/400/400" },
     destination: { type: String, required: true },
     dates: { type: String, default: "Próximamente" },
+    tripStartDate: { type: String, default: "" },
+    tripEndDate: { type: String, default: "" },
+    deletionScheduledAt: { type: Date, default: null },
     language: { type: String, enum: ["es", "en"], default: "es" },
     theme: { type: String, enum: ["light", "dark"], default: "light" },
   },
@@ -82,6 +85,9 @@ userSchema.set("toJSON", {
     delete ret._id;
     delete ret.__v;
     delete ret.passwordHash;
+    if (ret.deletionScheduledAt instanceof Date) {
+      ret.deletionScheduledAt = ret.deletionScheduledAt.toISOString();
+    }
     return ret;
   },
 });
@@ -106,6 +112,8 @@ app.post("/api/auth/register", async (req, res) => {
       avatarUrl,
       destination,
       dates,
+      tripStartDate,
+      tripEndDate,
       language,
       theme,
     } = req.body;
@@ -187,7 +195,25 @@ app.post("/api/auth/register", async (req, res) => {
     if (travelStyle && Array.isArray(travelStyle)) userData.travelStyle = travelStyle;
     if (interests && Array.isArray(interests)) userData.interests = interests;
     if (avatarUrl && avatarUrl.trim()) userData.avatarUrl = avatarUrl.trim();
-    if (dates && dates.trim()) userData.dates = dates.trim();
+    const start =
+      typeof tripStartDate === "string" && tripStartDate.trim()
+        ? tripStartDate.trim()
+        : "";
+    const end =
+      typeof tripEndDate === "string" && tripEndDate.trim()
+        ? tripEndDate.trim()
+        : "";
+    if (start) userData.tripStartDate = start;
+    if (end) userData.tripEndDate = end;
+    if (start && end) {
+      userData.dates = `${start} → ${end}`;
+    } else if (start) {
+      userData.dates = start;
+    } else if (end) {
+      userData.dates = end;
+    } else if (dates && dates.trim()) {
+      userData.dates = dates.trim();
+    }
     if (language) userData.language = language;
     if (theme) userData.theme = theme;
 
@@ -324,6 +350,20 @@ app.put("/api/users/:id", async (req, res) => {
 
     // Nunca permitir actualizar passwordHash directamente
     delete update.passwordHash;
+    delete update.deletionScheduledAt;
+
+    if (
+      typeof update.tripStartDate === "string" &&
+      typeof update.tripEndDate === "string" &&
+      update.tripStartDate.trim() &&
+      update.tripEndDate.trim()
+    ) {
+      update.dates = `${update.tripStartDate.trim()} → ${update.tripEndDate.trim()}`;
+    } else if (typeof update.tripStartDate === "string" && update.tripStartDate.trim()) {
+      update.dates = update.tripStartDate.trim();
+    } else if (typeof update.tripEndDate === "string" && update.tripEndDate.trim()) {
+      update.dates = update.tripEndDate.trim();
+    }
 
     const user = await User.findByIdAndUpdate(id, update, {
       new: true,
@@ -340,6 +380,88 @@ app.put("/api/users/:id", async (req, res) => {
     res.status(500).json({ error: "Error al actualizar usuario" });
   }
 });
+
+// Borrar cuenta de forma inmediata
+app.delete("/api/users/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndDelete(id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    return res.status(204).send();
+  } catch (err) {
+    console.error("[SERVER][DELETE_USER]", err);
+    return res.status(500).json({ error: "Error al borrar la cuenta." });
+  }
+});
+
+// Programar borrado de cuenta
+app.post("/api/users/:id/schedule-deletion", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { scheduledAt } = req.body;
+    if (!scheduledAt || typeof scheduledAt !== "string") {
+      return res.status(400).json({ error: "Fecha de borrado obligatoria (scheduledAt ISO)." });
+    }
+    const when = new Date(scheduledAt);
+    if (Number.isNaN(when.getTime())) {
+      return res.status(400).json({ error: "Fecha inválida." });
+    }
+    const min = new Date();
+    min.setDate(min.getDate() + 1);
+    if (when < min) {
+      return res.status(400).json({ error: "La fecha debe ser al menos mañana." });
+    }
+    const user = await User.findByIdAndUpdate(
+      id,
+      { deletionScheduledAt: when },
+      { new: true, runValidators: true }
+    );
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    return res.json(user.toJSON());
+  } catch (err) {
+    console.error("[SERVER][SCHEDULE_DELETION]", err);
+    return res.status(500).json({ error: "Error al programar el borrado." });
+  }
+});
+
+// Cancelar borrado programado
+app.post("/api/users/:id/cancel-deletion", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findByIdAndUpdate(
+      id,
+      { deletionScheduledAt: null },
+      { new: true, runValidators: true }
+    );
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado" });
+    }
+    return res.json(user.toJSON());
+  } catch (err) {
+    console.error("[SERVER][CANCEL_DELETION]", err);
+    return res.status(500).json({ error: "Error al cancelar el borrado." });
+  }
+});
+
+const runScheduledAccountDeletions = async () => {
+  try {
+    const now = new Date();
+    const result = await User.deleteMany({
+      deletionScheduledAt: { $ne: null, $lte: now },
+    });
+    if (result.deletedCount > 0) {
+      console.log("[SERVER][CRON] Cuentas borradas por programación", {
+        deletedCount: result.deletedCount,
+      });
+    }
+  } catch (err) {
+    console.error("[SERVER][CRON] Error borrando cuentas programadas", err);
+  }
+};
 
 const sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
@@ -374,6 +496,8 @@ const startServer = async () => {
   app.listen(PORT, () => {
     console.log(`🚀 API de TravelMatch escuchando en http://localhost:${PORT}`);
   });
+  setInterval(runScheduledAccountDeletions, 60 * 60 * 1000);
+  runScheduledAccountDeletions();
 };
 
 startServer();

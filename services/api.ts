@@ -37,6 +37,8 @@ export interface RegisterPayload {
   role?: "cliente" | "empresa";
   destination?: string;
   dates?: string;
+  tripStartDate?: string;
+  tripEndDate?: string;
   age?: number;
   country?: string;
   bio?: string;
@@ -162,6 +164,16 @@ export async function loginUser(
   return data as UserProfile;
 }
 
+async function parseJsonResponse(res: Response): Promise<{ data: any; text: string }> {
+  const text = await res.text();
+  if (!text) return { data: null, text: "" };
+  try {
+    return { data: JSON.parse(text), text };
+  } catch {
+    return { data: null, text };
+  }
+}
+
 export async function recoverAccount(
   email: string,
   newPassword: string
@@ -203,17 +215,73 @@ export async function updateUserProfile(
   id: string,
   profile: Partial<UserProfile>
 ): Promise<UserProfile> {
+  const payload = { ...profile } as Record<string, unknown>;
+  delete payload.id;
   const res = await fetch(`${API_BASE_URL}/users/${id}`, {
     method: "PUT",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(profile),
+    body: JSON.stringify(payload),
   });
 
+  const { data, text } = await parseJsonResponse(res);
   if (!res.ok) {
-    const message = await res.text();
-    throw new Error(message || "Error al actualizar usuario");
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      text ||
+      `Error al actualizar usuario (HTTP ${res.status})`;
+    throw new Error(message);
   }
+  if (!data || typeof data !== "object") {
+    throw new Error(text || "Respuesta inválida del servidor");
+  }
+  return data as UserProfile;
+}
 
-  return (await res.json()) as UserProfile;
+export async function deleteUserAccount(id: string): Promise<void> {
+  const res = await fetch(`${API_BASE_URL}/users/${id}`, { method: "DELETE" });
+  if (!res.ok) {
+    const { data, text } = await parseJsonResponse(res);
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      text ||
+      `Error al borrar la cuenta (HTTP ${res.status})`;
+    throw new Error(message);
+  }
+}
+
+export async function scheduleAccountDeletion(
+  id: string,
+  scheduledAtIso: string
+): Promise<UserProfile> {
+  const res = await fetch(`${API_BASE_URL}/users/${id}/schedule-deletion`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ scheduledAt: scheduledAtIso }),
+  });
+  const { data, text } = await parseJsonResponse(res);
+  if (!res.ok) {
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      text ||
+      "Error al programar el borrado";
+    throw new Error(message);
+  }
+  return data as UserProfile;
+}
+
+export async function cancelScheduledDeletion(id: string): Promise<UserProfile> {
+  const res = await fetch(`${API_BASE_URL}/users/${id}/cancel-deletion`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+  });
+  const { data, text } = await parseJsonResponse(res);
+  if (!res.ok) {
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      text ||
+      "Error al cancelar el borrado";
+    throw new Error(message);
+  }
+  return data as UserProfile;
 }
 

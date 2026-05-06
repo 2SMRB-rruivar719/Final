@@ -23,10 +23,25 @@ export interface UserProfile {
   interests: string[];
   avatarUrl: string;
   destination: string;
+  /** Resumen legible (p. ej. ida → vuelta); mantener por compatibilidad */
   dates: string;
+  /** Fecha de ida (YYYY-MM-DD) */
+  tripStartDate?: string;
+  /** Fecha de vuelta (YYYY-MM-DD) */
+  tripEndDate?: string;
   role: UserRole;
   language: LanguageCode;
-   theme: ThemeMode;
+  theme: ThemeMode;
+  /** ISO: cuenta programada para borrarse */
+  deletionScheduledAt?: string | null;
+}
+
+/** Reservado para iteración del planificador IA circular */
+export type PlannerPhase = 'gather' | 'plan' | 'refine';
+
+export interface PlannerSessionState {
+  phase: PlannerPhase;
+  lastPrompt?: string;
 }
 
 export interface ItineraryDay {

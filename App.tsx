@@ -10,6 +10,18 @@ import { LanguageCode, ThemeMode, UserProfile } from './types';
 import { Logo } from './components/Logo';
 import { Button } from './components/Button';
 import { ToastProvider, useToast } from './components/ToastProvider';
+import { updateUserProfile } from './services/api';
+
+const normalizeUser = (u: UserProfile): UserProfile => ({
+  ...u,
+  interests: Array.isArray(u.interests) ? u.interests : [],
+  travelStyle: Array.isArray(u.travelStyle) ? u.travelStyle : [],
+  language: u.language === 'en' ? 'en' : 'es',
+  theme: u.theme === 'dark' ? 'dark' : 'light',
+  tripStartDate: u.tripStartDate || '',
+  tripEndDate: u.tripEndDate || '',
+  deletionScheduledAt: u.deletionScheduledAt ?? null,
+});
 
 const AppInner: React.FC = () => {
   const { showToast } = useToast();
@@ -23,7 +35,7 @@ const AppInner: React.FC = () => {
   React.useEffect(() => {
     const savedUser = localStorage.getItem('tm_user');
     if (savedUser) {
-      const parsedUser = JSON.parse(savedUser) as UserProfile;
+      const parsedUser = normalizeUser(JSON.parse(savedUser) as UserProfile);
       setCurrentUser(parsedUser);
       setLanguage(parsedUser.language || 'es');
       setTheme(parsedUser.theme || 'light');
@@ -31,29 +43,39 @@ const AppInner: React.FC = () => {
   }, []);
 
   const handleLoginSuccess = (user: UserProfile) => {
-    console.log('[FLOW] Login completado, usuario autenticado', user);
-    setCurrentUser(user);
-    setLanguage(user.language || 'es');
-    setTheme(user.theme || 'light');
+    const normalized = normalizeUser(user);
+    console.log('[FLOW] Login completado, usuario autenticado', normalized);
+    setCurrentUser(normalized);
+    setLanguage(normalized.language || 'es');
+    setTheme(normalized.theme || 'light');
     setCurrentView('match');
-    localStorage.setItem('tm_user', JSON.stringify(user));
+    localStorage.setItem('tm_user', JSON.stringify(normalized));
   };
 
   const handleOnboardingComplete = (profile: UserProfile) => {
-    console.log('[FLOW] Registro completado, usuario creado', profile);
+    const normalized = normalizeUser(profile);
+    console.log('[FLOW] Registro completado, usuario creado', normalized);
     showToast('Cuenta creada correctamente. ¡Bienvenido a TravelMatch! 🌍', 'success');
-    setCurrentUser(profile);
-    setLanguage(profile.language);
-    setTheme(profile.theme || 'light');
+    setCurrentUser(normalized);
+    setLanguage(normalized.language);
+    setTheme(normalized.theme || 'light');
     setCurrentView('match');
-    localStorage.setItem('tm_user', JSON.stringify(profile));
+    localStorage.setItem('tm_user', JSON.stringify(normalized));
   };
 
   const handleUpdateUser = (updatedProfile: UserProfile) => {
-    console.log('[FLOW] Guardando cambios de perfil', updatedProfile);
-    showToast('Guardando cambios de tu perfil...', 'info');
-    setCurrentUser(updatedProfile);
-    localStorage.setItem('tm_user', JSON.stringify(updatedProfile));
+    const normalized = normalizeUser(updatedProfile);
+    console.log('[FLOW] Perfil actualizado en cliente', normalized);
+    setCurrentUser(normalized);
+    localStorage.setItem('tm_user', JSON.stringify(normalized));
+  };
+
+  const handleAccountDeleted = () => {
+    localStorage.removeItem('tm_user');
+    setCurrentUser(null);
+    setCurrentView('match');
+    setAuthView('landing');
+    showToast('Tu cuenta ha sido eliminada.', 'info');
   };
 
   const handleLogout = () => {
@@ -63,22 +85,40 @@ const AppInner: React.FC = () => {
     setAuthView('landing');
   };
 
-  const handleChangeLanguage = (nextLanguage: LanguageCode) => {
+  const handleChangeLanguage = async (nextLanguage: LanguageCode) => {
     setLanguage(nextLanguage);
     if (!currentUser) return;
 
-    const updatedUser = { ...currentUser, language: nextLanguage };
-    setCurrentUser(updatedUser);
-    localStorage.setItem('tm_user', JSON.stringify(updatedUser));
+    const optimistic = normalizeUser({ ...currentUser, language: nextLanguage });
+    setCurrentUser(optimistic);
+    localStorage.setItem('tm_user', JSON.stringify(optimistic));
+    try {
+      const saved = await updateUserProfile(currentUser.id, { language: nextLanguage });
+      const normalized = normalizeUser(saved);
+      setCurrentUser(normalized);
+      localStorage.setItem('tm_user', JSON.stringify(normalized));
+    } catch (e) {
+      console.error('[API] Error al guardar idioma', e);
+      showToast('No se pudo guardar el idioma en el servidor.', 'error');
+    }
   };
 
-  const handleChangeTheme = (nextTheme: ThemeMode) => {
+  const handleChangeTheme = async (nextTheme: ThemeMode) => {
     setTheme(nextTheme);
     if (!currentUser) return;
 
-    const updatedUser = { ...currentUser, theme: nextTheme };
-    setCurrentUser(updatedUser);
-    localStorage.setItem('tm_user', JSON.stringify(updatedUser));
+    const optimistic = normalizeUser({ ...currentUser, theme: nextTheme });
+    setCurrentUser(optimistic);
+    localStorage.setItem('tm_user', JSON.stringify(optimistic));
+    try {
+      const saved = await updateUserProfile(currentUser.id, { theme: nextTheme });
+      const normalized = normalizeUser(saved);
+      setCurrentUser(normalized);
+      localStorage.setItem('tm_user', JSON.stringify(normalized));
+    } catch (e) {
+      console.error('[API] Error al guardar tema', e);
+      showToast('No se pudo guardar el tema en el servidor.', 'error');
+    }
   };
 
   const renderContent = () => {
@@ -165,9 +205,9 @@ const AppInner: React.FC = () => {
             currentUser={currentUser}
             onUpdateUser={handleUpdateUser}
             onLogout={handleLogout}
+            onAccountDeleted={handleAccountDeleted}
             language={language}
             onChangeLanguage={handleChangeLanguage}
-            theme={theme}
             onChangeTheme={handleChangeTheme}
           />
         );

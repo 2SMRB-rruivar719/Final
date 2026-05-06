@@ -11,10 +11,10 @@ interface NavigationProps {
 
 export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser }) => {
   const navItems = [
+    { id: 'profile', icon: User, label: 'Perfil' },
     { id: 'match', icon: Home, label: 'Explorar' },
     { id: 'itinerary', icon: Map, label: 'Viaje' },
     { id: 'chat', icon: MessageCircle, label: 'Chat' },
-    { id: 'profile', icon: User, label: 'Perfil' },
   ];
 
   return (
