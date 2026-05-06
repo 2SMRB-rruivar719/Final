@@ -208,6 +208,7 @@ const AppInner: React.FC = () => {
             onAccountDeleted={handleAccountDeleted}
             language={language}
             onChangeLanguage={handleChangeLanguage}
+            theme={theme}
             onChangeTheme={handleChangeTheme}
           />
         );
