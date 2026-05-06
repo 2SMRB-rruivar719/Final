@@ -235,6 +235,15 @@ app.post("/api/auth/register", async (req, res) => {
       });
     }
 
+    if (err?.name === "ValidationError") {
+      const firstValidationMessage = Object.values(err.errors || {})
+        .map((entry) => entry?.message)
+        .find(Boolean);
+      return res.status(400).json({
+        error: firstValidationMessage || "Datos de registro inválidos.",
+      });
+    }
+
     res.status(500).json({ error: "Error al registrar usuario" });
   }
 });

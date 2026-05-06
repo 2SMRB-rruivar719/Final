@@ -78,25 +78,22 @@ export async function registerUser(
   let data: any = null;
   let fallbackText: string | null = null;
 
-  try {
-    data = await res.json();
-    console.log("[API][REGISTER] Body parseado como JSON", {
-      type: typeof data,
-      hasId: !!data?.id,
-      hasError: !!data?.error,
-    });
-  } catch {
-    console.warn("[API][REGISTER] No se pudo parsear JSON, intentando leer texto");
-    // Si no es JSON válido, intentamos leer el cuerpo como texto
+  // Leemos primero como texto para evitar "body already consumed"
+  const rawBody = await res.text();
+  if (rawBody) {
     try {
-      fallbackText = await res.clone().text();
-      console.log("[API][REGISTER] Body fallback en texto", {
-        length: fallbackText?.length || 0,
-        preview: fallbackText?.slice(0, 200),
+      data = JSON.parse(rawBody);
+      console.log("[API][REGISTER] Body parseado como JSON", {
+        type: typeof data,
+        hasId: !!data?.id,
+        hasError: !!data?.error,
       });
     } catch {
-      console.error("[API][REGISTER] Tampoco se pudo leer body como texto");
-      // ignoramos el error, nos quedamos sin cuerpo legible
+      fallbackText = rawBody;
+      console.warn("[API][REGISTER] Body no es JSON, se usa texto", {
+        length: fallbackText.length,
+        preview: fallbackText.slice(0, 200),
+      });
     }
   }
 
@@ -104,7 +101,7 @@ export async function registerUser(
     const message =
       (data && typeof data === "object" && (data.error || data.message)) ||
       fallbackText ||
-      "Error al registrar usuario";
+      `Error al registrar usuario (HTTP ${res.status})`;
     console.error("[API][REGISTER] Request fallida", {
       endpoint,
       status: res.status,
