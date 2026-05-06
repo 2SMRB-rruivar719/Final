@@ -280,9 +280,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                 <Calendar size={16} /> ¿Cuándo?
               </label>
               <input
-                type="text"
+                type="date"
                 className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
-                placeholder="Ej. Mayo 2024"
                 value={formData.dates || ''}
                 onChange={e => setFormData({...formData, dates: e.target.value})}
               />
