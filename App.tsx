@@ -30,6 +30,17 @@ const AppInner: React.FC = () => {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
   const [language, setLanguage] = useState<LanguageCode>('es');
   const [theme, setTheme] = useState<ThemeMode>('light');
+  const t = language === 'en'
+    ? {
+        tagline: 'Find travel buddies, plan with AI and explore the world.',
+        login: 'Sign in',
+        register: 'Create account',
+      }
+    : {
+        tagline: 'Encuentra compañeros de viaje, planifica con IA y explora el mundo.',
+        login: 'Iniciar sesión',
+        register: 'Crear cuenta',
+      };
 
   // Load user from local storage (mock persistence)
   React.useEffect(() => {
@@ -173,11 +184,11 @@ const AppInner: React.FC = () => {
              </div>
              
              <p className="text-white/95 text-center mb-8 max-w-xs mx-auto text-lg font-medium drop-shadow-md tracking-wide">
-               Encuentra compañeros de viaje, planifica con IA y explora el mundo.
+               {t.tagline}
              </p>
              <div className="w-full max-w-xs mx-auto space-y-3">
                <Button fullWidth onClick={() => setAuthView('login')}>
-                 Iniciar sesión
+                 {t.login}
                </Button>
                <Button
                  fullWidth
@@ -185,7 +196,7 @@ const AppInner: React.FC = () => {
                  onClick={() => setAuthView('register')}
                  className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary"
                >
-                 Crear cuenta
+                 {t.register}
                </Button>
              </div>
           </div>
