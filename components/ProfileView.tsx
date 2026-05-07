@@ -305,7 +305,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   if (isEditing) {
     return (
-      <div className={`p-6 max-w-2xl mx-auto min-h-screen pb-24 lg:pb-10 lg:mt-8 lg:rounded-3xl lg:border lg:shadow-sm ${
+      <div className={`p-6 max-w-2xl mx-auto min-h-screen pb-24 lg:pb-10 lg:rounded-3xl lg:border lg:shadow-sm ${
         theme === 'dark' ? 'bg-slate-900 lg:border-slate-700' : 'bg-white lg:border-gray-100'
       }`}>
         <div className="flex items-center gap-2 mb-6 mt-4">
@@ -438,7 +438,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   }
 
   return (
-    <div className={`p-6 max-w-3xl mx-auto min-h-screen pb-24 lg:pb-10 lg:mt-8 lg:rounded-3xl lg:border lg:shadow-sm ${
+    <div className={`p-6 max-w-3xl mx-auto min-h-screen pb-24 lg:pb-10 lg:rounded-3xl lg:border lg:shadow-sm ${
       theme === 'dark'
         ? 'bg-slate-900 text-gray-100 lg:border-slate-700'
         : 'bg-white lg:border-gray-100'
