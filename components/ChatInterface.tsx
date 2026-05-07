@@ -21,7 +21,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
     lastMessageTime: '10:30',
     unread: 2,
     isGroup: true,
-    leaderId: 'u-demo-current',
+    leaderId: 'current-user',
     members: [
       {
         id: 'gm-1',
@@ -132,13 +132,19 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         noDescription: 'Este usuario aun no tiene descripcion.',
       };
   const [chats, setChats] = useState<ChatThreadType[]>(() => {
+    const withLeaderDefaults = (items: ChatThreadType[]) =>
+      items.map((chat) =>
+        chat.isGroup && !chat.leaderId
+          ? { ...chat, leaderId: 'current-user' }
+          : chat
+      );
     try {
       const savedChats = localStorage.getItem(chatStorageKey);
-      if (!savedChats) return INITIAL_CHATS;
+      if (!savedChats) return withLeaderDefaults(INITIAL_CHATS);
       const parsed = JSON.parse(savedChats) as ChatThreadType[];
-      return Array.isArray(parsed) && parsed.length ? parsed : INITIAL_CHATS;
+      return Array.isArray(parsed) && parsed.length ? withLeaderDefaults(parsed) : withLeaderDefaults(INITIAL_CHATS);
     } catch {
-      return INITIAL_CHATS;
+      return withLeaderDefaults(INITIAL_CHATS);
     }
   });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -152,23 +158,29 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const nameColors = ['text-sky-400', 'text-emerald-400', 'text-fuchsia-400', 'text-amber-400', 'text-rose-400', 'text-cyan-400'];
 
   useEffect(() => {
+    const withLeaderDefaults = (items: ChatThreadType[]) =>
+      items.map((chat) =>
+        chat.isGroup && !chat.leaderId
+          ? { ...chat, leaderId: 'current-user' }
+          : chat
+      );
     try {
       const savedChats = localStorage.getItem(chatStorageKey);
       if (!savedChats) {
-        setChats(INITIAL_CHATS);
+        setChats(withLeaderDefaults(INITIAL_CHATS));
         setActiveChatId(null);
         return;
       }
       const parsed = JSON.parse(savedChats) as ChatThreadType[];
       if (Array.isArray(parsed) && parsed.length) {
-        setChats(parsed);
+        setChats(withLeaderDefaults(parsed));
         setActiveChatId(null);
       } else {
-        setChats(INITIAL_CHATS);
+        setChats(withLeaderDefaults(INITIAL_CHATS));
         setActiveChatId(null);
       }
     } catch {
-      setChats(INITIAL_CHATS);
+      setChats(withLeaderDefaults(INITIAL_CHATS));
       setActiveChatId(null);
     }
   }, [chatStorageKey]);
@@ -251,6 +263,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     const sum = authorId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
     return nameColors[sum % nameColors.length];
   };
+  const isGroupLeader = (chat?: ChatThreadType | null) =>
+    !!chat?.isGroup && (chat.leaderId === currentUser.id || chat.leaderId === 'current-user');
 
   const handleSend = () => {
     const targetChatId = activeChatId || chats[0]?.id;
@@ -317,7 +331,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   };
 
   const activeGroupChat = (activeChat?.isGroup ? activeChat : null) || (desktopActiveChat?.isGroup ? desktopActiveChat : null);
-  const isActiveUserLeader = !!activeGroupChat && activeGroupChat.leaderId === currentUser.id;
+  const isActiveUserLeader = isGroupLeader(activeGroupChat);
 
   const handleDeleteGroup = (chatId: string) => {
     setChats((prev) => prev.filter((chat) => chat.id !== chatId));
@@ -415,7 +429,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   >
                     {t.groupMembers}
                   </button>
-                  {desktopActiveChat.leaderId === currentUser.id && (
+                  {isGroupLeader(desktopActiveChat) && (
                     <button
                       type="button"
                       onClick={() => handleDeleteGroup(desktopActiveChat.id)}
@@ -517,7 +531,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 >
                   {t.groupMembers}
                 </button>
-                {activeChat.leaderId === currentUser.id && (
+                {isGroupLeader(activeChat) && (
                   <button
                     type="button"
                     onClick={() => handleDeleteGroup(activeChat.id)}
