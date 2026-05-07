@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserProfile, ChatThreadType, ChatMember, LanguageCode, ThemeMode } from '../types';
 import { ChevronLeft, Send, Phone, Video, MapPin, X, Users } from 'lucide-react';
 import { Button } from './Button';
@@ -9,6 +9,7 @@ interface ChatInterfaceProps {
   currentUser: UserProfile;
   language: LanguageCode;
   theme: ThemeMode;
+  initialTargetUser?: UserProfile | null;
 }
 
 const INITIAL_CHATS: ChatThreadType[] = [
@@ -91,7 +92,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
   },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme, initialTargetUser }) => {
   const isDark = theme === 'dark';
   const t = language === 'en'
     ? {
@@ -135,6 +136,43 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const [groupMembersPreview, setGroupMembersPreview] = useState<ChatMember[] | null>(null);
   const [groupMembersTitle, setGroupMembersTitle] = useState('');
   const { showToast } = useToast();
+
+  useEffect(() => {
+    if (!initialTargetUser) return;
+
+    const directChatId = `direct-${initialTargetUser.id}`;
+    setChats((prevChats) => {
+      const existing = prevChats.find((chat) => chat.id === directChatId);
+      if (existing) return prevChats;
+
+      const newDirectChat: ChatThreadType = {
+        id: directChatId,
+        name: initialTargetUser.name,
+        avatarUrl: initialTargetUser.avatarUrl,
+        age: initialTargetUser.age,
+        sex: initialTargetUser.sex,
+        destination: initialTargetUser.destination,
+        bio: initialTargetUser.bio,
+        lastMessage: language === 'en' ? 'Say hi and start planning the trip.' : 'Saluda y empieza a planear el viaje.',
+        lastMessageTime: t.now,
+        unread: 0,
+        isGroup: false,
+        messages: [
+          {
+            id: `init-${initialTargetUser.id}`,
+            text: language === 'en'
+              ? `Hi ${initialTargetUser.name.split(' ')[0]}! We have great compatibility.`
+              : `Hola ${initialTargetUser.name.split(' ')[0]}! Tenemos muy buena compatibilidad.`,
+            sender: 'me',
+            timestamp: t.now,
+          },
+        ],
+      };
+
+      return [newDirectChat, ...prevChats];
+    });
+    setActiveChatId(directChatId);
+  }, [initialTargetUser, language, t.now]);
 
   const activeChat = chats.find(c => c.id === activeChatId);
   const desktopActiveChat = activeChat || chats[0] || null;

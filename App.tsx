@@ -31,6 +31,7 @@ const AppInner: React.FC = () => {
   const [language, setLanguage] = useState<LanguageCode>('es');
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
+  const [chatTargetUser, setChatTargetUser] = useState<UserProfile | null>(null);
   const t = language === 'en'
     ? {
         tagline: 'Find travel buddies, plan with AI and explore the world.',
@@ -207,11 +208,21 @@ const AppInner: React.FC = () => {
 
     switch (currentView) {
       case 'match':
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} theme={theme} />;
+        return (
+          <MatchFeed
+            currentUser={currentUser}
+            onStartChat={(user) => {
+              setChatTargetUser(user);
+              setCurrentView('chat');
+            }}
+            language={language}
+            theme={theme}
+          />
+        );
       case 'itinerary':
         return <ItineraryBuilder currentUser={currentUser} language={language} theme={theme} />;
       case 'chat':
-        return <ChatInterface currentUser={currentUser} language={language} theme={theme} />;
+        return <ChatInterface currentUser={currentUser} language={language} theme={theme} initialTargetUser={chatTargetUser} />;
       case 'profile':
         return (
           <ProfileView
@@ -241,7 +252,17 @@ const AppInner: React.FC = () => {
           />
         );
       default:
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} theme={theme} />;
+        return (
+          <MatchFeed
+            currentUser={currentUser}
+            onStartChat={(user) => {
+              setChatTargetUser(user);
+              setCurrentView('chat');
+            }}
+            language={language}
+            theme={theme}
+          />
+        );
     }
   };
 

@@ -98,6 +98,8 @@ const PUBLIC_CHANNELS: PublicChannel[] = [
 
 export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language, theme }) => {
   const isDark = theme === 'dark';
+  const travelStyleFilters = ['Mochilero', 'Lujo', 'Aventura', 'Cultural', 'Relax', 'Fiesta'];
+  const budgetFilters = ['Bajo', 'Medio', 'Alto'];
   const t = language === 'en'
     ? {
         loading: 'AI is looking for your ideal travel buddies...',
@@ -115,10 +117,12 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         searchPlaceholder: 'Search travelers...',
         filterBy: 'Filter by',
         all: 'All',
-        destinationFilter: 'Destination',
+        filterDate: 'Date',
+        datePlaceholder: 'Any date',
         styleFilter: 'Travel style',
+        stylePlaceholder: 'Any style',
         budgetFilter: 'Budget',
-        interestsFilter: 'Interests',
+        budgetPlaceholder: 'Any budget',
         noResults: 'No profiles match your search.',
         clearSearch: 'Clear filters',
       }
@@ -138,10 +142,12 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         searchPlaceholder: 'Buscar viajeros...',
         filterBy: 'Filtrar por',
         all: 'Todo',
-        destinationFilter: 'Destino',
+        filterDate: 'Fecha',
+        datePlaceholder: 'Cualquier fecha',
         styleFilter: 'Estilo de viaje',
+        stylePlaceholder: 'Cualquier estilo',
         budgetFilter: 'Presupuesto',
-        interestsFilter: 'Intereses',
+        budgetPlaceholder: 'Cualquier presupuesto',
         noResults: 'No hay perfiles que coincidan con tu búsqueda.',
         clearSearch: 'Limpiar filtros',
       };
@@ -150,7 +156,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchScope, setSearchScope] = useState<'all' | 'destination' | 'style' | 'budget' | 'interests'>('all');
+  const [filterDate, setFilterDate] = useState('');
+  const [styleFilter, setStyleFilter] = useState('');
+  const [budgetFilter, setBudgetFilter] = useState('');
   const [channelStartIndex, setChannelStartIndex] = useState(0);
   const [activeChannel, setActiveChannel] = useState<PublicChannel | null>(null);
 
@@ -167,34 +175,28 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   useEffect(() => {
     setCurrentIndex(0);
-  }, [searchTerm, searchScope]);
+  }, [searchTerm, filterDate, styleFilter, budgetFilter]);
 
   const filteredCandidates = useMemo(() => {
     const query = searchTerm.trim().toLowerCase();
-    if (!query) return candidates;
-
     return candidates.filter((candidate) => {
-      const inName = candidate.name.toLowerCase().includes(query);
-      const inDestination = candidate.destination.toLowerCase().includes(query);
-      const inStyle = candidate.travelStyle.some((style) => style.toLowerCase().includes(query));
-      const inBudget = candidate.budget.toLowerCase().includes(query);
-      const inInterests = candidate.interests.some((interest) => interest.toLowerCase().includes(query));
+      const matchesSearch = !query
+        || candidate.name.toLowerCase().includes(query)
+        || candidate.destination.toLowerCase().includes(query)
+        || candidate.travelStyle.some((style) => style.toLowerCase().includes(query))
+        || candidate.interests.some((interest) => interest.toLowerCase().includes(query));
 
-      switch (searchScope) {
-        case 'destination':
-          return inDestination;
-        case 'style':
-          return inStyle;
-        case 'budget':
-          return inBudget;
-        case 'interests':
-          return inInterests;
-        case 'all':
-        default:
-          return inName || inDestination || inStyle || inBudget || inInterests;
-      }
+      const matchesStyle = !styleFilter || candidate.travelStyle.includes(styleFilter as UserProfile['travelStyle'][number]);
+      const matchesBudget = !budgetFilter || candidate.budget === budgetFilter;
+
+      const matchesDate = !filterDate || (() => {
+        if (!candidate.tripStartDate || !candidate.tripEndDate) return false;
+        return filterDate >= candidate.tripStartDate && filterDate <= candidate.tripEndDate;
+      })();
+
+      return matchesSearch && matchesStyle && matchesBudget && matchesDate;
     });
-  }, [candidates, searchScope, searchTerm]);
+  }, [budgetFilter, candidates, filterDate, searchTerm, styleFilter]);
 
   const handleAction = (action: 'pass' | 'like') => {
     setSwipeDirection(action === 'pass' ? 'left' : 'right');
@@ -250,7 +252,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           <Button
             onClick={() => {
               setSearchTerm('');
-              setSearchScope('all');
+              setFilterDate('');
+              setStyleFilter('');
+              setBudgetFilter('');
             }}
             variant="outline"
             className="mb-3"
@@ -301,20 +305,46 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                 isDark ? 'bg-slate-800 text-gray-100 placeholder-gray-400' : 'bg-gray-50 text-gray-800 placeholder-gray-500'
               }`}
             />
-            <div className="flex items-center gap-2 md:min-w-[280px]">
+            <div className="flex flex-wrap items-center gap-2 md:justify-end">
               <span className={`text-xs font-semibold whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t.filterBy}</span>
+              <label className="sr-only" htmlFor="filter-date">{t.filterDate}</label>
+              <input
+                id="filter-date"
+                type="date"
+                value={filterDate}
+                onChange={(e) => setFilterDate(e.target.value)}
+                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                  isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                }`}
+                title={t.filterDate}
+              />
+              <label className="sr-only" htmlFor="filter-style">{t.styleFilter}</label>
               <select
-                value={searchScope}
-                onChange={(e) => setSearchScope(e.target.value as typeof searchScope)}
-                className={`w-full rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                id="filter-style"
+                value={styleFilter}
+                onChange={(e) => setStyleFilter(e.target.value)}
+                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
                   isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
                 }`}
               >
-                <option value="all">{t.all}</option>
-                <option value="destination">{t.destinationFilter}</option>
-                <option value="style">{t.styleFilter}</option>
-                <option value="budget">{t.budgetFilter}</option>
-                <option value="interests">{t.interestsFilter}</option>
+                <option value="">{t.stylePlaceholder}</option>
+                {travelStyleFilters.map((style) => (
+                  <option key={style} value={style}>{style}</option>
+                ))}
+              </select>
+              <label className="sr-only" htmlFor="filter-budget">{t.budgetFilter}</label>
+              <select
+                id="filter-budget"
+                value={budgetFilter}
+                onChange={(e) => setBudgetFilter(e.target.value)}
+                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                  isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                }`}
+              >
+                <option value="">{t.budgetPlaceholder}</option>
+                {budgetFilters.map((budget) => (
+                  <option key={budget} value={budget}>{budget}</option>
+                ))}
               </select>
             </div>
           </div>
@@ -326,7 +356,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
               <img
                 src={currentCandidate.avatarUrl}
                 alt={currentCandidate.name}
-                className="w-full h-full object-cover"
+                className="w-full h-full object-cover object-center"
               />
               <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/75 to-transparent p-6 pt-20">
                 <h2 className="text-3xl font-bold text-white mb-1">
@@ -414,9 +444,20 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           </div>
         </div>
 
-        <aside className={`hidden lg:block max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+        <aside
+          className={`hidden lg:block max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm cursor-pointer ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
-        }`}>
+        }`}
+          onClick={() => onStartChat(currentCandidate)}
+          role="button"
+          tabIndex={0}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' || e.key === ' ') {
+              e.preventDefault();
+              onStartChat(currentCandidate);
+            }
+          }}
+        >
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.matchInsight}</p>
           <h4 className={`font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t.highlighted}</h4>
           <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
@@ -430,7 +471,13 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
               </div>
             ))}
           </div>
-          <Button fullWidth onClick={() => onStartChat(currentCandidate)}>
+          <Button
+            fullWidth
+            onClick={(e) => {
+              e.stopPropagation();
+              onStartChat(currentCandidate);
+            }}
+          >
             {t.firstMessage}
           </Button>
           <p className={`text-[11px] mt-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.tip}</p>
