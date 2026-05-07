@@ -206,11 +206,11 @@ const AppInner: React.FC = () => {
 
     switch (currentView) {
       case 'match':
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} />;
+        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} theme={theme} />;
       case 'itinerary':
-        return <ItineraryBuilder currentUser={currentUser} language={language} />;
+        return <ItineraryBuilder currentUser={currentUser} language={language} theme={theme} />;
       case 'chat':
-        return <ChatInterface currentUser={currentUser} language={language} />;
+        return <ChatInterface currentUser={currentUser} language={language} theme={theme} />;
       case 'profile':
         return (
           <ProfileView
@@ -225,7 +225,7 @@ const AppInner: React.FC = () => {
           />
         );
       default:
-        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} />;
+        return <MatchFeed currentUser={currentUser} onStartChat={() => setCurrentView('chat')} language={language} theme={theme} />;
     }
   };
 
@@ -255,6 +255,7 @@ const AppInner: React.FC = () => {
           onChangeView={setCurrentView}
           currentUser={currentUser}
           language={language}
+          theme={theme}
         />
       )}
     </div>

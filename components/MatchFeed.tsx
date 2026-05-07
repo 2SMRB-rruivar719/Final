@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LanguageCode, UserProfile } from '../types';
+import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
 import { Button } from './Button';
 import { X, Heart, MessageCircle, MapPin, Calendar, Wallet } from 'lucide-react';
@@ -8,9 +8,11 @@ interface MatchFeedProps {
   currentUser: UserProfile;
   onStartChat: (user: UserProfile) => void;
   language: LanguageCode;
+  theme: ThemeMode;
 }
 
-export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language }) => {
+export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language, theme }) => {
+  const isDark = theme === 'dark';
   const t = language === 'en'
     ? {
         loading: 'AI is looking for your ideal travel buddies...',
@@ -89,28 +91,32 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   return (
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
       <div className="mx-auto w-full max-w-6xl grid gap-6 lg:grid-cols-[250px_minmax(420px,540px)_290px] lg:items-start">
-        <aside className="hidden lg:block bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-5 shadow-sm">
+        <aside className={`hidden lg:block backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+          isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
+        }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.yourTrip}</p>
-          <h3 className="text-xl font-bold text-travel-dark mb-1">{currentUser.destination}</h3>
-          <p className="text-sm text-gray-500 mb-4">{currentUser.dates}</p>
+          <h3 className={`text-xl font-bold mb-1 ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{currentUser.destination}</h3>
+          <p className={`text-sm mb-4 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{currentUser.dates}</p>
           <div className="space-y-2 mb-4">
-            <p className="text-xs text-gray-500">{t.lookingFor}</p>
+            <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.lookingFor}</p>
             <div className="flex flex-wrap gap-2">
               {currentUser.travelStyle.slice(0, 4).map((style) => (
-                <span key={style} className="px-2.5 py-1 rounded-full bg-travel-secondary/50 text-travel-dark text-xs font-semibold">
+                  <span key={style} className={`px-2.5 py-1 rounded-full text-xs font-semibold ${isDark ? 'bg-slate-700 text-gray-100' : 'bg-travel-secondary/50 text-travel-dark'}`}>
                   {style}
                 </span>
               ))}
             </div>
           </div>
-          <div className="rounded-2xl bg-gray-50 border border-gray-100 p-3">
-            <p className="text-xs text-gray-500 mb-1">{t.currentProfile}</p>
-            <p className="text-sm font-semibold text-gray-800">{currentIndex + 1} de {candidates.length}</p>
+          <div className={`rounded-2xl p-3 ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gray-50 border border-gray-100'}`}>
+            <p className={`text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.currentProfile}</p>
+            <p className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{currentIndex + 1} de {candidates.length}</p>
           </div>
         </aside>
 
         <div className="flex flex-col">
-          <div className="relative bg-white rounded-[2rem] shadow-xl overflow-hidden border border-gray-100 flex flex-col h-[74vh] min-h-[560px]">
+          <div className={`relative rounded-[2rem] shadow-xl overflow-hidden border flex flex-col h-[74vh] min-h-[560px] ${
+            isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
+          }`}>
             <div className="relative h-[58%] bg-gray-200">
               <img
                 src={currentCandidate.avatarUrl}
@@ -128,16 +134,16 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
             </div>
 
             <div className="p-6 flex-1 overflow-y-auto">
-              <div className="flex flex-wrap gap-3 mb-4 text-sm text-gray-600">
-                <span className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+              <div className={`flex flex-wrap gap-3 mb-4 text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                <span className={`flex items-center gap-1 px-2 py-1 rounded-lg border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}>
                   <Calendar size={14} className="text-travel-accent" /> {currentCandidate.dates}
                 </span>
-                <span className="flex items-center gap-1 bg-gray-50 px-2 py-1 rounded-lg border border-gray-100">
+                <span className={`flex items-center gap-1 px-2 py-1 rounded-lg border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}>
                   <Wallet size={14} className="text-travel-accent" /> {currentCandidate.budget}
                 </span>
               </div>
 
-              <p className="text-gray-600 mb-4 leading-relaxed">{currentCandidate.bio}</p>
+              <p className={`mb-4 leading-relaxed ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{currentCandidate.bio}</p>
 
               <div className="flex flex-wrap gap-2">
                 {currentCandidate.travelStyle.map((style) => (
@@ -146,7 +152,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                   </span>
                 ))}
                 {currentCandidate.interests.map((interest) => (
-                  <span key={interest} className="px-3 py-1 bg-gray-100 text-gray-600 rounded-full text-xs">
+                  <span key={interest} className={`px-3 py-1 rounded-full text-xs ${isDark ? 'bg-slate-800 text-gray-300' : 'bg-gray-100 text-gray-600'}`}>
                     {interest}
                   </span>
                 ))}
@@ -179,15 +185,17 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           </div>
         </div>
 
-        <aside className="hidden lg:block bg-white/80 backdrop-blur-md rounded-3xl border border-white/60 p-5 shadow-sm">
+        <aside className={`hidden lg:block backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+          isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
+        }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.matchInsight}</p>
-          <h4 className="font-bold text-gray-800 mb-2">{t.highlighted}</h4>
-          <p className="text-sm text-gray-600 mb-4">
+          <h4 className={`font-bold mb-2 ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t.highlighted}</h4>
+          <p className={`text-sm mb-4 ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
             {t.insightText}
           </p>
           <div className="space-y-2 mb-5">
             {currentCandidate.interests.slice(0, 4).map((interest) => (
-              <div key={interest} className="flex items-center gap-2 text-sm text-gray-700">
+              <div key={interest} className={`flex items-center gap-2 text-sm ${isDark ? 'text-gray-200' : 'text-gray-700'}`}>
                 <span className="w-2 h-2 rounded-full bg-travel-accent" />
                 {interest}
               </div>
@@ -196,7 +204,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           <Button fullWidth onClick={() => onStartChat(currentCandidate)}>
             {t.firstMessage}
           </Button>
-          <p className="text-[11px] text-gray-500 mt-3">{t.tip}</p>
+          <p className={`text-[11px] mt-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.tip}</p>
         </aside>
       </div>
     </div>

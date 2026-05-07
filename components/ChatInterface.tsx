@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, ChatThreadType, Message, LanguageCode } from '../types';
+import { UserProfile, ChatThreadType, Message, LanguageCode, ThemeMode } from '../types';
 import { ChevronLeft, Send, Phone, Video } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
@@ -7,6 +7,7 @@ import { useToast } from './ToastProvider';
 interface ChatInterfaceProps {
   currentUser: UserProfile;
   language: LanguageCode;
+  theme: ThemeMode;
 }
 
 const INITIAL_CHATS: ChatThreadType[] = [
@@ -52,7 +53,8 @@ const INITIAL_CHATS: ChatThreadType[] = [
   },
 ];
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme }) => {
+  const isDark = theme === 'dark';
   const t = language === 'en'
     ? {
         messages: 'Messages',
@@ -112,10 +114,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   return (
     <>
       <div className="hidden lg:grid lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-4rem)] p-6">
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
-          <div className="p-5 border-b border-gray-100 bg-white">
-            <h1 className="text-2xl font-bold text-travel-dark">{t.messages}</h1>
-            <p className="text-sm text-gray-500">{currentUser.destination} · {chats.length} {t.activeChats}</p>
+        <div className={`rounded-3xl border shadow-sm overflow-hidden ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+          <div className={`p-5 border-b ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{currentUser.destination} · {chats.length} {t.activeChats}</p>
           </div>
           <div className="h-[calc(100%-92px)] overflow-y-auto">
             {chats.map((chat) => {
@@ -125,7 +127,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   key={chat.id}
                   onClick={() => setActiveChatId(chat.id)}
                   className={`flex items-center gap-4 p-4 cursor-pointer border-b border-gray-50 transition-colors ${
-                    isSelected ? 'bg-travel-secondary/35' : 'hover:bg-gray-50'
+                    isSelected ? 'bg-travel-secondary/35' : (isDark ? 'hover:bg-slate-800' : 'hover:bg-gray-50')
                   }`}
                 >
                   <div className="relative">
@@ -142,10 +144,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
-                      <h3 className="font-bold text-gray-800 truncate">{chat.name}</h3>
+                      <h3 className={`font-bold truncate ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{chat.name}</h3>
                       <span className="text-xs text-gray-400">{chat.lastMessageTime}</span>
                     </div>
-                    <p className={`text-sm truncate ${chat.unread > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                    <p className={`text-sm truncate ${chat.unread > 0 ? (isDark ? 'text-gray-100 font-medium' : 'text-gray-900 font-medium') : (isDark ? 'text-gray-400' : 'text-gray-500')}`}>
                       {chat.lastMessage}
                     </p>
                   </div>
@@ -156,24 +158,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         </div>
 
         {desktopActiveChat && (
-          <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden flex flex-col">
-            <div className="bg-white p-4 shadow-sm flex items-center gap-3 border-b border-gray-100">
+          <div className={`rounded-3xl border shadow-sm overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+            <div className={`p-4 shadow-sm flex items-center gap-3 border-b ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
               <img src={desktopActiveChat.avatarUrl} alt={desktopActiveChat.name} className="w-10 h-10 rounded-full object-cover" />
               <div className="flex-1">
-                <h3 className="font-bold text-gray-800">{desktopActiveChat.name}</h3>
+                <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{desktopActiveChat.name}</h3>
                 <span className="text-xs text-green-500 font-medium">{t.online}</span>
               </div>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
             </div>
 
-            <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-gray-50/60">
+            <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-slate-950/40' : 'bg-gray-50/60'}`}>
               {desktopActiveChat.messages.map((msg) => (
                 <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[75%] p-3 rounded-2xl ${
                     msg.sender === 'me'
                       ? 'bg-travel-primary text-white rounded-tr-none'
-                      : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm'
+                      : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
                   }`}>
                     <p className="text-sm">{msg.text}</p>
                     <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
@@ -184,14 +186,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               ))}
             </div>
 
-            <div className="bg-white p-3 border-t border-gray-100 flex items-center gap-2">
+            <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
               <input
                 type="text"
                 value={newMessage}
                 onChange={(e) => setNewMessage(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                 placeholder={t.inputPlaceholder}
-                className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm"
+                className={`flex-1 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm ${isDark ? 'bg-slate-800 text-gray-100 placeholder-gray-400' : 'bg-gray-100'}`}
               />
               <button
                 onClick={handleSend}
@@ -206,14 +208,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
       </div>
 
       {activeChatId && activeChat ? (
-        <div className="lg:hidden flex flex-col h-full bg-gray-50 max-w-2xl mx-auto h-screen pb-20">
-          <div className="bg-white p-4 shadow-sm flex items-center gap-3 sticky top-0 z-10">
+        <div className={`lg:hidden flex flex-col h-full max-w-2xl mx-auto h-screen pb-20 ${isDark ? 'bg-slate-950' : 'bg-gray-50'}`}>
+          <div className={`p-4 shadow-sm flex items-center gap-3 sticky top-0 z-10 ${isDark ? 'bg-slate-900 border-b border-slate-700' : 'bg-white'}`}>
             <button onClick={() => setActiveChatId(null)} className="p-2 hover:bg-gray-100 rounded-full">
               <ChevronLeft size={24} className="text-gray-600" />
             </button>
             <img src={activeChat.avatarUrl} alt={activeChat.name} className="w-10 h-10 rounded-full object-cover" />
             <div className="flex-1">
-              <h3 className="font-bold text-gray-800">{activeChat.name}</h3>
+              <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{activeChat.name}</h3>
               <span className="text-xs text-green-500 font-medium">{t.online}</span>
             </div>
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
@@ -226,7 +228,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 <div className={`max-w-[75%] p-3 rounded-2xl ${
                   msg.sender === 'me'
                     ? 'bg-travel-primary text-white rounded-tr-none'
-                    : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm'
+                    : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
                 }`}>
                   <p className="text-sm">{msg.text}</p>
                   <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
@@ -237,14 +239,14 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             ))}
           </div>
 
-          <div className="bg-white p-3 border-t border-gray-100 flex items-center gap-2">
+          <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
             <input
               type="text"
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend()}
               placeholder={t.inputPlaceholder}
-              className="flex-1 bg-gray-100 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm"
+              className={`flex-1 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-travel-primary/50 text-sm ${isDark ? 'bg-slate-800 text-gray-100 placeholder-gray-400' : 'bg-gray-100'}`}
             />
             <button
               onClick={handleSend}
@@ -256,9 +258,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
           </div>
         </div>
       ) : (
-        <div className="lg:hidden flex flex-col h-full bg-white max-w-2xl mx-auto shadow-sm min-h-screen">
-          <div className="p-4 border-b border-gray-100 bg-white sticky top-0 z-10">
-            <h1 className="text-2xl font-bold text-travel-dark">{t.messages}</h1>
+        <div className={`lg:hidden flex flex-col h-full max-w-2xl mx-auto shadow-sm min-h-screen ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
+          <div className={`p-4 border-b sticky top-0 z-10 ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
+            <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
           </div>
 
           <div className="flex-1 overflow-y-auto pb-24">
@@ -270,7 +272,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   showToast(`${t.openingChat} ${chat.name}`, 'info');
                   setActiveChatId(chat.id);
                 }}
-                className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 cursor-pointer"
+                className={`flex items-center gap-4 p-4 transition-colors border-b cursor-pointer ${isDark ? 'hover:bg-slate-800 border-slate-800' : 'hover:bg-gray-50 border-gray-50'}`}
               >
                 <div className="relative">
                   <img
@@ -287,10 +289,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
 
                 <div className="flex-1 min-w-0">
                   <div className="flex justify-between items-baseline mb-1">
-                    <h3 className="font-bold text-gray-800 truncate">{chat.name}</h3>
+                    <h3 className={`font-bold truncate ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{chat.name}</h3>
                     <span className="text-xs text-gray-400">{chat.lastMessageTime}</span>
                   </div>
-                  <p className={`text-sm truncate ${chat.unread > 0 ? 'text-gray-900 font-medium' : 'text-gray-500'}`}>
+                  <p className={`text-sm truncate ${chat.unread > 0 ? (isDark ? 'text-gray-100 font-medium' : 'text-gray-900 font-medium') : (isDark ? 'text-gray-400' : 'text-gray-500')}`}>
                     {chat.lastMessage}
                   </p>
                 </div>

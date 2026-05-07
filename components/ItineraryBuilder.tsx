@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, Itinerary, LanguageCode } from '../types';
+import { UserProfile, Itinerary, LanguageCode, ThemeMode } from '../types';
 import { generateItinerary } from '../services/aiService';
 import { Button } from './Button';
 import { Map, Clock, MapPin, Sparkles, Share2 } from 'lucide-react';
@@ -7,9 +7,11 @@ import { Map, Clock, MapPin, Sparkles, Share2 } from 'lucide-react';
 interface ItineraryBuilderProps {
   currentUser: UserProfile;
   language: LanguageCode;
+  theme: ThemeMode;
 }
 
-export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser, language }) => {
+export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser, language, theme }) => {
+  const isDark = theme === 'dark';
   const t = language === 'en'
     ? {
         title: 'AI Planner',
@@ -96,15 +98,15 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
            <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
              {itinerary.days.map((day) => (
-               <div key={day.day} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100">
+               <div key={day.day} className={`rounded-2xl p-5 shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
                  <div className="flex items-center gap-3 mb-4">
                    <div className="bg-travel-primary/20 text-travel-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                      {day.day}
                    </div>
-                   <h4 className="font-bold text-lg text-gray-800">{day.title}</h4>
+                   <h4 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{day.title}</h4>
                  </div>
                  
-                 <div className="space-y-6 relative pl-5 border-l-2 border-gray-100 ml-5">
+                 <div className={`space-y-6 relative pl-5 ml-5 border-l-2 ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
                    {day.activities.map((act, idx) => (
                      <div key={idx} className="relative">
                         <div className="absolute -left-[27px] top-1 w-3 h-3 bg-travel-accent rounded-full border-2 border-white ring-2 ring-gray-50"></div>
@@ -113,8 +115,8 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                             <Clock size={10} /> {act.time}
                           </span>
                           <div className="flex-1">
-                            <p className="text-gray-800 font-medium">{act.description}</p>
-                            <p className="text-sm text-gray-500 flex items-center gap-1 mt-1">
+                            <p className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{act.description}</p>
+                            <p className={`text-sm flex items-center gap-1 mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
                               <MapPin size={12} /> {act.location}
                             </p>
                           </div>
@@ -133,9 +135,9 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
       )}
       
       {!itinerary && !loading && (
-        <div className="text-center p-8 bg-white border border-dashed border-gray-300 rounded-3xl">
+        <div className={`text-center p-8 border border-dashed rounded-3xl ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-300'}`}>
           <Map className="w-12 h-12 text-gray-300 mx-auto mb-3" />
-          <p className="text-gray-500">{t.empty}</p>
+          <p className={isDark ? 'text-gray-400' : 'text-gray-500'}>{t.empty}</p>
         </div>
       )}
     </div>
