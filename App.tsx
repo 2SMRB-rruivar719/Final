@@ -218,6 +218,21 @@ const AppInner: React.FC = () => {
             onUpdateUser={handleUpdateUser}
             onLogout={handleLogout}
             onAccountDeleted={handleAccountDeleted}
+            section="profile"
+            language={language}
+            onChangeLanguage={handleChangeLanguage}
+            theme={theme}
+            onChangeTheme={handleChangeTheme}
+          />
+        );
+      case 'settings':
+        return (
+          <ProfileView
+            currentUser={currentUser}
+            onUpdateUser={handleUpdateUser}
+            onLogout={handleLogout}
+            onAccountDeleted={handleAccountDeleted}
+            section="settings"
             language={language}
             onChangeLanguage={handleChangeLanguage}
             theme={theme}

@@ -28,6 +28,7 @@ interface ProfileViewProps {
   onUpdateUser: (user: UserProfile) => void;
   onLogout: () => void;
   onAccountDeleted?: () => void;
+  section: 'profile' | 'settings';
   language: LanguageCode;
   onChangeLanguage: (lang: LanguageCode) => void;
   theme: ThemeMode;
@@ -77,12 +78,12 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   onUpdateUser,
   onLogout,
   onAccountDeleted,
+  section,
   language,
   onChangeLanguage,
   theme,
   onChangeTheme,
 }) => {
-  const [activeTab, setActiveTab] = useState<'profile' | 'settings'>('profile');
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UserProfile>(currentUser);
   const [saving, setSaving] = useState(false);
@@ -476,32 +477,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm mt-1`}>{currentUser.email}</p>
       </div>
 
-      <div className={`flex rounded-2xl p-1 mb-6 max-w-md mx-auto ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-100'}`}>
-        <button
-          type="button"
-          onClick={() => setActiveTab('profile')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${
-            activeTab === 'profile'
-              ? (theme === 'dark' ? 'bg-slate-700 shadow text-white' : 'bg-white shadow text-travel-dark')
-              : (theme === 'dark' ? 'text-gray-300' : 'text-gray-500')
-          }`}
-        >
-          <User size={16} />
-          {t.profile}
-        </button>
-        <button
-          type="button"
-          onClick={() => setActiveTab('settings')}
-          className={`flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl text-sm font-semibold transition ${
-            activeTab === 'settings'
-              ? (theme === 'dark' ? 'bg-slate-700 shadow text-white' : 'bg-white shadow text-travel-dark')
-              : (theme === 'dark' ? 'text-gray-300' : 'text-gray-500')
-          }`}
-        >
-          <Settings size={16} />
-          {t.settings}
-        </button>
-      </div>
+      <h3 className={`text-sm font-semibold mb-6 text-center ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+        {section === 'profile' ? t.profile : t.settings}
+      </h3>
 
       {currentUser.deletionScheduledAt && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -515,7 +493,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       )}
 
-      {activeTab === 'profile' && (
+      {section === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
           <div className={`${cardClass} p-4 rounded-xl`}>
             <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.nextDestination}</h3>
@@ -568,7 +546,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
       )}
 
-      {activeTab === 'settings' && (
+      {section === 'settings' && (
         <div className="space-y-4">
           <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
             <h3 className={`text-xs font-bold uppercase mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`}>{t.appearanceLanguage}</h3>
