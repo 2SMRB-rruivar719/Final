@@ -1,4 +1,4 @@
-type NameGender = 'female' | 'male' | 'unknown';
+export type NameGender = 'female' | 'male' | 'unknown';
 
 const femaleFirstNames = new Set([
   'ana', 'maria', 'sofia', 'lucia', 'valeria', 'camila', 'paula', 'laura', 'sarah', 'isabella', 'martina',
@@ -52,9 +52,20 @@ export const inferGenderFromName = (fullName: string): NameGender => {
   return 'unknown';
 };
 
-export const getAvatarByName = (fullName: string) => {
+export const getAvatarPoolByName = (fullName: string) => {
   const gender = inferGenderFromName(fullName);
-  const pool = gender === 'female' ? femalePortraits : gender === 'male' ? malePortraits : unknownPortraits;
-  const index = hashString(normalizeText(fullName || 'user')) % pool.length;
+  if (gender === 'female') return femalePortraits;
+  if (gender === 'male') return malePortraits;
+  return unknownPortraits;
+};
+
+export const getStableAvatarIndex = (fullName: string, poolLength: number) => {
+  if (poolLength <= 0) return 0;
+  return hashString(normalizeText(fullName || 'user')) % poolLength;
+};
+
+export const getAvatarByName = (fullName: string) => {
+  const pool = getAvatarPoolByName(fullName);
+  const index = getStableAvatarIndex(fullName, pool.length);
   return pool[index];
 };

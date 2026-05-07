@@ -1,5 +1,5 @@
 import { Itinerary, TravelStyle, UserProfile } from '../types';
-import { getAvatarByName } from './avatarByName';
+import { getAvatarPoolByName, getStableAvatarIndex } from './avatarByName';
 
 const countries = ['España', 'Argentina', 'México', 'Chile', 'Portugal', 'Colombia', 'Italia', 'Francia'];
 
@@ -53,6 +53,24 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       ? userProfile.travelStyle
       : [TravelStyle.CULTURAL, TravelStyle.ADVENTURE];
 
+  const usedAvatarUrls = new Set<string>();
+
+  const pickNonRepeatedAvatar = (name: string) => {
+    const pool = getAvatarPoolByName(name);
+    if (!pool.length) return '';
+    const startIndex = getStableAvatarIndex(name, pool.length);
+    for (let offset = 0; offset < pool.length; offset += 1) {
+      const candidate = pool[(startIndex + offset) % pool.length];
+      if (!usedAvatarUrls.has(candidate)) {
+        usedAvatarUrls.add(candidate);
+        return candidate;
+      }
+    }
+    const fallback = pool[startIndex];
+    usedAvatarUrls.add(fallback);
+    return fallback;
+  };
+
   return Array.from({ length: 8 }).map((_, index) => {
     const seed = Date.now() + index * 41;
     const styles = pickMany(Object.values(TravelStyle), 2, seed + 9);
@@ -75,7 +93,7 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       budget: userProfile.budget,
       travelStyle: mergedStyles,
       interests,
-      avatarUrl: getAvatarByName(name),
+      avatarUrl: pickNonRepeatedAvatar(name),
       destination: userProfile.destination,
       dates: userProfile.dates,
       tripStartDate: userProfile.tripStartDate,

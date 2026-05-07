@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, TravelStyle, UserRole, LanguageCode } from '../types';
+import { UserProfile, TravelStyle, UserRole, LanguageCode, UserSex } from '../types';
 import { Button } from './Button';
 import { Compass, Calendar, DollarSign, MapPin, User, Check, ChevronLeft } from 'lucide-react';
 import { registerUser, RegisterPayload } from '../services/api';
@@ -22,6 +22,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         outbound: 'Outbound',
         return: 'Return',
         accountType: 'Account type',
+        sex: 'Sex',
+        male: 'Male',
+        female: 'Female',
         client: 'Client',
         company: 'Company',
         next: 'Next',
@@ -39,6 +42,9 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         outbound: 'Ida',
         return: 'Vuelta',
         accountType: 'Tipo de cuenta',
+        sex: 'Sexo',
+        male: 'Hombre',
+        female: 'Mujer',
         client: 'Cliente',
         company: 'Empresa',
         next: 'Siguiente',
@@ -57,6 +63,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   const [password, setPassword] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
   const [role, setRole] = useState<UserRole>('cliente');
+  const [sex, setSex] = useState<UserSex>('hombre');
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
@@ -64,6 +71,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   const buildDebugSnapshot = () => ({
     step,
     role,
+    sex,
     language,
     name: formData.name,
     destination: formData.destination,
@@ -172,6 +180,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         email,
         password,
         role: role || undefined,
+        sex,
         destination: formData.destination?.trim() || undefined,
         dates: formData.dates?.trim() || undefined,
         tripStartDate: formData.tripStartDate?.trim() || undefined,
@@ -403,6 +412,34 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
               {passwordConfirm && passwordConfirm !== password && password.length >= 6 && (
                 <p className="text-xs text-red-600">Las contraseñas no coinciden</p>
               )}
+            </div>
+
+            <div className="space-y-2">
+              <span className="text-sm font-medium text-gray-600">{t.sex}</span>
+              <div className="grid grid-cols-2 gap-2">
+                <button
+                  type="button"
+                  onClick={() => setSex('hombre')}
+                  className={`relative overflow-hidden py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                    sex === 'hombre'
+                      ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-sm ring-2 ring-blue-200'
+                      : 'bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:border-blue-200'
+                  }`}
+                >
+                  {t.male}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSex('mujer')}
+                  className={`relative overflow-hidden py-2.5 rounded-xl text-sm font-semibold border transition-all ${
+                    sex === 'mujer'
+                      ? 'bg-pink-100 border-pink-300 text-pink-700 shadow-sm ring-2 ring-pink-200'
+                      : 'bg-white border-gray-200 text-gray-500 hover:bg-pink-50 hover:border-pink-200'
+                  }`}
+                >
+                  {t.female}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-2">

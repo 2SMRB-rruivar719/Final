@@ -40,6 +40,7 @@ export interface RegisterPayload {
   tripStartDate?: string;
   tripEndDate?: string;
   age?: number;
+  sex?: UserProfile["sex"];
   country?: string;
   bio?: string;
   budget?: UserProfile["budget"];

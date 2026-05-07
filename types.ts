@@ -10,12 +10,14 @@ export enum TravelStyle {
 export type UserRole = 'cliente' | 'empresa';
 export type LanguageCode = 'es' | 'en';
 export type ThemeMode = 'light' | 'dark';
+export type UserSex = 'hombre' | 'mujer';
 
 export interface UserProfile {
   id: string;
   name: string;
   email: string;
   age: number;
+  sex?: UserSex;
   country: string;
   bio: string;
   budget: 'Bajo' | 'Medio' | 'Alto';

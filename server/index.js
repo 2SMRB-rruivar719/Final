@@ -59,6 +59,7 @@ const userSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, enum: ["cliente", "empresa"], required: true },
     age: { type: Number, default: 25 },
+    sex: { type: String, enum: ["hombre", "mujer"], default: "hombre" },
     country: { type: String, default: "Global" },
     bio: { type: String, default: "Listo para viajar!" },
     budget: { type: String, enum: ["Bajo", "Medio", "Alto"], default: "Medio" },
@@ -104,6 +105,7 @@ app.post("/api/auth/register", async (req, res) => {
       password,
       role,
       age,
+      sex,
       country,
       bio,
       budget,
@@ -189,6 +191,7 @@ app.post("/api/auth/register", async (req, res) => {
     
     // Solo añadir campos opcionales si tienen valor
     if (age !== undefined && age !== null) userData.age = Number(age);
+    if (sex === "hombre" || sex === "mujer") userData.sex = sex;
     if (country && country.trim()) userData.country = country.trim();
     if (bio && bio.trim()) userData.bio = bio.trim();
     if (budget) userData.budget = budget;
