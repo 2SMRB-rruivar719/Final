@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserProfile, ChatThreadType, ChatMember, LanguageCode, ThemeMode } from '../types';
-import { ChevronLeft, Send, Phone, Video, MapPin, X, Users } from 'lucide-react';
+import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
 import { getAvatarByName } from '../services/avatarByName';
@@ -136,6 +136,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const [groupMembersPreview, setGroupMembersPreview] = useState<ChatMember[] | null>(null);
   const [groupMembersTitle, setGroupMembersTitle] = useState('');
   const { showToast } = useToast();
+  const nameColors = ['text-sky-400', 'text-emerald-400', 'text-fuchsia-400', 'text-amber-400', 'text-rose-400', 'text-cyan-400'];
 
   useEffect(() => {
     if (!initialTargetUser) return;
@@ -177,6 +178,37 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const activeChat = chats.find(c => c.id === activeChatId);
   const desktopActiveChat = activeChat || chats[0] || null;
 
+  const getAuthorMeta = (chat: ChatThreadType, msg: ChatThreadType['messages'][number], msgIndex: number) => {
+    if (msg.sender === 'me') {
+      return {
+        id: currentUser.id,
+        name: currentUser.name,
+        avatarUrl: currentUser.avatarUrl,
+      };
+    }
+
+    if (!chat.isGroup) {
+      return {
+        id: chat.id,
+        name: chat.name,
+        avatarUrl: chat.avatarUrl,
+      };
+    }
+
+    const members = chat.members || [];
+    const fallbackMember = members[msgIndex % Math.max(1, members.length)];
+    return {
+      id: msg.authorId || fallbackMember?.id || chat.id,
+      name: msg.authorName || fallbackMember?.name || chat.name,
+      avatarUrl: msg.authorAvatarUrl || fallbackMember?.avatarUrl || chat.avatarUrl,
+    };
+  };
+
+  const getAuthorColorClass = (authorId: string) => {
+    const sum = authorId.split('').reduce((acc, ch) => acc + ch.charCodeAt(0), 0);
+    return nameColors[sum % nameColors.length];
+  };
+
   const handleSend = () => {
     const targetChatId = activeChatId || chats[0]?.id;
     if (!newMessage.trim() || !targetChatId) return;
@@ -195,7 +227,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               id: `msg-${Date.now()}`,
               text: newMessage,
               sender: 'me',
-              timestamp: t.now
+              timestamp: t.now,
+              authorId: currentUser.id,
+              authorName: currentUser.name,
+              authorAvatarUrl: currentUser.avatarUrl,
             }
           ]
         };
@@ -312,23 +347,43 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             </div>
 
             <div className={`flex-1 overflow-y-auto p-4 space-y-4 ${isDark ? 'bg-slate-950/40' : 'bg-gray-50/60'}`}>
-              {desktopActiveChat.messages.map((msg) => (
+              {desktopActiveChat.messages.map((msg, index) => {
+                const author = getAuthorMeta(desktopActiveChat, msg, index);
+                const authorColorClass = getAuthorColorClass(author.id);
+                return (
                 <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[75%] p-3 rounded-2xl ${
+                  <div className={`max-w-[78%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
+                    <img
+                      src={author.avatarUrl}
+                      alt={author.name}
+                      className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
+                    />
+                    <div className={`p-3 rounded-2xl ${
                     msg.sender === 'me'
                       ? 'bg-travel-primary text-white rounded-tr-none'
                       : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
                   }`}>
+                    <p className={`text-[11px] font-bold mb-1 ${authorColorClass}`}>{author.name}</p>
                     <p className="text-sm">{msg.text}</p>
                     <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
                       {msg.timestamp}
                     </span>
                   </div>
                 </div>
-              ))}
+              </div>
+              );})}
             </div>
 
             <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+              <button
+                type="button"
+                className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                  isDark ? 'bg-slate-800 text-gray-200 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+                title="Audio"
+              >
+                <Mic size={18} />
+              </button>
               <input
                 type="text"
                 value={newMessage}
@@ -383,23 +438,43 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
           </div>
 
           <div className="flex-1 overflow-y-auto p-4 space-y-4">
-            {activeChat.messages.map((msg) => (
+            {activeChat.messages.map((msg, index) => {
+              const author = getAuthorMeta(activeChat, msg, index);
+              const authorColorClass = getAuthorColorClass(author.id);
+              return (
               <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[75%] p-3 rounded-2xl ${
+                <div className={`max-w-[80%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
+                  <img
+                    src={author.avatarUrl}
+                    alt={author.name}
+                    className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
+                  />
+                  <div className={`p-3 rounded-2xl ${
                   msg.sender === 'me'
                     ? 'bg-travel-primary text-white rounded-tr-none'
                     : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
                 }`}>
+                  <p className={`text-[11px] font-bold mb-1 ${authorColorClass}`}>{author.name}</p>
                   <p className="text-sm">{msg.text}</p>
                   <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
                     {msg.timestamp}
                   </span>
                 </div>
               </div>
-            ))}
+            </div>
+            );})}
           </div>
 
           <div className={`p-3 border-t flex items-center gap-2 ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+            <button
+              type="button"
+              className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                isDark ? 'bg-slate-800 text-gray-200 hover:bg-slate-700' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+              }`}
+              title="Audio"
+            >
+              <Mic size={18} />
+            </button>
             <input
               type="text"
               value={newMessage}

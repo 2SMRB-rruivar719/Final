@@ -67,6 +67,9 @@ export interface Message {
   text: string;
   sender: 'me' | 'them';
   timestamp: string;
+  authorId?: string;
+  authorName?: string;
+  authorAvatarUrl?: string;
 }
 
 export interface ChatMember {
