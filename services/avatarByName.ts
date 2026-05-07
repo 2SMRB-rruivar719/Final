@@ -49,6 +49,10 @@ const forcedGenderByFirstName: Record<string, NameGender> = {
   bruno: 'male',
 };
 
+const forcedAvatarByFirstName: Record<string, string> = {
+  mateo: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+};
+
 export const inferGenderFromName = (fullName: string): NameGender => {
   const firstName = getFirstName(fullName);
   if (!firstName) return 'unknown';
@@ -56,6 +60,11 @@ export const inferGenderFromName = (fullName: string): NameGender => {
   if (femaleFirstNames.has(firstName)) return 'female';
   if (maleFirstNames.has(firstName)) return 'male';
   return 'unknown';
+};
+
+export const getForcedAvatarByName = (fullName: string) => {
+  const firstName = getFirstName(fullName);
+  return forcedAvatarByFirstName[firstName] || '';
 };
 
 export const getAvatarPoolByName = (fullName: string) => {
@@ -71,6 +80,8 @@ export const getStableAvatarIndex = (fullName: string, poolLength: number) => {
 };
 
 export const getAvatarByName = (fullName: string) => {
+  const forcedAvatar = getForcedAvatarByName(fullName);
+  if (forcedAvatar) return forcedAvatar;
   const pool = getAvatarPoolByName(fullName);
   const index = getStableAvatarIndex(fullName, pool.length);
   return pool[index];

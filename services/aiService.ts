@@ -1,5 +1,5 @@
 import { Itinerary, TravelStyle, UserProfile } from '../types';
-import { getAvatarPoolByName, getStableAvatarIndex, inferGenderFromName } from './avatarByName';
+import { getAvatarPoolByName, getStableAvatarIndex, inferGenderFromName, getForcedAvatarByName } from './avatarByName';
 
 const countries = ['España', 'Argentina', 'México', 'Chile', 'Portugal', 'Colombia', 'Italia', 'Francia'];
 
@@ -56,6 +56,11 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
   const usedAvatarUrls = new Set<string>();
 
   const pickNonRepeatedAvatar = (name: string) => {
+    const forcedAvatar = getForcedAvatarByName(name);
+    if (forcedAvatar) {
+      usedAvatarUrls.add(forcedAvatar);
+      return forcedAvatar;
+    }
     const pool = getAvatarPoolByName(name);
     if (!pool.length) return '';
     const startIndex = getStableAvatarIndex(name, pool.length);

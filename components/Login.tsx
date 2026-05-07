@@ -36,6 +36,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  const inputClass = 'w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
+  const labelClass = 'text-sm font-medium text-gray-800';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -128,7 +130,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
     <div className="flex flex-col h-full p-6 max-w-md mx-auto animate-fade-in bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl mt-10 mb-20 border border-white">
       <button
         onClick={onBackToLanding}
-        className="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-travel-primary text-left"
+        className="flex items-center gap-1 text-sm text-gray-700 mb-4 hover:text-travel-primary text-left"
       >
         <ChevronLeft size={18} />
         <span>{t.back}</span>
@@ -136,20 +138,20 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       <h2 className="text-2xl font-bold text-travel-dark text-center mb-6">{t.title}</h2>
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">{t.email}</label>
+          <label className={labelClass}>{t.email}</label>
           <input
             type="email"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+            className={inputClass}
             placeholder="tucorreo@ejemplo.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
           />
         </div>
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-600">{t.password}</label>
+          <label className={labelClass}>{t.password}</label>
           <input
             type="password"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+            className={inputClass}
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
@@ -166,7 +168,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       </form>
       <button
         type="button"
-        className="mt-3 text-sm text-travel-accent hover:underline self-start"
+        className="mt-3 text-sm text-gray-700 hover:text-travel-accent hover:underline self-start"
         onClick={() => {
           setShowRecover((prev) => !prev);
           setError(null);
@@ -180,24 +182,24 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       </button>
       {showRecover && (
         <form onSubmit={handleRecover} className="mt-4 space-y-3 border-t border-gray-200 pt-4">
-          <h3 className="text-sm font-semibold text-gray-700">{t.recoverTitle}</h3>
+          <h3 className="text-sm font-semibold text-gray-800">{t.recoverTitle}</h3>
           <input
             type="email"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+            className={inputClass}
             placeholder={t.accountEmail}
             value={recoverEmail}
             onChange={(e) => setRecoverEmail(e.target.value)}
           />
           <input
             type="password"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+            className={inputClass}
             placeholder={t.newPassword}
             value={newPassword}
             onChange={(e) => setNewPassword(e.target.value)}
           />
           <input
             type="password"
-            className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+            className={inputClass}
             placeholder={t.repeatPassword}
             value={confirmNewPassword}
             onChange={(e) => setConfirmNewPassword(e.target.value)}
