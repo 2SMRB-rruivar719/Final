@@ -94,6 +94,7 @@ export interface ChatThreadType {
   lastMessageTime: string;
   unread: number;
   isGroup: boolean;
+  leaderId?: string;
   members?: ChatMember[];
   messages: Message[];
 }

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { UserProfile, ChatThreadType, ChatMember, LanguageCode, ThemeMode } from '../types';
-import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic } from 'lucide-react';
+import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic, MoreVertical } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
 import { getAvatarByName } from '../services/avatarByName';
@@ -21,6 +21,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
     lastMessageTime: '10:30',
     unread: 2,
     isGroup: true,
+    leaderId: 'u-demo-current',
     members: [
       {
         id: 'gm-1',
@@ -145,6 +146,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const [profilePreview, setProfilePreview] = useState<ChatThreadType | null>(null);
   const [groupMembersPreview, setGroupMembersPreview] = useState<ChatMember[] | null>(null);
   const [groupMembersTitle, setGroupMembersTitle] = useState('');
+  const [groupMembersChatId, setGroupMembersChatId] = useState<string | null>(null);
+  const [profileActionsOpen, setProfileActionsOpen] = useState(false);
   const { showToast } = useToast();
   const nameColors = ['text-sky-400', 'text-emerald-400', 'text-fuchsia-400', 'text-amber-400', 'text-rose-400', 'text-cyan-400'];
 
@@ -283,6 +286,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
 
   const openProfilePreview = (chat: ChatThreadType) => {
     if (chat.isGroup) return;
+    setProfileActionsOpen(false);
     setProfilePreview(chat);
   };
 
@@ -291,9 +295,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     const members = chat.members || [];
     setGroupMembersTitle(chat.name);
     setGroupMembersPreview(members);
+    setGroupMembersChatId(chat.id);
   };
 
   const openMemberProfile = (member: ChatMember) => {
+    setProfileActionsOpen(false);
     setProfilePreview({
       id: member.id,
       name: member.name,
@@ -308,6 +314,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
       isGroup: false,
       messages: [],
     });
+  };
+
+  const activeGroupChat = (activeChat?.isGroup ? activeChat : null) || (desktopActiveChat?.isGroup ? desktopActiveChat : null);
+  const isActiveUserLeader = !!activeGroupChat && activeGroupChat.leaderId === currentUser.id;
+
+  const handleDeleteGroup = (chatId: string) => {
+    setChats((prev) => prev.filter((chat) => chat.id !== chatId));
+    if (activeChatId === chatId) setActiveChatId(null);
+    if (groupMembersChatId === chatId) {
+      setGroupMembersPreview(null);
+      setGroupMembersChatId(null);
+    }
+    showToast(language === 'en' ? 'Group deleted.' : 'Grupo eliminado.', 'info');
+  };
+
+  const handleKickMember = (chatId: string, memberId: string) => {
+    setChats((prev) =>
+      prev.map((chat) => {
+        if (chat.id !== chatId) return chat;
+        return {
+          ...chat,
+          members: (chat.members || []).filter((member) => member.id !== memberId),
+        };
+      })
+    );
+    setGroupMembersPreview((prev) => (prev ? prev.filter((member) => member.id !== memberId) : prev));
+    showToast(language === 'en' ? 'Member removed.' : 'Integrante expulsado.', 'info');
   };
 
   return (
@@ -374,13 +407,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 </button>
               )}
               {desktopActiveChat.isGroup && (
-                <button
-                  type="button"
-                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
-                  onClick={() => openGroupMembers(desktopActiveChat)}
-                >
-                  {t.groupMembers}
-                </button>
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                    onClick={() => openGroupMembers(desktopActiveChat)}
+                  >
+                    {t.groupMembers}
+                  </button>
+                  {desktopActiveChat.leaderId === currentUser.id && (
+                    <button
+                      type="button"
+                      onClick={() => handleDeleteGroup(desktopActiveChat.id)}
+                      className="px-3 py-1.5 rounded-full text-xs font-semibold border border-red-400 text-red-400 hover:bg-red-500/10"
+                    >
+                      {language === 'en' ? 'Delete group' : 'Borrar grupo'}
+                    </button>
+                  )}
+                </div>
               )}
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
@@ -465,13 +509,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               </button>
             )}
             {activeChat.isGroup && (
-              <button
-                type="button"
-                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
-                onClick={() => openGroupMembers(activeChat)}
-              >
-                {t.groupMembers}
-              </button>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => openGroupMembers(activeChat)}
+                >
+                  {t.groupMembers}
+                </button>
+                {activeChat.leaderId === currentUser.id && (
+                  <button
+                    type="button"
+                    onClick={() => handleDeleteGroup(activeChat.id)}
+                    className="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-400 text-red-400 hover:bg-red-500/10"
+                  >
+                    {language === 'en' ? 'Delete group' : 'Borrar grupo'}
+                  </button>
+                )}
+              </div>
             )}
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
@@ -584,9 +639,33 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
           <div className={`w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
             <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
               <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t.profile}</h3>
-              <button type="button" onClick={() => setProfilePreview(null)} className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-800 text-gray-200' : 'hover:bg-gray-100 text-gray-600'}`}>
-                <X size={18} />
-              </button>
+              <div className="relative flex items-center gap-1">
+                <button
+                  type="button"
+                  onClick={() => setProfileActionsOpen((prev) => !prev)}
+                  className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-800 text-gray-200' : 'hover:bg-gray-100 text-gray-600'}`}
+                >
+                  <MoreVertical size={18} />
+                </button>
+                {profileActionsOpen && (
+                  <div className={`absolute right-12 top-0 min-w-[190px] rounded-xl border p-2 shadow-xl ${
+                    isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
+                  }`}>
+                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+                      {language === 'en' ? 'Remove from friends' : 'Eliminar de amigos'}
+                    </button>
+                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+                      {language === 'en' ? 'Report' : 'Reportar'}
+                    </button>
+                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+                      {language === 'en' ? 'Block user' : 'Bloquear a gente'}
+                    </button>
+                  </div>
+                )}
+                <button type="button" onClick={() => setProfilePreview(null)} className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-800 text-gray-200' : 'hover:bg-gray-100 text-gray-600'}`}>
+                  <X size={18} />
+                </button>
+              </div>
             </div>
             <div className="p-5">
               <div className="flex items-center gap-4 mb-4">
@@ -646,6 +725,18 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                     <p className={`font-semibold truncate ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{member.name}, {member.age}</p>
                     <p className={`text-xs truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{member.destination}</p>
                   </div>
+                  {isActiveUserLeader && groupMembersChatId && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleKickMember(groupMembersChatId, member.id);
+                      }}
+                      className="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-400 text-red-400 hover:bg-red-500/10"
+                    >
+                      {language === 'en' ? 'Kick' : 'Echar'}
+                    </button>
+                  )}
                   <Users size={16} className={isDark ? 'text-gray-400' : 'text-gray-500'} />
                 </button>
               ))}
