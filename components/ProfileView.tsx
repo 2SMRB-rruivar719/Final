@@ -61,6 +61,9 @@ const formatDeletionDate = (iso?: string | null) => {
   }
 };
 
+const getFallbackAvatar = (name?: string) =>
+  `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=0f172a&color=ffffff`;
+
 export const ProfileView: React.FC<ProfileViewProps> = ({
   currentUser,
   onUpdateUser,
@@ -76,6 +79,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [formData, setFormData] = useState<UserProfile>(currentUser);
   const [saving, setSaving] = useState(false);
   const [avatarDraft, setAvatarDraft] = useState(currentUser.avatarUrl);
+  const [avatarSrc, setAvatarSrc] = useState(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   const [deletionDateInput, setDeletionDateInput] = useState('');
   const { showToast } = useToast();
   const inputClass = `w-full p-3 border rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm ${
@@ -139,6 +143,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   useEffect(() => {
     setFormData(currentUser);
     setAvatarDraft(currentUser.avatarUrl);
+    setAvatarSrc(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   }, [currentUser]);
 
   const trip = useMemo(() => deriveTripDates(currentUser), [currentUser]);
@@ -267,12 +272,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   if (isEditing) {
     return (
-      <div className="p-6 max-w-2xl mx-auto bg-white min-h-screen pb-24 lg:pb-10 lg:mt-8 lg:rounded-3xl lg:border lg:border-gray-100 lg:shadow-sm">
+      <div className={`p-6 max-w-2xl mx-auto min-h-screen pb-24 lg:pb-10 lg:mt-8 lg:rounded-3xl lg:border lg:shadow-sm ${
+        theme === 'dark' ? 'bg-slate-900 lg:border-slate-700' : 'bg-white lg:border-gray-100'
+      }`}>
         <div className="flex items-center gap-2 mb-6 mt-4">
-          <button type="button" onClick={handleCancel} className="p-2 hover:bg-gray-100 rounded-full">
-            <ChevronLeft size={22} className="text-gray-600" />
+          <button type="button" onClick={handleCancel} className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-gray-100'}`}>
+            <ChevronLeft size={22} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
           </button>
-          <h2 className="text-2xl font-bold text-travel-dark">{t.editProfile}</h2>
+          <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>{t.editProfile}</h2>
         </div>
 
         <div className="space-y-6">
@@ -282,6 +289,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 src={formData.avatarUrl}
                 className="w-28 h-28 rounded-full object-cover opacity-90 border-4 border-travel-secondary"
                 alt="Perfil"
+                onError={() => setFormData((prev) => ({ ...prev, avatarUrl: getFallbackAvatar(prev.name) }))}
               />
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
                 <Camera className="text-gray-800 bg-white/50 p-2 rounded-full w-10 h-10" />
@@ -290,7 +298,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">URL de la foto</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>URL de la foto</label>
             <input
               type="url"
               value={formData.avatarUrl}
@@ -301,7 +309,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Nombre</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Nombre</label>
             <input
               type="text"
               value={formData.name}
@@ -311,7 +319,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Email</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Email</label>
             <input
               type="email"
               value={formData.email}
@@ -322,7 +330,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Edad</label>
+              <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Edad</label>
               <input
                 type="number"
                 value={formData.age}
@@ -331,7 +339,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">País</label>
+              <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>País</label>
               <input
                 type="text"
                 value={formData.country}
@@ -342,7 +350,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Bio</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Bio</label>
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
@@ -351,7 +359,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">Próximo destino</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Próximo destino</label>
             <input
               type="text"
               value={formData.destination}
@@ -361,10 +369,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-medium text-gray-600">{t.tripDates}</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.tripDates}</label>
             <div className="grid grid-cols-2 gap-2">
               <div>
-                <span className="text-xs text-gray-500 block mb-1">{t.outbound}</span>
+                <span className={`text-xs block mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t.outbound}</span>
                 <input
                   type="date"
                   value={formData.tripStartDate || ''}
@@ -375,7 +383,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 />
               </div>
               <div>
-                <span className="text-xs text-gray-500 block mb-1">{t.return}</span>
+                <span className={`text-xs block mb-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t.return}</span>
                 <input
                   type="date"
                   value={formData.tripEndDate || ''}
@@ -405,9 +413,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       <div className="text-center mb-6 mt-6">
         <div className="relative inline-block">
           <img
-            src={currentUser.avatarUrl}
+            src={avatarSrc}
             className="w-28 h-28 rounded-full border-4 border-travel-secondary object-cover"
             alt="Perfil"
+            onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
           />
           <button
             type="button"
@@ -429,11 +438,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </svg>
           </button>
         </div>
-        <h2 className="text-2xl font-bold mt-4 text-travel-dark">
+        <h2 className={`text-2xl font-bold mt-4 ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
           {currentUser.name}, {currentUser.age}
         </h2>
-        <p className="text-gray-500">{currentUser.country}</p>
-        <p className="text-gray-500 text-sm mt-1">{currentUser.email}</p>
+        <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}>{currentUser.country}</p>
+        <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm mt-1`}>{currentUser.email}</p>
       </div>
 
       <div className={`flex rounded-2xl p-1 mb-6 max-w-md mx-auto ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-100'}`}>
@@ -540,7 +549,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeLanguage(language === 'es' ? 'en' : 'es')}
-                className="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 hover:bg-gray-100"
+                className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                  theme === 'dark'
+                    ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
+                    : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
+                }`}
               >
                 {language === 'es' ? 'Español' : 'English'}
               </button>
@@ -558,7 +571,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               <button
                 type="button"
                 onClick={() => onChangeTheme(theme === 'dark' ? 'light' : 'dark')}
-                className="px-3 py-1 rounded-full text-xs font-semibold bg-white border border-gray-200 hover:bg-gray-100"
+                className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+                  theme === 'dark'
+                    ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
+                    : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
+                }`}
               >
                 {theme === 'dark' ? t.deactivate : t.activate}
               </button>
