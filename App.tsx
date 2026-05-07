@@ -12,6 +12,23 @@ import { Button } from './components/Button';
 import { ToastProvider, useToast } from './components/ToastProvider';
 import { updateUserProfile } from './services/api';
 
+interface SavedAccountEntry {
+  id: string;
+  profile: UserProfile;
+  savedAt: string;
+}
+
+const readSavedAccounts = (): SavedAccountEntry[] => {
+  try {
+    const raw = localStorage.getItem('tm_saved_accounts');
+    if (!raw) return [];
+    const parsed = JSON.parse(raw) as SavedAccountEntry[];
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+};
+
 const normalizeUser = (u: UserProfile): UserProfile => ({
   ...u,
   interests: Array.isArray(u.interests) ? u.interests : [],
@@ -96,6 +113,21 @@ const AppInner: React.FC = () => {
     setCurrentUser(null);
     setCurrentView('match');
     setAuthView('landing');
+  };
+
+  const handleSwitchAccount = (nextAccount: UserProfile) => {
+    const normalized = normalizeUser(nextAccount);
+    setCurrentUser(normalized);
+    setLanguage(normalized.language || 'es');
+    setTheme(normalized.theme || 'light');
+    setCurrentView('settings');
+    localStorage.setItem('tm_user', JSON.stringify(normalized));
+    const existing = readSavedAccounts();
+    const merged = [
+      { id: normalized.id, profile: normalized, savedAt: new Date().toISOString() },
+      ...existing.filter((entry) => entry.id !== normalized.id),
+    ].slice(0, 8);
+    localStorage.setItem('tm_saved_accounts', JSON.stringify(merged));
   };
 
   const handleChangeLanguage = async (nextLanguage: LanguageCode) => {
@@ -229,6 +261,7 @@ const AppInner: React.FC = () => {
             currentUser={currentUser}
             onUpdateUser={handleUpdateUser}
             onLogout={handleLogout}
+            onSwitchAccount={handleSwitchAccount}
             onAccountDeleted={handleAccountDeleted}
             section="profile"
             language={language}
@@ -243,6 +276,7 @@ const AppInner: React.FC = () => {
             currentUser={currentUser}
             onUpdateUser={handleUpdateUser}
             onLogout={handleLogout}
+            onSwitchAccount={handleSwitchAccount}
             onAccountDeleted={handleAccountDeleted}
             section="settings"
             language={language}

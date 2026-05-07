@@ -28,6 +28,7 @@ interface ProfileViewProps {
   currentUser: UserProfile;
   onUpdateUser: (user: UserProfile) => void;
   onLogout: () => void;
+  onSwitchAccount: (user: UserProfile) => void;
   onAccountDeleted?: () => void;
   section: 'profile' | 'settings';
   language: LanguageCode;
@@ -74,10 +75,17 @@ const fileToDataUrl = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+interface SavedAccountEntry {
+  id: string;
+  profile: UserProfile;
+  savedAt: string;
+}
+
 export const ProfileView: React.FC<ProfileViewProps> = ({
   currentUser,
   onUpdateUser,
   onLogout,
+  onSwitchAccount,
   onAccountDeleted,
   section,
   language,
@@ -91,6 +99,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [avatarDraft, setAvatarDraft] = useState(currentUser.avatarUrl);
   const [avatarSrc, setAvatarSrc] = useState(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   const [deletionDateInput, setDeletionDateInput] = useState('');
+  const [settingsPanel, setSettingsPanel] = useState<'photo' | 'security' | null>(null);
+  const [switchAccountOpen, setSwitchAccountOpen] = useState(false);
+  const [savedAccounts, setSavedAccounts] = useState<SavedAccountEntry[]>([]);
   const { showToast } = useToast();
   const inputClass = `w-full p-3 border rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm ${
     theme === 'dark'
@@ -121,6 +132,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Disable',
         accountSecurity: 'Account and security',
         profilePicture: 'Profile picture',
+        switchAccount: 'Switch account',
+        savedAccounts: 'Saved accounts',
+        noSavedAccounts: 'No saved accounts yet.',
+        useThisAccount: 'Use this account',
         uploadFile: 'Upload file',
         applyPhoto: 'Apply photo',
         scheduledDeletion: 'Scheduled deletion',
@@ -146,6 +161,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Desactivar',
         accountSecurity: 'Cuenta y seguridad',
         profilePicture: 'Foto de perfil',
+        switchAccount: 'Cambiar cuenta',
+        savedAccounts: 'Cuentas guardadas',
+        noSavedAccounts: 'Aún no tienes cuentas guardadas.',
+        useThisAccount: 'Usar esta cuenta',
         uploadFile: 'Subir archivo',
         applyPhoto: 'Aplicar foto',
         scheduledDeletion: 'Borrado programado',
@@ -159,6 +178,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   }, [currentUser]);
 
   const trip = useMemo(() => deriveTripDates(currentUser), [currentUser]);
+
+  const loadSavedAccounts = () => {
+    try {
+      const raw = localStorage.getItem('tm_saved_accounts');
+      if (!raw) {
+        setSavedAccounts([]);
+        return;
+      }
+      const parsed = JSON.parse(raw) as SavedAccountEntry[];
+      const safe = Array.isArray(parsed) ? parsed : [];
+      setSavedAccounts(safe.filter((entry) => entry?.profile?.id));
+    } catch {
+      setSavedAccounts([]);
+    }
+  };
 
   const handleSave = async () => {
     setSaving(true);
@@ -301,6 +335,11 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleOpenSwitchAccount = () => {
+    loadSavedAccounts();
+    setSwitchAccountOpen(true);
   };
 
   if (isEditing) {
@@ -610,63 +649,169 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
-            <h3 className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2 mb-1">
-              <ImageIcon size={14} />
-              {t.profilePicture}
-            </h3>
-            <p className="text-xs text-gray-500">Pega una URL de imagen (por ahora sin subida de archivos).</p>
-            <input
-              type="url"
-              value={avatarDraft}
-              onChange={(e) => setAvatarDraft(e.target.value)}
-              className={inputClass}
-              placeholder="https://..."
-            />
-            <input
-              type="file"
-              accept="image/*"
-              onChange={handleAvatarFileChange}
-              className={`${theme === 'dark' ? 'text-gray-200 file:bg-slate-700 file:text-white file:border-slate-600' : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300'} block w-full text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border`}
-            />
-            <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-              {t.uploadFile}: JPG, PNG, WEBP (max 4MB)
-            </p>
-            <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
-              {t.applyPhoto}
-            </Button>
+            <button
+              type="button"
+              onClick={() => setSettingsPanel('photo')}
+              className={`w-full text-left p-3 rounded-xl border flex items-center gap-2 ${
+                theme === 'dark' ? 'border-slate-700 hover:bg-slate-700/60' : 'border-gray-200 hover:bg-white'
+              }`}
+            >
+              <ImageIcon size={16} className="text-travel-accent" />
+              <span className="font-semibold">{t.profilePicture}</span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setSettingsPanel('security')}
+              className={`w-full text-left p-3 rounded-xl border flex items-center gap-2 ${
+                theme === 'dark' ? 'border-red-900/40 hover:bg-red-900/20 text-red-300' : 'border-red-200 hover:bg-red-50 text-red-500'
+              }`}
+            >
+              <Trash2 size={16} />
+              <span className="font-semibold">{t.accountSecurity}</span>
+            </button>
           </div>
 
-          <div className={`${cardClass} p-4 rounded-xl space-y-3 border ${theme === 'dark' ? 'border-red-900/40' : 'border-red-100'}`}>
-            <h3 className="text-xs font-bold text-red-400 uppercase flex items-center gap-2 mb-1">
-              <Trash2 size={14} />
-              {t.accountSecurity}
-            </h3>
-            <p className="text-xs text-gray-600">
-              Puedes borrar la cuenta al instante o programar el borrado (mínimo mañana).
-            </p>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input
-                type="date"
-                value={deletionDateInput}
-                onChange={(e) => setDeletionDateInput(e.target.value)}
-                className={inputClass}
-              />
-              <Button type="button" variant="outline" className="sm:w-auto" onClick={handleScheduleDeletion} disabled={saving}>
-                Programar borrado
-              </Button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={onLogout}
+              className="w-full py-3 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-colors"
+            >
+              {t.logout}
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenSwitchAccount}
+              className={`w-full py-3 font-medium rounded-xl transition-colors ${
+                theme === 'dark' ? 'text-gray-100 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {t.switchAccount}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {settingsPanel && (
+        <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/55 p-4">
+          <div className={`w-full max-w-xl rounded-3xl border shadow-2xl p-5 space-y-3 ${
+            theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="flex items-center justify-between">
+              <h3 className={`font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
+                {settingsPanel === 'photo' ? t.profilePicture : t.accountSecurity}
+              </h3>
+              <button
+                type="button"
+                onClick={() => setSettingsPanel(null)}
+                className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-gray-100'}`}
+              >
+                <ChevronLeft size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
+              </button>
             </div>
-            <Button type="button" fullWidth className="bg-red-600 hover:bg-red-700 text-white border-0" onClick={handleDeleteNow} disabled={saving}>
-              Borrar cuenta ahora
-            </Button>
-          </div>
 
-          <button
-            type="button"
-            onClick={onLogout}
-            className="w-full py-3 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-colors"
-          >
-            {t.logout}
-          </button>
+            {settingsPanel === 'photo' && (
+              <>
+                <p className="text-xs text-gray-500">Pega una URL de imagen (por ahora sin subida de archivos).</p>
+                <input
+                  type="url"
+                  value={avatarDraft}
+                  onChange={(e) => setAvatarDraft(e.target.value)}
+                  className={inputClass}
+                  placeholder="https://..."
+                />
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarFileChange}
+                  className={`${theme === 'dark' ? 'text-gray-200 file:bg-slate-700 file:text-white file:border-slate-600' : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300'} block w-full text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border`}
+                />
+                <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {t.uploadFile}: JPG, PNG, WEBP (max 4MB)
+                </p>
+                <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
+                  {t.applyPhoto}
+                </Button>
+              </>
+            )}
+
+            {settingsPanel === 'security' && (
+              <>
+                <p className="text-xs text-gray-600">
+                  Puedes borrar la cuenta al instante o programar el borrado (mínimo mañana).
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="date"
+                    value={deletionDateInput}
+                    onChange={(e) => setDeletionDateInput(e.target.value)}
+                    className={inputClass}
+                  />
+                  <Button type="button" variant="outline" className="sm:w-auto" onClick={handleScheduleDeletion} disabled={saving}>
+                    Programar borrado
+                  </Button>
+                </div>
+                <Button type="button" fullWidth className="bg-red-600 hover:bg-red-700 text-white border-0" onClick={handleDeleteNow} disabled={saving}>
+                  Borrar cuenta ahora
+                </Button>
+              </>
+            )}
+          </div>
+        </div>
+      )}
+
+      {switchAccountOpen && (
+        <div className="fixed inset-0 z-[85] flex items-center justify-center bg-black/55 p-4">
+          <div className={`w-full max-w-xl rounded-3xl border shadow-2xl p-5 ${
+            theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
+          }`}>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className={`font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{t.savedAccounts}</h3>
+              <button
+                type="button"
+                onClick={() => setSwitchAccountOpen(false)}
+                className={`p-2 rounded-full ${theme === 'dark' ? 'hover:bg-slate-800' : 'hover:bg-gray-100'}`}
+              >
+                <ChevronLeft size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
+              </button>
+            </div>
+            <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+              {savedAccounts.length === 0 && (
+                <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.noSavedAccounts}</p>
+              )}
+              {savedAccounts.map((entry) => (
+                <div
+                  key={entry.id}
+                  className={`rounded-xl border p-3 flex items-center justify-between gap-3 ${
+                    theme === 'dark' ? 'border-slate-700 bg-slate-800' : 'border-gray-200 bg-gray-50'
+                  }`}
+                >
+                  <div className="flex items-center gap-3 min-w-0">
+                    <img
+                      src={entry.profile.avatarUrl || getFallbackAvatar(entry.profile.name)}
+                      alt={entry.profile.name}
+                      className="w-11 h-11 rounded-full object-cover"
+                    />
+                    <div className="min-w-0">
+                      <p className={`font-semibold truncate ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{entry.profile.name}</p>
+                      <p className={`text-xs truncate ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{entry.profile.email}</p>
+                    </div>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="text-xs py-2 px-3"
+                    onClick={() => {
+                      onSwitchAccount(entry.profile);
+                      setSwitchAccountOpen(false);
+                    }}
+                  >
+                    {t.useThisAccount}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       )}
     </div>

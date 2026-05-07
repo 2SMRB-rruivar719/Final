@@ -12,18 +12,33 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, language }) => {
+  const saveAccountForQuickSwitch = (user: UserProfile) => {
+    try {
+      const raw = localStorage.getItem('tm_saved_accounts');
+      const parsed = raw ? (JSON.parse(raw) as Array<{ id: string; profile: UserProfile; savedAt: string }>) : [];
+      const next = [
+        { id: user.id, profile: user, savedAt: new Date().toISOString() },
+        ...parsed.filter((entry) => entry.id !== user.id),
+      ].slice(0, 8);
+      localStorage.setItem('tm_saved_accounts', JSON.stringify(next));
+    } catch {
+      // Ignore persistence issues in login flow.
+    }
+  };
   const t = language === 'en'
     ? {
         back: 'Back', title: 'Sign in', email: 'Email', password: 'Password', login: 'Sign in', loggingIn: 'Signing in...',
         recover: 'Recover account', cancelRecover: 'Cancel recovery', recoverTitle: 'Recover account',
         accountEmail: 'Account email', newPassword: 'New password', repeatPassword: 'Repeat new password',
         updatePassword: 'Update password', updating: 'Updating...', loginToast: 'Signing in...', loginOk: 'Signed in successfully.',
+        saveAccountPrompt: 'Do you want to save this account for quick switching later?',
       }
     : {
         back: 'Volver', title: 'Iniciar sesión', email: 'Email', password: 'Contraseña', login: 'Iniciar sesión', loggingIn: 'Entrando...',
         recover: 'Recuperar cuenta', cancelRecover: 'Cancelar recuperación', recoverTitle: 'Recuperar cuenta',
         accountEmail: 'Email de la cuenta', newPassword: 'Nueva contraseña', repeatPassword: 'Repite la nueva contraseña',
         updatePassword: 'Actualizar contraseña', updating: 'Actualizando...', loginToast: 'Iniciando sesión...', loginOk: 'Sesión iniciada correctamente.',
+        saveAccountPrompt: '¿Quieres guardar esta cuenta para cambiar rápidamente después?',
       };
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -67,6 +82,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       const user = await loginUser(email, password);
       console.log('[API] Login correcto, usuario recibido', user);
       showToast(t.loginOk, 'success');
+      if (window.confirm(t.saveAccountPrompt)) {
+        saveAccountForQuickSwitch(user);
+      }
       onLoginSuccess(user);
     } catch (err: any) {
       let msg = err?.message || 'Credenciales incorrectas o error al iniciar sesión.';
