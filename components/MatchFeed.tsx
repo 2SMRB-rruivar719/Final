@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
 import { Button } from './Button';
@@ -112,6 +112,15 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         insightText: 'Destination, style and budget match. Great to build a joint plan quickly.',
         firstMessage: 'Send first message',
         tip: 'Tip: use the center button to break the ice instantly.',
+        searchPlaceholder: 'Search travelers...',
+        filterBy: 'Filter by',
+        all: 'All',
+        destinationFilter: 'Destination',
+        styleFilter: 'Travel style',
+        budgetFilter: 'Budget',
+        interestsFilter: 'Interests',
+        noResults: 'No profiles match your search.',
+        clearSearch: 'Clear filters',
       }
     : {
         loading: 'La IA está buscando a tus compañeros ideales...',
@@ -126,11 +135,22 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         insightText: 'Coinciden en destino, estilo y presupuesto. Ideal para armar plan conjunto rápidamente.',
         firstMessage: 'Enviar primer mensaje',
         tip: 'Tip: usa el botón central para romper el hielo al instante.',
+        searchPlaceholder: 'Buscar viajeros...',
+        filterBy: 'Filtrar por',
+        all: 'Todo',
+        destinationFilter: 'Destino',
+        styleFilter: 'Estilo de viaje',
+        budgetFilter: 'Presupuesto',
+        interestsFilter: 'Intereses',
+        noResults: 'No hay perfiles que coincidan con tu búsqueda.',
+        clearSearch: 'Limpiar filtros',
       };
   const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [searchScope, setSearchScope] = useState<'all' | 'destination' | 'style' | 'budget' | 'interests'>('all');
   const [channelStartIndex, setChannelStartIndex] = useState(0);
   const [activeChannel, setActiveChannel] = useState<PublicChannel | null>(null);
 
@@ -139,10 +159,42 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
       setLoading(true);
       const matches = await generatePotentialMatches(currentUser);
       setCandidates(matches);
+      setCurrentIndex(0);
       setLoading(false);
     };
     fetchMatches();
   }, [currentUser]);
+
+  useEffect(() => {
+    setCurrentIndex(0);
+  }, [searchTerm, searchScope]);
+
+  const filteredCandidates = useMemo(() => {
+    const query = searchTerm.trim().toLowerCase();
+    if (!query) return candidates;
+
+    return candidates.filter((candidate) => {
+      const inName = candidate.name.toLowerCase().includes(query);
+      const inDestination = candidate.destination.toLowerCase().includes(query);
+      const inStyle = candidate.travelStyle.some((style) => style.toLowerCase().includes(query));
+      const inBudget = candidate.budget.toLowerCase().includes(query);
+      const inInterests = candidate.interests.some((interest) => interest.toLowerCase().includes(query));
+
+      switch (searchScope) {
+        case 'destination':
+          return inDestination;
+        case 'style':
+          return inStyle;
+        case 'budget':
+          return inBudget;
+        case 'interests':
+          return inInterests;
+        case 'all':
+        default:
+          return inName || inDestination || inStyle || inBudget || inInterests;
+      }
+    });
+  }, [candidates, searchScope, searchTerm]);
 
   const handleAction = (action: 'pass' | 'like') => {
     setSwipeDirection(action === 'pass' ? 'left' : 'right');
@@ -166,15 +218,15 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   };
 
   const handleNext = () => {
-    if (currentIndex >= candidates.length - 1) return;
+    if (currentIndex >= filteredCandidates.length - 1) return;
     setSwipeDirection('right');
     setTimeout(() => {
-      setCurrentIndex(prev => Math.min(candidates.length - 1, prev + 1));
+      setCurrentIndex(prev => Math.min(filteredCandidates.length - 1, prev + 1));
       setSwipeDirection(null);
     }, 150);
   };
 
-  const currentCandidate = candidates[currentIndex];
+  const currentCandidate = filteredCandidates[currentIndex];
   const visibleChannels = PUBLIC_CHANNELS.slice(channelStartIndex, channelStartIndex + 2);
 
   if (loading) {
@@ -193,7 +245,19 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           <Heart className="h-12 w-12 text-travel-primary" />
         </div>
         <h3 className="text-xl font-bold text-travel-dark mb-2">{t.seenAll}</h3>
-        <p className="text-gray-500 mb-6">{t.comeBack}</p>
+        <p className="text-gray-500 mb-6">{searchTerm ? t.noResults : t.comeBack}</p>
+        {searchTerm && (
+          <Button
+            onClick={() => {
+              setSearchTerm('');
+              setSearchScope('all');
+            }}
+            variant="outline"
+            className="mb-3"
+          >
+            {t.clearSearch}
+          </Button>
+        )}
         <Button onClick={() => setCurrentIndex(0)} variant="outline">{t.reviewAgain}</Button>
       </div>
     );
@@ -220,11 +284,41 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           </div>
           <div className={`rounded-2xl p-3 ${isDark ? 'bg-slate-900 border border-slate-700' : 'bg-gray-50 border border-gray-100'}`}>
             <p className={`text-xs mb-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.currentProfile}</p>
-            <p className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{currentIndex + 1} de {candidates.length}</p>
+            <p className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{currentIndex + 1} de {filteredCandidates.length}</p>
           </div>
         </aside>
 
         <div className="flex flex-col">
+          <div className={`mb-4 rounded-2xl border p-3 flex flex-col md:flex-row gap-3 ${
+            isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
+          }`}>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder={t.searchPlaceholder}
+              className={`flex-1 rounded-xl px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                isDark ? 'bg-slate-800 text-gray-100 placeholder-gray-400' : 'bg-gray-50 text-gray-800 placeholder-gray-500'
+              }`}
+            />
+            <div className="flex items-center gap-2 md:min-w-[280px]">
+              <span className={`text-xs font-semibold whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t.filterBy}</span>
+              <select
+                value={searchScope}
+                onChange={(e) => setSearchScope(e.target.value as typeof searchScope)}
+                className={`w-full rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                  isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                }`}
+              >
+                <option value="all">{t.all}</option>
+                <option value="destination">{t.destinationFilter}</option>
+                <option value="style">{t.styleFilter}</option>
+                <option value="budget">{t.budgetFilter}</option>
+                <option value="interests">{t.interestsFilter}</option>
+              </select>
+            </div>
+          </div>
+
           <div className={`relative rounded-[2rem] shadow-xl overflow-hidden border flex flex-col h-[74vh] min-h-[560px] ${
             isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
           } ${swipeDirection === 'left' ? 'swipe-left' : swipeDirection === 'right' ? 'swipe-right' : ''}`}>
@@ -307,9 +401,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
             </button>
             <button
               onClick={handleNext}
-              disabled={currentIndex >= candidates.length - 1}
+              disabled={currentIndex >= filteredCandidates.length - 1}
               className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
-                currentIndex >= candidates.length - 1
+                currentIndex >= filteredCandidates.length - 1
                   ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-300'
                   : 'border-gray-200 bg-white text-gray-500 hover:text-travel-primary hover:border-travel-primary'
               }`}
