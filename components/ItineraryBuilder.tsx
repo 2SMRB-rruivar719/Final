@@ -14,6 +14,8 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
   const isDark = theme === 'dark';
   const getDayImage = (destination: string, day: number) =>
     `https://source.unsplash.com/1200x800/?${encodeURIComponent(`${destination},travel,landmark`)}&sig=${day}`;
+  const getActivityImage = (destination: string, day: number, idx: number, hint: string) =>
+    `https://source.unsplash.com/600x420/?${encodeURIComponent(`${destination},${hint},travel`)}&sig=${day * 11 + idx}`;
   const t = language === 'en'
     ? {
         title: 'AI Planner',
@@ -125,15 +127,27 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                     {day.activities.map((act, idx) => (
                       <div key={idx} className="relative">
                         <div className="absolute -left-[27px] top-1 w-3 h-3 bg-travel-accent rounded-full border-2 border-white ring-2 ring-gray-50"></div>
-                        <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-                          <span className="text-xs font-bold text-travel-accent bg-travel-accent/10 px-2 py-1 rounded w-fit flex items-center gap-1">
-                            <Clock size={10} /> {act.time}
-                          </span>
-                          <div className="flex-1">
-                            <p className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{act.description}</p>
-                            <p className={`text-sm flex items-center gap-1 mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                              <MapPin size={12} /> {act.location}
-                            </p>
+                        <div className={`rounded-xl overflow-hidden border ${
+                          isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'
+                        }`}>
+                          <img
+                            src={getActivityImage(currentUser.destination, day.day, idx, act.location)}
+                            alt={`${currentUser.destination} ${act.location}`}
+                            className="w-full h-28 object-cover"
+                            loading="lazy"
+                          />
+                          <div className="p-3">
+                            <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
+                              <span className="text-xs font-bold text-travel-accent bg-travel-accent/10 px-2 py-1 rounded w-fit flex items-center gap-1">
+                                <Clock size={10} /> {act.time}
+                              </span>
+                              <div className="flex-1">
+                                <p className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{act.description}</p>
+                                <p className={`text-sm flex items-center gap-1 mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                                  <MapPin size={12} /> {act.location}
+                                </p>
+                              </div>
+                            </div>
                           </div>
                         </div>
                       </div>
