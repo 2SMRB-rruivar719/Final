@@ -78,6 +78,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [avatarDraft, setAvatarDraft] = useState(currentUser.avatarUrl);
   const [deletionDateInput, setDeletionDateInput] = useState('');
   const { showToast } = useToast();
+  const inputClass = `w-full p-3 border rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm ${
+    theme === 'dark'
+      ? 'bg-slate-800 border-slate-700 text-gray-100 placeholder-gray-400'
+      : 'bg-white border-gray-200 text-gray-800'
+  }`;
+  const cardClass = theme === 'dark' ? 'bg-slate-800' : 'bg-gray-50';
+  const headingClass = theme === 'dark' ? 'text-gray-300' : 'text-gray-400';
+  const bodyTextClass = theme === 'dark' ? 'text-gray-200' : 'text-gray-700';
   const t = language === 'en'
     ? {
         profile: 'Profile',
@@ -287,7 +295,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="url"
               value={formData.avatarUrl}
               onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+              className={inputClass}
               placeholder="https://..."
             />
           </div>
@@ -298,7 +306,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="text"
               value={formData.name}
               onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+              className={inputClass}
             />
           </div>
 
@@ -308,7 +316,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="email"
               value={formData.email}
               onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+              className={inputClass}
             />
           </div>
 
@@ -319,7 +327,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 type="number"
                 value={formData.age}
                 onChange={(e) => setFormData({ ...formData, age: parseInt(e.target.value, 10) || 0 })}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
               />
             </div>
             <div className="space-y-2">
@@ -328,7 +336,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 type="text"
                 value={formData.country}
                 onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
               />
             </div>
           </div>
@@ -338,7 +346,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             <textarea
               value={formData.bio}
               onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none h-24 resize-none"
+              className={`${inputClass} h-24 resize-none`}
             />
           </div>
 
@@ -348,7 +356,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="text"
               value={formData.destination}
               onChange={(e) => setFormData({ ...formData, destination: e.target.value })}
-              className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+              className={inputClass}
             />
           </div>
 
@@ -363,7 +371,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, tripStartDate: e.target.value })
                   }
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
               <div>
@@ -374,7 +382,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   onChange={(e) =>
                     setFormData({ ...formData, tripEndDate: e.target.value })
                   }
-                  className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                  className={inputClass}
                 />
               </div>
             </div>
@@ -469,8 +477,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {activeTab === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          <div className="bg-gray-50 p-4 rounded-xl">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.nextDestination}</h3>
+          <div className={`${cardClass} p-4 rounded-xl`}>
+            <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.nextDestination}</h3>
             <div className="flex items-center gap-2 text-travel-dark font-semibold">
               <Plane size={18} className="text-travel-primary shrink-0" />
               <span>
@@ -487,21 +495,21 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.budget}</h3>
+          <div className={`${cardClass} p-4 rounded-xl`}>
+            <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.budget}</h3>
             <p className="font-medium text-travel-dark">{currentUser.budget}</p>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl lg:col-span-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.bio}</h3>
-            <p className="text-gray-600 text-sm leading-relaxed">{currentUser.bio}</p>
+          <div className={`${cardClass} p-4 rounded-xl lg:col-span-2`}>
+            <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.bio}</h3>
+            <p className={`${bodyTextClass} text-sm leading-relaxed`}>{currentUser.bio}</p>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl lg:col-span-2">
-            <h3 className="text-xs font-bold text-gray-400 uppercase mb-2">{t.interests}</h3>
+          <div className={`${cardClass} p-4 rounded-xl lg:col-span-2`}>
+            <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.interests}</h3>
             <div className="flex flex-wrap gap-2">
               {(currentUser.interests || []).map((i) => (
-                <span key={i} className="bg-white px-3 py-1 rounded-full text-sm shadow-sm text-gray-600">
+                <span key={i} className={`${theme === 'dark' ? 'bg-slate-900 text-gray-200' : 'bg-white text-gray-600'} px-3 py-1 rounded-full text-sm shadow-sm`}>
                   {i}
                 </span>
               ))}
@@ -522,7 +530,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {activeTab === 'settings' && (
         <div className="space-y-4">
-          <div className={`p-4 rounded-xl space-y-3 ${theme === 'dark' ? 'bg-slate-800' : 'bg-gray-50'}`}>
+          <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
             <h3 className={`text-xs font-bold uppercase mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`}>{t.appearanceLanguage}</h3>
             <div className="flex items-center justify-between">
               <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
@@ -557,7 +565,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl space-y-3">
+          <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
             <h3 className="text-xs font-bold text-gray-400 uppercase flex items-center gap-2 mb-1">
               <ImageIcon size={14} />
               {t.profilePicture}
@@ -567,7 +575,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               type="url"
               value={avatarDraft}
               onChange={(e) => setAvatarDraft(e.target.value)}
-              className="w-full p-3 border border-gray-200 rounded-xl bg-white text-sm focus:ring-2 focus:ring-travel-primary focus:outline-none"
+              className={inputClass}
               placeholder="https://..."
             />
             <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
@@ -575,7 +583,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </Button>
           </div>
 
-          <div className="bg-gray-50 p-4 rounded-xl space-y-3 border border-red-100">
+          <div className={`${cardClass} p-4 rounded-xl space-y-3 border ${theme === 'dark' ? 'border-red-900/40' : 'border-red-100'}`}>
             <h3 className="text-xs font-bold text-red-400 uppercase flex items-center gap-2 mb-1">
               <Trash2 size={14} />
               {t.accountSecurity}
@@ -588,7 +596,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 type="date"
                 value={deletionDateInput}
                 onChange={(e) => setDeletionDateInput(e.target.value)}
-                className="flex-1 p-2 border border-gray-200 rounded-xl bg-white text-sm"
+                className={inputClass}
               />
               <Button type="button" variant="outline" className="sm:w-auto" onClick={handleScheduleDeletion} disabled={saving}>
                 Programar borrado
