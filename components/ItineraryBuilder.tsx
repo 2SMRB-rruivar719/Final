@@ -12,6 +12,8 @@ interface ItineraryBuilderProps {
 
 export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser, language, theme }) => {
   const isDark = theme === 'dark';
+  const getDayImage = (destination: string, day: number) =>
+    `https://source.unsplash.com/1200x800/?${encodeURIComponent(`${destination},travel,landmark`)}&sig=${day}`;
   const t = language === 'en'
     ? {
         title: 'AI Planner',
@@ -98,7 +100,20 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
            <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
              {itinerary.days.map((day) => (
-               <div key={day.day} className={`rounded-2xl p-5 shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+               <div key={day.day} className={`rounded-2xl overflow-hidden shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+                 <div className="relative h-36">
+                   <img
+                     src={getDayImage(currentUser.destination, day.day)}
+                     alt={`${currentUser.destination} day ${day.day}`}
+                     className="w-full h-full object-cover"
+                     loading="lazy"
+                   />
+                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
+                   <div className="absolute bottom-3 left-3 text-white text-xs font-semibold tracking-wide uppercase">
+                     {currentUser.destination}
+                   </div>
+                 </div>
+                 <div className="p-5">
                  <div className="flex items-center gap-3 mb-4">
                    <div className="bg-travel-primary/20 text-travel-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">
                      {day.day}
@@ -121,6 +136,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                             </p>
                           </div>
                         </div>
+                 </div>
                      </div>
                    ))}
                  </div>

@@ -94,6 +94,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme, initialTargetUser }) => {
   const isDark = theme === 'dark';
+  const chatStorageKey = `tm_chats_${currentUser.id}`;
   const t = language === 'en'
     ? {
         messages: 'Messages',
@@ -129,7 +130,16 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         participants: 'participantes',
         noDescription: 'Este usuario aun no tiene descripcion.',
       };
-  const [chats, setChats] = useState<ChatThreadType[]>(INITIAL_CHATS);
+  const [chats, setChats] = useState<ChatThreadType[]>(() => {
+    try {
+      const savedChats = localStorage.getItem(chatStorageKey);
+      if (!savedChats) return INITIAL_CHATS;
+      const parsed = JSON.parse(savedChats) as ChatThreadType[];
+      return Array.isArray(parsed) && parsed.length ? parsed : INITIAL_CHATS;
+    } catch {
+      return INITIAL_CHATS;
+    }
+  });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
   const [profilePreview, setProfilePreview] = useState<ChatThreadType | null>(null);
@@ -137,6 +147,36 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const [groupMembersTitle, setGroupMembersTitle] = useState('');
   const { showToast } = useToast();
   const nameColors = ['text-sky-400', 'text-emerald-400', 'text-fuchsia-400', 'text-amber-400', 'text-rose-400', 'text-cyan-400'];
+
+  useEffect(() => {
+    try {
+      const savedChats = localStorage.getItem(chatStorageKey);
+      if (!savedChats) {
+        setChats(INITIAL_CHATS);
+        setActiveChatId(null);
+        return;
+      }
+      const parsed = JSON.parse(savedChats) as ChatThreadType[];
+      if (Array.isArray(parsed) && parsed.length) {
+        setChats(parsed);
+        setActiveChatId(null);
+      } else {
+        setChats(INITIAL_CHATS);
+        setActiveChatId(null);
+      }
+    } catch {
+      setChats(INITIAL_CHATS);
+      setActiveChatId(null);
+    }
+  }, [chatStorageKey]);
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(chatStorageKey, JSON.stringify(chats));
+    } catch {
+      // Ignore persistence errors and keep chat usable.
+    }
+  }, [chatStorageKey, chats]);
 
   useEffect(() => {
     if (!initialTargetUser) return;
