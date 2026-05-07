@@ -113,17 +113,17 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                      {currentUser.destination}
                    </div>
                  </div>
-                 <div className="p-5">
-                 <div className="flex items-center gap-3 mb-4">
-                   <div className="bg-travel-primary/20 text-travel-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                     {day.day}
-                   </div>
-                   <h4 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{day.title}</h4>
-                 </div>
-                 
-                 <div className={`space-y-6 relative pl-5 ml-5 border-l-2 ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
-                   {day.activities.map((act, idx) => (
-                     <div key={idx} className="relative">
+                <div className="p-5">
+                  <div className="flex items-center gap-3 mb-4">
+                    <div className="bg-travel-primary/20 text-travel-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">
+                      {day.day}
+                    </div>
+                    <h4 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{day.title}</h4>
+                  </div>
+
+                  <div className={`space-y-6 relative pl-5 ml-5 border-l-2 ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
+                    {day.activities.map((act, idx) => (
+                      <div key={idx} className="relative">
                         <div className="absolute -left-[27px] top-1 w-3 h-3 bg-travel-accent rounded-full border-2 border-white ring-2 ring-gray-50"></div>
                         <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
                           <span className="text-xs font-bold text-travel-accent bg-travel-accent/10 px-2 py-1 rounded w-fit flex items-center gap-1">
@@ -136,11 +136,10 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                             </p>
                           </div>
                         </div>
-                 </div>
-                     </div>
-                   ))}
-                 </div>
-               </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
              ))}
            </div>
            
