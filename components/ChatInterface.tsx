@@ -427,7 +427,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
       )}
 
       {profilePreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/55 p-4">
           <div className={`w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
             <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
               <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t.profile}</h3>
@@ -465,7 +465,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
       )}
 
       {groupMembersPreview && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/55 p-4">
           <div className={`w-full max-w-lg rounded-3xl shadow-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
             <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
               <div>

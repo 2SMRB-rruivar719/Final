@@ -41,6 +41,17 @@ const pickMany = <T>(list: T[], count: number, seed: number): T[] => {
   return result;
 };
 
+const shuffleWithSeed = <T>(list: T[], seed: number): T[] => {
+  const copy = [...list];
+  let localSeed = seed;
+  for (let i = copy.length - 1; i > 0; i -= 1) {
+    localSeed = (localSeed * 9301 + 49297) % 233280;
+    const j = Math.floor((localSeed / 233280) * (i + 1));
+    [copy[i], copy[j]] = [copy[j], copy[i]];
+  }
+  return copy;
+};
+
 const firstNameList = ['Lucía', 'Diego', 'Sofía', 'Mateo', 'Valeria', 'Nicolás', 'Camila', 'Bruno'];
 const lastNameList = ['Martínez', 'Ruiz', 'Torres', 'Silva', 'López', 'Castro', 'Romero', 'Navarro'];
 const buildName = (index: number) => `${firstNameList[index % firstNameList.length]} ${lastNameList[(index * 3) % lastNameList.length]}`;
@@ -76,7 +87,10 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
     return fallback;
   };
 
-  return Array.from({ length: 8 }).map((_, index) => {
+  const names = Array.from({ length: 8 }).map((_, index) => buildName(index + 1));
+  const shuffledNames = shuffleWithSeed(names, Date.now());
+
+  return shuffledNames.map((name, index) => {
     const seed = Date.now() + index * 41;
     const styles = pickMany(Object.values(TravelStyle), 2, seed + 9);
     const mergedStyles = Array.from(new Set([...baseStyles.slice(0, 1), ...styles])).slice(0, 3);
@@ -86,7 +100,6 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       seed + 17
     );
     const age = Math.max(18, Math.min(45, (userProfile.age || 28) + (index % 5) - 2));
-    const name = buildName(index + 1);
     const inferredGender = inferGenderFromName(name);
     const sex = inferredGender === 'female' ? 'mujer' : 'hombre';
 

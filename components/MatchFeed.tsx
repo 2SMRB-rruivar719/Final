@@ -11,6 +11,91 @@ interface MatchFeedProps {
   theme: ThemeMode;
 }
 
+interface PublicChannelPost {
+  id: string;
+  author: string;
+  place: string;
+  comment: string;
+  imageUrl: string;
+}
+
+interface PublicChannel {
+  id: string;
+  name: string;
+  destination: string;
+  members: number;
+  posts: PublicChannelPost[];
+}
+
+const PUBLIC_CHANNELS: PublicChannel[] = [
+  {
+    id: 'pc-1',
+    name: 'Foodies en Italia',
+    destination: 'Roma',
+    members: 128,
+    posts: [
+      {
+        id: 'p1',
+        author: 'Lucia',
+        place: 'Trastevere',
+        comment: 'Pasta increible y ambiente super local. Muy recomendado para cena.',
+        imageUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=900&q=80',
+      },
+      {
+        id: 'p2',
+        author: 'Marco',
+        place: 'Mercato Centrale',
+        comment: 'Perfecto para probar varios puestos en una sola visita.',
+        imageUrl: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&q=80',
+      },
+    ],
+  },
+  {
+    id: 'pc-2',
+    name: 'Miradores y fotos',
+    destination: 'Lisboa',
+    members: 97,
+    posts: [
+      {
+        id: 'p3',
+        author: 'Sara',
+        place: 'Miradouro da Senhora do Monte',
+        comment: 'Atardecer top. Lleva algo de abrigo porque corre viento.',
+        imageUrl: 'https://images.unsplash.com/photo-1513735492246-483525079686?auto=format&fit=crop&w=900&q=80',
+      },
+      {
+        id: 'p4',
+        author: 'Joao',
+        place: 'Alfama',
+        comment: 'Calles preciosas para fotos espontaneas por la mañana.',
+        imageUrl: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80',
+      },
+    ],
+  },
+  {
+    id: 'pc-3',
+    name: 'Aventura urbana',
+    destination: 'Tokyo',
+    members: 212,
+    posts: [
+      {
+        id: 'p5',
+        author: 'Kenji',
+        place: 'Shibuya',
+        comment: 'Para street photography este punto nunca falla.',
+        imageUrl: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=900&q=80',
+      },
+      {
+        id: 'p6',
+        author: 'Marta',
+        place: 'Asakusa',
+        comment: 'Templo precioso y zona llena de tiendas tradicionales.',
+        imageUrl: 'https://images.unsplash.com/photo-1492571350019-22de08371fd3?auto=format&fit=crop&w=900&q=80',
+      },
+    ],
+  },
+];
+
 export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language, theme }) => {
   const isDark = theme === 'dark';
   const t = language === 'en'
@@ -46,6 +131,8 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
+  const [channelStartIndex, setChannelStartIndex] = useState(0);
+  const [activeChannel, setActiveChannel] = useState<PublicChannel | null>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -88,6 +175,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   };
 
   const currentCandidate = candidates[currentIndex];
+  const visibleChannels = PUBLIC_CHANNELS.slice(channelStartIndex, channelStartIndex + 2);
 
   if (loading) {
     return (
@@ -254,6 +342,98 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           <p className={`text-[11px] mt-3 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.tip}</p>
         </aside>
       </div>
+
+      <section className={`mt-8 rounded-3xl border p-4 lg:p-5 ${
+        isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
+      }`}>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className={`text-sm uppercase tracking-wide font-bold ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Canales publicos</h3>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setChannelStartIndex((prev) => Math.max(0, prev - 1))}
+              disabled={channelStartIndex === 0}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center ${
+                channelStartIndex === 0
+                  ? 'opacity-40 cursor-not-allowed border-gray-400 text-gray-400'
+                  : (isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50')
+              }`}
+            >
+              <ChevronLeft size={18} />
+            </button>
+            <button
+              type="button"
+              onClick={() => setChannelStartIndex((prev) => Math.min(PUBLIC_CHANNELS.length - 2, prev + 1))}
+              disabled={channelStartIndex >= PUBLIC_CHANNELS.length - 2}
+              className={`w-9 h-9 rounded-full border flex items-center justify-center ${
+                channelStartIndex >= PUBLIC_CHANNELS.length - 2
+                  ? 'opacity-40 cursor-not-allowed border-gray-400 text-gray-400'
+                  : (isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50')
+              }`}
+            >
+              <ChevronRight size={18} />
+            </button>
+          </div>
+        </div>
+        <div className="grid gap-3 lg:grid-cols-2">
+          {visibleChannels.map((channel) => (
+            <article key={channel.id} className={`rounded-2xl p-4 border ${
+              isDark ? 'border-slate-700 bg-slate-800/80' : 'border-gray-100 bg-gray-50'
+            }`}>
+              <div className="flex items-start justify-between gap-3 mb-2">
+                <div>
+                  <p className={`font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{channel.name}</p>
+                  <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{channel.destination} · {channel.members} miembros</p>
+                </div>
+                <Button type="button" variant="outline" className="py-1.5 px-3 text-xs" onClick={() => setActiveChannel(channel)}>
+                  Unirme
+                </Button>
+              </div>
+              <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                Foro de viajeros con fotos compartidas y reseñas reales de lugares.
+              </p>
+            </article>
+          ))}
+        </div>
+      </section>
+
+      {activeChannel && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/60 p-4">
+          <div className={`w-full max-w-3xl rounded-3xl border shadow-2xl overflow-hidden ${
+            isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
+          }`}>
+            <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
+              <div>
+                <h4 className={`text-lg font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{activeChannel.name}</h4>
+                <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Foro publico · {activeChannel.destination}</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveChannel(null)}
+                className={`w-9 h-9 rounded-full border flex items-center justify-center ${
+                  isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                }`}
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="max-h-[70vh] overflow-y-auto p-4 space-y-4">
+              {activeChannel.posts.map((post) => (
+                <article key={post.id} className={`rounded-2xl overflow-hidden border ${
+                  isDark ? 'border-slate-700 bg-slate-800' : 'border-gray-100 bg-gray-50'
+                }`}>
+                  <img src={post.imageUrl} alt={post.place} className="w-full h-44 object-cover" />
+                  <div className="p-3">
+                    <p className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{post.place}</p>
+                    <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Reseña de {post.author}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{post.comment}</p>
+                  </div>
+                </article>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
