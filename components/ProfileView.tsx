@@ -13,6 +13,7 @@ import {
   Trash2,
   CalendarClock,
   ImageIcon,
+  Pencil,
 } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
@@ -495,6 +496,23 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          <div className="lg:col-span-2 flex justify-center">
+            <Button
+              type="button"
+              onClick={() => {
+                const { start, end } = deriveTripDates(currentUser);
+                setFormData({
+                  ...currentUser,
+                  tripStartDate: currentUser.tripStartDate || start || '',
+                  tripEndDate: currentUser.tripEndDate || end || '',
+                });
+                setIsEditing(true);
+              }}
+              className="px-6"
+            >
+              <Pencil size={16} /> {t.editProfile}
+            </Button>
+          </div>
           <div className={`${cardClass} p-4 rounded-xl`}>
             <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.nextDestination}</h3>
             <div className="flex items-center gap-2 text-travel-dark font-semibold">

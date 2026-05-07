@@ -1,6 +1,11 @@
 body {
+  margin: 0;
   font-family: 'Inter', sans-serif;
   background-color: #f9f9f9;
+}
+
+#root {
+  min-height: 100vh;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -10,4 +15,22 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+.swipe-left {
+  animation: swipeLeft 240ms ease-in-out;
+}
+
+.swipe-right {
+  animation: swipeRight 240ms ease-in-out;
+}
+
+@keyframes swipeLeft {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(-34px); opacity: 0.88; }
+}
+
+@keyframes swipeRight {
+  0% { transform: translateX(0); opacity: 1; }
+  100% { transform: translateX(34px); opacity: 0.88; }
 }

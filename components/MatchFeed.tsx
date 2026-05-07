@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
 import { Button } from './Button';
-import { X, Heart, MessageCircle, MapPin, Calendar, Wallet } from 'lucide-react';
+import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MatchFeedProps {
   currentUser: UserProfile;
@@ -45,6 +45,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -57,11 +58,33 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   }, [currentUser]);
 
   const handleAction = (action: 'pass' | 'like') => {
+    setSwipeDirection(action === 'pass' ? 'left' : 'right');
     if (action === 'like') {
-        // In a real app, this would create a match record
-        // Here we just simulate interest
+      // In a real app, this would create a match record
+      // Here we just simulate interest
     }
-    setCurrentIndex(prev => prev + 1);
+    setTimeout(() => {
+      setCurrentIndex(prev => prev + 1);
+      setSwipeDirection(null);
+    }, 180);
+  };
+
+  const handlePrev = () => {
+    if (currentIndex <= 0) return;
+    setSwipeDirection('left');
+    setTimeout(() => {
+      setCurrentIndex(prev => Math.max(0, prev - 1));
+      setSwipeDirection(null);
+    }, 150);
+  };
+
+  const handleNext = () => {
+    if (currentIndex >= candidates.length - 1) return;
+    setSwipeDirection('right');
+    setTimeout(() => {
+      setCurrentIndex(prev => Math.min(candidates.length - 1, prev + 1));
+      setSwipeDirection(null);
+    }, 150);
   };
 
   const currentCandidate = candidates[currentIndex];
@@ -90,8 +113,8 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   return (
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
-      <div className="mx-auto w-full max-w-6xl grid gap-6 lg:grid-cols-[250px_minmax(420px,540px)_290px] lg:items-start">
-        <aside className={`hidden lg:block backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+      <div className="mx-auto w-full max-w-7xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)_minmax(0,1fr)] lg:items-start">
+        <aside className={`hidden lg:block max-w-[260px] justify-self-end backdrop-blur-md rounded-3xl p-5 shadow-sm ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.yourTrip}</p>
@@ -116,7 +139,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         <div className="flex flex-col">
           <div className={`relative rounded-[2rem] shadow-xl overflow-hidden border flex flex-col h-[74vh] min-h-[560px] ${
             isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
-          }`}>
+          } ${swipeDirection === 'left' ? 'swipe-left' : swipeDirection === 'right' ? 'swipe-right' : ''}`}>
             <div className="relative h-[58%] bg-gray-200">
               <img
                 src={currentCandidate.avatarUrl}
@@ -160,7 +183,19 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
             </div>
           </div>
 
-          <div className="flex justify-center gap-6 mt-6">
+          <div className="flex justify-center gap-4 mt-6 items-center">
+            <button
+              onClick={handlePrev}
+              disabled={currentIndex <= 0}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
+                currentIndex <= 0
+                  ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:text-travel-primary hover:border-travel-primary'
+              }`}
+              title="Anterior"
+            >
+              <ChevronLeft size={22} />
+            </button>
             <button
               onClick={() => handleAction('pass')}
               className="w-14 h-14 rounded-full bg-white shadow-lg text-gray-400 flex items-center justify-center hover:bg-gray-50 hover:text-red-500 transition-colors border border-gray-100"
@@ -182,10 +217,22 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
             >
               <Heart size={28} />
             </button>
+            <button
+              onClick={handleNext}
+              disabled={currentIndex >= candidates.length - 1}
+              className={`w-10 h-10 rounded-full flex items-center justify-center border transition-colors ${
+                currentIndex >= candidates.length - 1
+                  ? 'opacity-40 cursor-not-allowed border-gray-200 text-gray-300'
+                  : 'border-gray-200 bg-white text-gray-500 hover:text-travel-primary hover:border-travel-primary'
+              }`}
+              title="Siguiente"
+            >
+              <ChevronRight size={22} />
+            </button>
           </div>
         </div>
 
-        <aside className={`hidden lg:block backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+        <aside className={`hidden lg:block max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.matchInsight}</p>

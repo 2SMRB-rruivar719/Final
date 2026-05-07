@@ -42,6 +42,16 @@ const pickMany = <T>(list: T[], count: number, seed: number): T[] => {
 
 const firstNameList = ['Lucía', 'Diego', 'Sofía', 'Mateo', 'Valeria', 'Nicolás', 'Camila', 'Bruno'];
 const lastNameList = ['Martínez', 'Ruiz', 'Torres', 'Silva', 'López', 'Castro', 'Romero', 'Navarro'];
+const realPortraits = [
+  'https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1524504388940-b1c1722653e1?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1488426862026-3ee34a7d66df?auto=format&fit=crop&w=600&q=80',
+  'https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?auto=format&fit=crop&w=600&q=80',
+];
 
 const buildName = (index: number) => `${firstNameList[index % firstNameList.length]} ${lastNameList[(index * 3) % lastNameList.length]}`;
 
@@ -75,7 +85,7 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       budget: userProfile.budget,
       travelStyle: mergedStyles,
       interests,
-      avatarUrl: `https://picsum.photos/seed/${name.replace(' ', '')}/600/600`,
+      avatarUrl: realPortraits[index % realPortraits.length],
       destination: userProfile.destination,
       dates: userProfile.dates,
       tripStartDate: userProfile.tripStartDate,
