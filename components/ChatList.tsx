@@ -1,6 +1,7 @@
 import React from 'react';
 import { UserProfile } from '../types';
 import { Circle, ChevronRight } from 'lucide-react';
+import { getAvatarByName } from '../services/avatarByName';
 
 interface ChatListProps {
   currentUser: UserProfile;
@@ -8,8 +9,8 @@ interface ChatListProps {
 
 const MOCK_CHATS = [
   { id: '1', name: 'Grupo: Viaje a Japón', lastMessage: '¿Ya reservaron el hotel?', time: '10:30', unread: 2, isGroup: true, img: 'https://picsum.photos/seed/japan/100/100' },
-  { id: '2', name: 'Carlos Ruiz', lastMessage: 'Me encanta la idea de ir a Kioto.', time: 'Ayer', unread: 0, isGroup: false, img: 'https://picsum.photos/seed/carlos/100/100' },
-  { id: '3', name: 'Sarah Miller', lastMessage: '¡Hola! Vi que coincidimos en fechas.', time: 'Ayer', unread: 1, isGroup: false, img: 'https://picsum.photos/seed/sarah/100/100' },
+  { id: '2', name: 'Carlos Ruiz', lastMessage: 'Me encanta la idea de ir a Kioto.', time: 'Ayer', unread: 0, isGroup: false, img: getAvatarByName('Carlos Ruiz') },
+  { id: '3', name: 'Sarah Miller', lastMessage: '¡Hola! Vi que coincidimos en fechas.', time: 'Ayer', unread: 1, isGroup: false, img: getAvatarByName('Sarah Miller') },
 ];
 
 export const ChatList: React.FC<ChatListProps> = () => {

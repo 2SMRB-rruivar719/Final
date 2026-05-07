@@ -3,6 +3,7 @@ import { UserProfile, ChatThreadType, Message, LanguageCode, ThemeMode } from '.
 import { ChevronLeft, Send, Phone, Video } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
+import { getAvatarByName } from '../services/avatarByName';
 
 interface ChatInterfaceProps {
   currentUser: UserProfile;
@@ -28,7 +29,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
   {
     id: '2',
     name: 'Carlos Ruiz',
-    avatarUrl: 'https://picsum.photos/seed/carlos/300/300',
+    avatarUrl: getAvatarByName('Carlos Ruiz'),
     lastMessage: 'Me encanta la idea de ir a Kioto.',
     lastMessageTime: 'Ayer',
     unread: 0,
@@ -42,7 +43,7 @@ const INITIAL_CHATS: ChatThreadType[] = [
   {
     id: '3',
     name: 'Sarah Miller',
-    avatarUrl: 'https://picsum.photos/seed/sarah/300/300',
+    avatarUrl: getAvatarByName('Sarah Miller'),
     lastMessage: '¡Hola! Vi que coincidimos en fechas.',
     lastMessageTime: 'Ayer',
     unread: 1,
