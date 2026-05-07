@@ -2,6 +2,7 @@ import { Itinerary, TravelStyle, UserProfile } from '../types';
 import { getAvatarPoolByName, getStableAvatarIndex, inferGenderFromName, getForcedAvatarByName } from './avatarByName';
 
 const countries = ['España', 'Argentina', 'México', 'Chile', 'Portugal', 'Colombia', 'Italia', 'Francia'];
+const budgetPool: Array<UserProfile['budget']> = ['Bajo', 'Medio', 'Alto'];
 
 const bios = [
   'Me encanta descubrir cafeterías locales y rincones auténticos en cada ciudad.',
@@ -55,6 +56,14 @@ const shuffleWithSeed = <T>(list: T[], seed: number): T[] => {
 const firstNameList = ['Lucía', 'Diego', 'Sofía', 'Mateo', 'Valeria', 'Nicolás', 'Camila', 'Bruno'];
 const lastNameList = ['Martínez', 'Ruiz', 'Torres', 'Silva', 'López', 'Castro', 'Romero', 'Navarro'];
 const buildName = (index: number) => `${firstNameList[index % firstNameList.length]} ${lastNameList[(index * 3) % lastNameList.length]}`;
+const pickBudget = (preferredBudget: UserProfile['budget'], seed: number): UserProfile['budget'] => {
+  const normalized = Math.abs(Math.sin(seed * 999)) % 1;
+  if (normalized < 0.4) {
+    return preferredBudget;
+  }
+  const index = Math.floor(((normalized - 0.4) / 0.6) * budgetPool.length);
+  return budgetPool[Math.min(index, budgetPool.length - 1)];
+};
 
 export const generatePotentialMatches = async (userProfile: UserProfile): Promise<UserProfile[]> => {
   await new Promise((resolve) => setTimeout(resolve, 450));
@@ -111,7 +120,7 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
       sex,
       country: countries[index % countries.length],
       bio: bios[index % bios.length],
-      budget: userProfile.budget,
+      budget: pickBudget(userProfile.budget, seed + 23),
       travelStyle: mergedStyles,
       interests,
       avatarUrl: pickNonRepeatedAvatar(name),

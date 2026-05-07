@@ -116,6 +116,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         tip: 'Tip: use the center button to break the ice instantly.',
         searchPlaceholder: 'Search travelers...',
         filterBy: 'Filter by',
+        filters: 'Filters',
         all: 'All',
         filterDate: 'Date',
         datePlaceholder: 'Any date',
@@ -141,6 +142,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         tip: 'Tip: usa el botón central para romper el hielo al instante.',
         searchPlaceholder: 'Buscar viajeros...',
         filterBy: 'Filtrar por',
+        filters: 'Filtrar',
         all: 'Todo',
         filterDate: 'Fecha',
         datePlaceholder: 'Cualquier fecha',
@@ -159,6 +161,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [filterDate, setFilterDate] = useState('');
   const [styleFilter, setStyleFilter] = useState('');
   const [budgetFilter, setBudgetFilter] = useState('');
+  const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [channelStartIndex, setChannelStartIndex] = useState(0);
   const [activeChannel, setActiveChannel] = useState<PublicChannel | null>(null);
 
@@ -270,7 +273,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   return (
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
       <div className="mx-auto w-full max-w-7xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)_minmax(0,1fr)] lg:items-start">
-        <aside className={`hidden lg:block max-w-[260px] justify-self-end backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+        <aside className={`hidden lg:block lg:self-center max-w-[260px] justify-self-end backdrop-blur-md rounded-3xl p-5 shadow-sm ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.yourTrip}</p>
@@ -292,7 +295,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           </div>
         </aside>
 
-        <div className="flex flex-col">
+        <div className="flex flex-col relative">
           <div className={`mb-4 rounded-2xl border p-3 flex flex-col md:flex-row gap-3 ${
             isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
           }`}>
@@ -305,49 +308,77 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                 isDark ? 'bg-slate-800 text-gray-100 placeholder-gray-400' : 'bg-gray-50 text-gray-800 placeholder-gray-500'
               }`}
             />
-            <div className="flex flex-wrap items-center gap-2 md:justify-end">
-              <span className={`text-xs font-semibold whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t.filterBy}</span>
-              <label className="sr-only" htmlFor="filter-date">{t.filterDate}</label>
-              <input
-                id="filter-date"
-                type="date"
-                value={filterDate}
-                onChange={(e) => setFilterDate(e.target.value)}
-                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
-                  isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
-                }`}
-                title={t.filterDate}
-              />
-              <label className="sr-only" htmlFor="filter-style">{t.styleFilter}</label>
-              <select
-                id="filter-style"
-                value={styleFilter}
-                onChange={(e) => setStyleFilter(e.target.value)}
-                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+            <div className="flex items-center md:justify-end">
+              <button
+                type="button"
+                onClick={() => setIsFilterPanelOpen((prev) => !prev)}
+                className={`rounded-xl px-4 py-2 text-sm font-semibold border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
                   isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
                 }`}
               >
-                <option value="">{t.stylePlaceholder}</option>
-                {travelStyleFilters.map((style) => (
-                  <option key={style} value={style}>{style}</option>
-                ))}
-              </select>
-              <label className="sr-only" htmlFor="filter-budget">{t.budgetFilter}</label>
-              <select
-                id="filter-budget"
-                value={budgetFilter}
-                onChange={(e) => setBudgetFilter(e.target.value)}
-                className={`rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
-                  isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
-                }`}
-              >
-                <option value="">{t.budgetPlaceholder}</option>
-                {budgetFilters.map((budget) => (
-                  <option key={budget} value={budget}>{budget}</option>
-                ))}
-              </select>
+                {t.filters}
+              </button>
             </div>
           </div>
+          {isFilterPanelOpen && (
+            <div className={`absolute top-[72px] right-0 z-40 w-full md:w-[360px] rounded-2xl border p-4 shadow-2xl ${
+              isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
+            }`}>
+              <div className="space-y-3">
+                <div>
+                  <label className={`block text-xs mb-1 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`} htmlFor="filter-date">
+                    {t.filterDate}
+                  </label>
+                  <input
+                    id="filter-date"
+                    type="date"
+                    value={filterDate}
+                    onChange={(e) => setFilterDate(e.target.value)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                      isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                    }`}
+                    title={t.filterDate}
+                  />
+                </div>
+                <div>
+                  <label className={`block text-xs mb-1 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`} htmlFor="filter-style">
+                    {t.styleFilter}
+                  </label>
+                  <select
+                    id="filter-style"
+                    value={styleFilter}
+                    onChange={(e) => setStyleFilter(e.target.value)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                      isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <option value="">{t.stylePlaceholder}</option>
+                    {travelStyleFilters.map((style) => (
+                      <option key={style} value={style}>{style}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className={`block text-xs mb-1 font-semibold ${isDark ? 'text-gray-300' : 'text-gray-600'}`} htmlFor="filter-budget">
+                    {t.budgetFilter}
+                  </label>
+                  <select
+                    id="filter-budget"
+                    value={budgetFilter}
+                    onChange={(e) => setBudgetFilter(e.target.value)}
+                    className={`w-full rounded-xl px-3 py-2 text-sm border focus:outline-none focus:ring-2 focus:ring-travel-primary/40 ${
+                      isDark ? 'bg-slate-800 border-slate-700 text-gray-100' : 'bg-white border-gray-200 text-gray-700'
+                    }`}
+                  >
+                    <option value="">{t.budgetPlaceholder}</option>
+                    {budgetFilters.map((budget) => (
+                      <option key={budget} value={budget}>{budget}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className={`relative rounded-[2rem] shadow-xl overflow-hidden border flex flex-col h-[74vh] min-h-[560px] ${
             isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
@@ -445,7 +476,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         </div>
 
         <aside
-          className={`hidden lg:block max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm cursor-pointer ${
+          className={`hidden lg:block lg:self-center max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm cursor-pointer ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}
           onClick={() => onStartChat(currentCandidate)}
