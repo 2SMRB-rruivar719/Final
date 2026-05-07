@@ -67,6 +67,8 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
+  const inputClass = 'w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
+  const labelClass = 'text-sm font-medium text-gray-800';
 
   const buildDebugSnapshot = () => ({
     step,
@@ -279,7 +281,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
       <button
         type="button"
         onClick={handleBack}
-        className="flex items-center gap-1 text-sm text-gray-500 mb-4 hover:text-travel-primary text-left"
+        className="flex items-center gap-1 text-sm text-gray-700 mb-4 hover:text-travel-primary text-left"
       >
         <ChevronLeft size={18} />
         <span>{t.back}</span>
@@ -298,12 +300,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             <h2 className="text-2xl font-bold text-travel-dark text-center">{t.aboutYou}</h2>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 <User size={16} /> {t.name}
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
                 placeholder="Ej. Ana García"
                 value={formData.name || ''}
                 onChange={e => setFormData({...formData, name: e.target.value})}
@@ -311,12 +313,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 <MapPin size={16} /> {t.whereTo}
               </label>
               <input
                 type="text"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
                 placeholder="Ej. Japón, Perú, Italia..."
                 value={formData.destination || ''}
                 onChange={e => setFormData({...formData, destination: e.target.value})}
@@ -324,24 +326,24 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 <Calendar size={16} /> {t.travelDates}
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-xs text-gray-500 block mb-1">{t.outbound}</span>
+                  <span className="text-xs text-gray-700 block mb-1">{t.outbound}</span>
                   <input
                     type="date"
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                    className={`${inputClass} text-sm`}
                     value={formData.tripStartDate || ''}
                     onChange={e => setFormData({ ...formData, tripStartDate: e.target.value })}
                   />
                 </div>
                 <div>
-                  <span className="text-xs text-gray-500 block mb-1">{t.return}</span>
+                  <span className="text-xs text-gray-700 block mb-1">{t.return}</span>
                   <input
                     type="date"
-                    className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm"
+                    className={`${inputClass} text-sm`}
                     value={formData.tripEndDate || ''}
                     onChange={e => setFormData({ ...formData, tripEndDate: e.target.value })}
                   />
@@ -350,7 +352,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Email</label>
+              <label className={labelClass}>Email</label>
               <input
                 type="email"
                 name="register-email"
@@ -358,7 +360,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                 autoCorrect="off"
                 autoCapitalize="none"
                 spellCheck={false}
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
                 placeholder="tucorreo@ejemplo.com"
                 value={email}
                 onChange={e => {
@@ -369,7 +371,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Contraseña</label>
+              <label className={labelClass}>Contraseña</label>
               <input
                 type="password"
                 name="tm-password"
@@ -380,7 +382,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                 data-lpignore="true"
                 data-1p-ignore="true"
                 data-form-type="other"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
                 placeholder="Mínimo 6 caracteres"
                 value={password}
                 onChange={(e) => handlePasswordChange(e.currentTarget.value)}
@@ -392,7 +394,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600">Repetir contraseña</label>
+              <label className={labelClass}>Repetir contraseña</label>
               <input
                 type="password"
                 name="tm-password-confirm"
@@ -403,7 +405,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                 data-lpignore="true"
                 data-1p-ignore="true"
                 data-form-type="other"
-                className="w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none"
+                className={inputClass}
                 placeholder="Repite la contraseña"
                 value={passwordConfirm}
                 onChange={(e) => handlePasswordConfirmChange(e.currentTarget.value)}
@@ -415,7 +417,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <span className="text-sm font-medium text-gray-600">{t.sex}</span>
+              <span className={labelClass}>{t.sex}</span>
               <div className="grid grid-cols-2 gap-2">
                 <button
                   type="button"
@@ -423,7 +425,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                   className={`relative overflow-hidden py-2.5 rounded-xl text-sm font-semibold border transition-all ${
                     sex === 'hombre'
                       ? 'bg-blue-100 border-blue-300 text-blue-700 shadow-sm ring-2 ring-blue-200'
-                      : 'bg-white border-gray-200 text-gray-500 hover:bg-blue-50 hover:border-blue-200'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-blue-50 hover:border-blue-200'
                   }`}
                 >
                   {t.male}
@@ -434,7 +436,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                   className={`relative overflow-hidden py-2.5 rounded-xl text-sm font-semibold border transition-all ${
                     sex === 'mujer'
                       ? 'bg-pink-100 border-pink-300 text-pink-700 shadow-sm ring-2 ring-pink-200'
-                      : 'bg-white border-gray-200 text-gray-500 hover:bg-pink-50 hover:border-pink-200'
+                      : 'bg-white border-gray-200 text-gray-700 hover:bg-pink-50 hover:border-pink-200'
                   }`}
                 >
                   {t.female}
@@ -443,13 +445,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <span className="text-sm font-medium text-gray-600">{t.accountType}</span>
+              <span className={labelClass}>{t.accountType}</span>
               <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
                 <button
                   type="button"
                   onClick={() => setRole('cliente')}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    role === 'cliente' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-500'
+                    role === 'cliente' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-700'
                   }`}
                 >
                   {t.client}
@@ -458,7 +460,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                   type="button"
                   onClick={() => setRole('empresa')}
                   className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                    role === 'empresa' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-500'
+                    role === 'empresa' ? 'bg-white shadow-sm text-travel-accent' : 'text-gray-700'
                   }`}
                 >
                   {t.company}
@@ -473,7 +475,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             <h2 className="text-2xl font-bold text-travel-dark text-center">{t.travelStyle}</h2>
             
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 <Compass size={16} /> ¿Qué tipo de viajero eres?
               </label>
               <div className="grid grid-cols-2 gap-3">
@@ -484,7 +486,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     className={`p-3 rounded-xl border text-sm font-medium transition-all ${
                       formData.travelStyle?.includes(style)
                         ? 'bg-travel-secondary border-travel-primary text-travel-dark'
-                        : 'bg-white border-gray-200 text-gray-500 hover:bg-gray-50'
+                        : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
                     }`}
                   >
                     {style} {formData.travelStyle?.includes(style) && '✓'}
@@ -494,7 +496,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             </div>
 
             <div className="space-y-2">
-              <label className="text-sm font-medium text-gray-600 flex items-center gap-2">
+              <label className={`${labelClass} flex items-center gap-2`}>
                 <DollarSign size={16} /> Presupuesto
               </label>
               <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
@@ -505,7 +507,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
                       formData.budget === b
                         ? 'bg-white shadow-sm text-travel-accent'
-                        : 'text-gray-500'
+                        : 'text-gray-700'
                     }`}
                   >
                     {b}
@@ -519,10 +521,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         {step === 3 && (
           <div className="space-y-6">
             <h2 className="text-2xl font-bold text-travel-dark text-center">{t.interests}</h2>
-            <p className="text-gray-500 text-center text-sm">Escribe tus intereses separados por comas para mejorar el matching con IA.</p>
+            <p className="text-gray-700 text-center text-sm">Escribe tus intereses separados por comas para mejorar el matching con IA.</p>
             
             <textarea
-              className="w-full h-32 p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none resize-none"
+              className={`${inputClass} h-32 resize-none`}
               placeholder="Ej. Gastronomía, Museos, Senderismo, Fotografía..."
               value={formData.interests?.join(', ') || ''}
               onChange={e => setFormData({

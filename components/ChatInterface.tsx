@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { UserProfile, ChatThreadType, Message, LanguageCode, ThemeMode } from '../types';
-import { ChevronLeft, Send, Phone, Video } from 'lucide-react';
+import { ChevronLeft, Send, Phone, Video, MapPin, X } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
 import { getAvatarByName } from '../services/avatarByName';
@@ -34,6 +34,10 @@ const INITIAL_CHATS: ChatThreadType[] = [
     lastMessageTime: 'Ayer',
     unread: 0,
     isGroup: false,
+    age: 29,
+    sex: 'hombre',
+    destination: 'Kioto',
+    bio: 'Me gusta viajar con planificación flexible, comida local y rutas culturales con buen ritmo.',
     messages: [
       { id: 'c1', text: 'Vi que también quieres ir a Kioto.', sender: 'them', timestamp: 'Yesterday' },
       { id: 'c2', text: '¡Sí! Es mi parte favorita del plan.', sender: 'me', timestamp: 'Yesterday' },
@@ -48,6 +52,10 @@ const INITIAL_CHATS: ChatThreadType[] = [
     lastMessageTime: 'Ayer',
     unread: 1,
     isGroup: false,
+    age: 27,
+    sex: 'mujer',
+    destination: 'Kioto',
+    bio: 'Busco compañia para descubrir barrios autenticos, tomar fotos y probar cafeterias locales.',
     messages: [
       { id: 's1', text: '¡Hola! Vi que coincidimos en fechas.', sender: 'them', timestamp: 'Yesterday' }
     ]
@@ -65,6 +73,12 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         sent: 'Message sent.',
         openingChat: 'Opening chat with',
         now: 'Now',
+        viewProfile: 'View profile',
+        profile: 'Profile',
+        publicInfo: 'Public information',
+        gender: 'Gender',
+        destination: 'Destination',
+        noDescription: 'This user has no description yet.',
       }
     : {
         messages: 'Mensajes',
@@ -74,10 +88,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         sent: 'Mensaje enviado.',
         openingChat: 'Abriendo chat con',
         now: 'Ahora',
+        viewProfile: 'Ver perfil',
+        profile: 'Perfil',
+        publicInfo: 'Informacion publica',
+        gender: 'Genero',
+        destination: 'Destino',
+        noDescription: 'Este usuario aun no tiene descripcion.',
       };
   const [chats, setChats] = useState<ChatThreadType[]>(INITIAL_CHATS);
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
   const [newMessage, setNewMessage] = useState('');
+  const [profilePreview, setProfilePreview] = useState<ChatThreadType | null>(null);
   const { showToast } = useToast();
 
   const activeChat = chats.find(c => c.id === activeChatId);
@@ -112,6 +133,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     showToast(t.sent, 'info');
   };
 
+  const openProfilePreview = (chat: ChatThreadType) => {
+    if (chat.isGroup) return;
+    setProfilePreview(chat);
+  };
+
   return (
     <>
       <div className="hidden lg:grid lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-4rem)] p-6">
@@ -131,7 +157,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                     isSelected ? 'bg-travel-secondary/35' : (isDark ? 'hover:bg-slate-800' : 'hover:bg-gray-50')
                   }`}
                 >
-                  <div className="relative">
+                  <button type="button" className="relative" onClick={(e) => { e.stopPropagation(); openProfilePreview(chat); }}>
                     <img
                       src={chat.avatarUrl}
                       alt={chat.name}
@@ -142,7 +168,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                         {chat.unread}
                       </span>
                     )}
-                  </div>
+                  </button>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-baseline mb-1">
                       <h3 className={`font-bold truncate ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{chat.name}</h3>
@@ -166,6 +192,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{desktopActiveChat.name}</h3>
                 <span className="text-xs text-green-500 font-medium">{t.online}</span>
               </div>
+              {!desktopActiveChat.isGroup && (
+                <button
+                  type="button"
+                  className={`px-3 py-1.5 rounded-full text-xs font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                  onClick={() => openProfilePreview(desktopActiveChat)}
+                >
+                  {t.viewProfile}
+                </button>
+              )}
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
               <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
             </div>
@@ -219,6 +254,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{activeChat.name}</h3>
               <span className="text-xs text-green-500 font-medium">{t.online}</span>
             </div>
+            {!activeChat.isGroup && (
+              <button
+                type="button"
+                className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'}`}
+                onClick={() => openProfilePreview(activeChat)}
+              >
+                {t.viewProfile}
+              </button>
+            )}
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Phone size={20} /></button>
             <button className="p-2 text-travel-accent hover:bg-gray-50 rounded-full"><Video size={20} /></button>
           </div>
@@ -276,11 +320,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 className={`flex items-center gap-4 p-4 transition-colors border-b cursor-pointer ${isDark ? 'hover:bg-slate-800 border-slate-800' : 'hover:bg-gray-50 border-gray-50'}`}
               >
                 <div className="relative">
-                  <img
-                    src={chat.avatarUrl}
-                    alt={chat.name}
-                    className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`}
-                  />
+                  <button type="button" onClick={(e) => { e.stopPropagation(); openProfilePreview(chat); }}>
+                    <img
+                      src={chat.avatarUrl}
+                      alt={chat.name}
+                      className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`}
+                    />
+                  </button>
                   {chat.unread > 0 && (
                     <span className="absolute -top-1 -right-1 bg-travel-accent text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">
                       {chat.unread}
@@ -299,6 +345,44 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {profilePreview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 p-4">
+          <div className={`w-full max-w-md rounded-3xl shadow-2xl overflow-hidden border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
+            <div className={`p-4 border-b flex items-center justify-between ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
+              <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{t.profile}</h3>
+              <button type="button" onClick={() => setProfilePreview(null)} className={`p-2 rounded-full ${isDark ? 'hover:bg-slate-800 text-gray-200' : 'hover:bg-gray-100 text-gray-600'}`}>
+                <X size={18} />
+              </button>
+            </div>
+            <div className="p-5">
+              <div className="flex items-center gap-4 mb-4">
+                <img src={profilePreview.avatarUrl} alt={profilePreview.name} className="w-20 h-20 rounded-full object-cover border-4 border-travel-secondary/60" />
+                <div>
+                  <h4 className={`text-xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
+                    {profilePreview.name}{profilePreview.age ? `, ${profilePreview.age}` : ''}
+                  </h4>
+                  <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{t.publicInfo}</p>
+                </div>
+              </div>
+              <div className="space-y-3">
+                <p className={`${isDark ? 'text-gray-200' : 'text-gray-700'} text-sm leading-relaxed`}>
+                  {profilePreview.bio || t.noDescription}
+                </p>
+                <div className="flex items-center gap-2 text-sm">
+                  <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t.gender}:</span>
+                  <span className={`${isDark ? 'text-gray-200' : 'text-gray-600'}`}>{profilePreview.sex || '—'}</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm">
+                  <MapPin size={14} className="text-travel-accent" />
+                  <span className={`font-semibold ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{t.destination}:</span>
+                  <span className={`${isDark ? 'text-gray-200' : 'text-gray-600'}`}>{profilePreview.destination || '—'}</span>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       )}

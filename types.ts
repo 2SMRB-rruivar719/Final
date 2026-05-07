@@ -73,6 +73,10 @@ export interface ChatThreadType {
   id: string;
   name: string;
   avatarUrl: string;
+  age?: number;
+  sex?: UserSex;
+  bio?: string;
+  destination?: string;
   lastMessage: string;
   lastMessageTime: string;
   unread: number;

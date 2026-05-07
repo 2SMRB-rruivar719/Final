@@ -44,9 +44,15 @@ const hashString = (value: string) => {
 
 const getFirstName = (fullName: string) => normalizeText(fullName).split(/\s+/).filter(Boolean)[0] || '';
 
+const forcedGenderByFirstName: Record<string, NameGender> = {
+  mateo: 'male',
+  bruno: 'male',
+};
+
 export const inferGenderFromName = (fullName: string): NameGender => {
   const firstName = getFirstName(fullName);
   if (!firstName) return 'unknown';
+  if (forcedGenderByFirstName[firstName]) return forcedGenderByFirstName[firstName];
   if (femaleFirstNames.has(firstName)) return 'female';
   if (maleFirstNames.has(firstName)) return 'male';
   return 'unknown';

@@ -1,5 +1,5 @@
 import { Itinerary, TravelStyle, UserProfile } from '../types';
-import { getAvatarPoolByName, getStableAvatarIndex } from './avatarByName';
+import { getAvatarPoolByName, getStableAvatarIndex, inferGenderFromName } from './avatarByName';
 
 const countries = ['España', 'Argentina', 'México', 'Chile', 'Portugal', 'Colombia', 'Italia', 'Francia'];
 
@@ -82,12 +82,15 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
     );
     const age = Math.max(18, Math.min(45, (userProfile.age || 28) + (index % 5) - 2));
     const name = buildName(index + 1);
+    const inferredGender = inferGenderFromName(name);
+    const sex = inferredGender === 'female' ? 'mujer' : 'hombre';
 
     return {
       id: `match-${index}-${Date.now()}`,
       name,
       email: `${name.toLowerCase().replace(/\s+/g, '.')}@travelmatch.local`,
       age,
+      sex,
       country: countries[index % countries.length],
       bio: bios[index % bios.length],
       budget: userProfile.budget,
