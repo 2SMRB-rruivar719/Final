@@ -64,6 +64,14 @@ const formatDeletionDate = (iso?: string | null) => {
 const getFallbackAvatar = (name?: string) =>
   `https://ui-avatars.com/api/?name=${encodeURIComponent(name || 'User')}&background=0f172a&color=ffffff`;
 
+const fileToDataUrl = (file: File) =>
+  new Promise<string>((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(String(reader.result || ''));
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+
 export const ProfileView: React.FC<ProfileViewProps> = ({
   currentUser,
   onUpdateUser,
@@ -111,6 +119,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Disable',
         accountSecurity: 'Account and security',
         profilePicture: 'Profile picture',
+        uploadFile: 'Upload file',
         applyPhoto: 'Apply photo',
         scheduledDeletion: 'Scheduled deletion',
         logout: 'Log out',
@@ -135,6 +144,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Desactivar',
         accountSecurity: 'Cuenta y seguridad',
         profilePicture: 'Foto de perfil',
+        uploadFile: 'Subir archivo',
         applyPhoto: 'Aplicar foto',
         scheduledDeletion: 'Borrado programado',
         logout: 'Cerrar sesión',
@@ -203,6 +213,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       showToast(msg, 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast('Selecciona un archivo de imagen válido.', 'error');
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      showToast('La imagen es demasiado grande (máximo 4MB).', 'error');
+      return;
+    }
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setAvatarDraft(dataUrl);
+      setAvatarSrc(dataUrl);
+      showToast('Imagen cargada. Pulsa en aplicar para guardar.', 'info');
+    } catch {
+      showToast('No se pudo leer el archivo.', 'error');
     }
   };
 
@@ -595,6 +626,15 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className={inputClass}
               placeholder="https://..."
             />
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarFileChange}
+              className={`${theme === 'dark' ? 'text-gray-200 file:bg-slate-700 file:text-white file:border-slate-600' : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300'} block w-full text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border`}
+            />
+            <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
+              {t.uploadFile}: JPG, PNG, WEBP (max 4MB)
+            </p>
             <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
               {t.applyPhoto}
             </Button>
