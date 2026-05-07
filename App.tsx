@@ -30,6 +30,7 @@ const AppInner: React.FC = () => {
   const [authView, setAuthView] = useState<'landing' | 'login' | 'register'>('landing');
   const [language, setLanguage] = useState<LanguageCode>('es');
   const [theme, setTheme] = useState<ThemeMode>('light');
+  const [isNavCollapsed, setIsNavCollapsed] = useState(false);
   const t = language === 'en'
     ? {
         tagline: 'Find travel buddies, plan with AI and explore the world.',
@@ -258,7 +259,7 @@ const AppInner: React.FC = () => {
       }`}
     >
       {isAuthenticated ? (
-        <div className="min-h-screen lg:pl-72">
+        <div className={`min-h-screen transition-all duration-200 ${isNavCollapsed ? 'lg:pl-24' : 'lg:pl-72'}`}>
           <div className="mx-auto w-full lg:max-w-[1360px]">{renderContent()}</div>
         </div>
       ) : (
@@ -271,6 +272,8 @@ const AppInner: React.FC = () => {
           currentUser={currentUser}
           language={language}
           theme={theme}
+          collapsed={isNavCollapsed}
+          onToggleCollapse={() => setIsNavCollapsed((prev) => !prev)}
         />
       )}
     </div>

@@ -69,6 +69,16 @@ export interface Message {
   timestamp: string;
 }
 
+export interface ChatMember {
+  id: string;
+  name: string;
+  avatarUrl: string;
+  age: number;
+  sex: UserSex;
+  bio: string;
+  destination: string;
+}
+
 export interface ChatThreadType {
   id: string;
   name: string;
@@ -81,5 +91,6 @@ export interface ChatThreadType {
   lastMessageTime: string;
   unread: number;
   isGroup: boolean;
+  members?: ChatMember[];
   messages: Message[];
 }

@@ -46,7 +46,6 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
-  const [showRightPanel, setShowRightPanel] = useState(false);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -114,23 +113,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   return (
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
-      <button
-        type="button"
-        onClick={() => setShowRightPanel((prev) => !prev)}
-        className={`hidden lg:flex absolute top-4 right-8 z-20 items-center justify-center w-10 h-10 rounded-full border shadow-sm transition ${
-          isDark
-            ? 'bg-slate-800 border-slate-600 text-gray-100 hover:bg-slate-700'
-            : 'bg-white border-gray-200 text-gray-700 hover:bg-gray-50'
-        }`}
-        title={showRightPanel ? 'Ocultar panel derecho' : 'Mostrar panel derecho'}
-      >
-        {showRightPanel ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
-      </button>
-      <div className={`mx-auto w-full max-w-7xl grid gap-6 lg:items-start ${
-        showRightPanel
-          ? 'lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)_minmax(0,1fr)]'
-          : 'lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)]'
-      }`}>
+      <div className="mx-auto w-full max-w-7xl grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)_minmax(0,1fr)] lg:items-start">
         <aside className={`hidden lg:block max-w-[260px] justify-self-end backdrop-blur-md rounded-3xl p-5 shadow-sm ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}>
@@ -249,7 +232,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
           </div>
         </div>
 
-        <aside className={`${showRightPanel ? 'hidden lg:block' : 'hidden'} max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm ${
+        <aside className={`hidden lg:block max-w-[300px] justify-self-start backdrop-blur-md rounded-3xl p-5 shadow-sm ${
           isDark ? 'bg-slate-800/80 border border-slate-700' : 'bg-white/80 border border-white/60'
         }`}>
           <p className="text-xs uppercase tracking-wider text-gray-400 font-semibold mb-3">{t.matchInsight}</p>

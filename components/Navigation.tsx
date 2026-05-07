@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, MessageCircle, Map, User, Settings } from 'lucide-react';
+import { Home, MessageCircle, Map, User, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
 
@@ -9,9 +9,11 @@ interface NavigationProps {
   currentUser?: UserProfile | null;
   language: LanguageCode;
   theme: ThemeMode;
+  collapsed: boolean;
+  onToggleCollapse: () => void;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language, theme }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language, theme, collapsed, onToggleCollapse }) => {
   const isDark = theme === 'dark';
   const t = language === 'en'
     ? { profile: 'Profile', explore: 'Explore', trip: 'Trip', chat: 'Chat', settings: 'Settings', subtitle: 'Find your next travel buddy', desktopTip: 'Desktop mode optimized for quick swipes.' }
@@ -26,12 +28,26 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
 
   return (
     <>
-      <aside className={`hidden lg:flex fixed left-0 top-0 h-screen w-72 backdrop-blur-xl z-50 flex-col px-5 py-6 shadow-xl ${
+      <aside className={`hidden lg:flex fixed left-0 top-0 h-screen backdrop-blur-xl z-50 flex-col py-6 shadow-xl transition-all duration-200 ${
+        collapsed ? 'w-24 px-3' : 'w-72 px-5'
+      } ${
         isDark ? 'border-r border-slate-700/80 bg-slate-900/90' : 'border-r border-white/60 bg-white/80'
       }`}>
-        <div className="mb-8 px-2">
-          <Logo className="w-auto" variant="text" />
-          <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.subtitle}</p>
+        <div className={`mb-8 ${collapsed ? 'px-0' : 'px-2'}`}>
+          <div className={`flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
+            {collapsed ? <Logo className="w-9 h-9" variant="icon" /> : <Logo className="w-auto" variant="text" />}
+            <button
+              type="button"
+              onClick={onToggleCollapse}
+              className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-full border ${
+                isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+              }`}
+              title={collapsed ? 'Desplegar menu' : 'Ocultar menu'}
+            >
+              {collapsed ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
+            </button>
+          </div>
+          {!collapsed && <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.subtitle}</p>}
         </div>
 
         <nav className="space-y-2">
@@ -42,20 +58,21 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
               <button
                 key={item.id}
                 onClick={() => onChangeView(item.id)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-2xl text-left transition-all duration-200 ${
+                className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl text-left transition-all duration-200 ${
                   isActive
                     ? 'bg-travel-primary text-white shadow-md'
                     : (isDark ? 'text-gray-300 hover:bg-slate-800' : 'text-gray-600 hover:bg-gray-100')
                 }`}
+                title={collapsed ? item.label : undefined}
               >
                 <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="font-semibold text-sm">{item.label}</span>
+                {!collapsed && <span className="font-semibold text-sm">{item.label}</span>}
               </button>
             );
           })}
         </nav>
 
-        {currentUser && (
+        {currentUser && !collapsed && (
           <div className={`mt-auto p-4 rounded-2xl border ${
             isDark ? 'bg-slate-800 border-slate-700' : 'bg-travel-secondary/50 border-travel-secondary/70'
           }`}>
