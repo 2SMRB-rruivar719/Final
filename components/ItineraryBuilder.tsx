@@ -27,6 +27,23 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         share: 'Share',
         newRoute: 'Generate New Route',
         empty: 'Configure your trip and let AI plan it for you.',
+        preferences: 'Trip Preferences',
+        localityCountry: 'Locality / Country',
+        food: 'Food',
+        price: 'Price',
+        pace: 'Pace',
+        vibe: 'Travel Vibe',
+        budgetFriendly: 'Budget friendly',
+        balanced: 'Balanced',
+        premium: 'Premium',
+        relaxed: 'Relaxed',
+        explorer: 'Explorer',
+        intense: 'Intense',
+        cultural: 'Cultural',
+        adventure: 'Adventure',
+        nightlife: 'Nightlife',
+        local: 'Local',
+        international: 'International',
       }
     : {
         title: 'Planificador IA',
@@ -38,20 +55,68 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         share: 'Compartir',
         newRoute: 'Generar Nueva Ruta',
         empty: 'Configura tu viaje y deja que la IA planifique por ti.',
+        preferences: 'Preferencias del viaje',
+        localityCountry: 'Localidad / País',
+        food: 'Comida',
+        price: 'Precio',
+        pace: 'Ritmo',
+        vibe: 'Estilo de viaje',
+        budgetFriendly: 'Económico',
+        balanced: 'Equilibrado',
+        premium: 'Premium',
+        relaxed: 'Relajado',
+        explorer: 'Explorador',
+        intense: 'Intenso',
+        cultural: 'Cultural',
+        adventure: 'Aventura',
+        nightlife: 'Vida nocturna',
+        local: 'Local',
+        international: 'Internacional',
       };
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [loading, setLoading] = useState(false);
   const [duration, setDuration] = useState(3);
+  const sliderProgress = 100 * ((duration - 1) / 13);
+  const [locality, setLocality] = useState(currentUser.destination);
+  const [foodPreference, setFoodPreference] = useState(language === 'en' ? 'Local' : 'Local');
+  const [pricePreference, setPricePreference] = useState<'Bajo' | 'Medio' | 'Alto'>(currentUser.budget);
+  const [pacePreference, setPacePreference] = useState(language === 'en' ? 'Explorer' : 'Explorador');
+  const [vibePreference, setVibePreference] = useState(language === 'en' ? 'Cultural' : 'Cultural');
+
+  const removeRepeatedActivities = (data: Itinerary): Itinerary => {
+    const globalSeen = new Set<string>();
+    return {
+      ...data,
+      days: data.days.map((day) => {
+        const activities = day.activities.filter((act) => {
+          const key = `${act.time}-${act.location}-${act.description}`.toLowerCase().trim();
+          if (globalSeen.has(key)) return false;
+          globalSeen.add(key);
+          return true;
+        });
+        return { ...day, activities };
+      }),
+    };
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
-    const result = await generateItinerary(
-      currentUser.destination, 
-      duration, 
-      currentUser.interests, 
-      currentUser.budget
+    const selectedInterests = Array.from(
+      new Set([
+        ...currentUser.interests,
+        foodPreference,
+        pacePreference,
+        vibePreference,
+        locality,
+      ])
     );
-    setItinerary(result);
+    const result = await generateItinerary(
+      locality,
+      duration, 
+      selectedInterests,
+      pricePreference
+    );
+    setItinerary(removeRepeatedActivities(result));
     setLoading(false);
   };
 
@@ -62,24 +127,96 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         <p className="opacity-90 mb-4 text-sm">{t.subtitle}</p>
         
         {!itinerary && (
-          <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-            <label className="block text-xs font-medium mb-2 uppercase tracking-wide">{t.duration}</label>
-            <div className="flex items-center gap-4">
-              <input 
-                type="range" 
-                min="1" 
-                max="14" 
-                value={duration} 
-                onChange={(e) => setDuration(parseInt(e.target.value))}
-                className="w-full accent-travel-secondary h-2 bg-white/30 rounded-lg appearance-none cursor-pointer"
-              />
-              <span className="font-bold text-xl w-8">{duration}</span>
+          <div className="grid gap-4 lg:grid-cols-2">
+            <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
+              <label className="block text-xs font-medium mb-2 uppercase tracking-wide">{t.duration}</label>
+              <div className="flex items-center gap-4">
+                <input
+                  type="range"
+                  min="1"
+                  max="14"
+                  value={duration}
+                  onChange={(e) => setDuration(parseInt(e.target.value, 10))}
+                  style={{
+                    background: `linear-gradient(90deg, #111827 ${sliderProgress}%, rgba(255,255,255,0.3) ${sliderProgress}%)`,
+                  }}
+                  className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300 ease-out
+                  [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
+                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:border-2
+                  [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-all
+                  [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black
+                  [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
+                />
+                <span className="font-bold text-xl w-8">{duration}</span>
+              </div>
+            </div>
+            <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 space-y-3">
+              <h4 className="text-xs font-medium uppercase tracking-wide">{t.preferences}</h4>
+              <div className="grid sm:grid-cols-2 gap-3 text-xs">
+                <label className="space-y-1">
+                  <span className="block opacity-90">{t.localityCountry}</span>
+                  <input
+                    value={locality}
+                    onChange={(e) => setLocality(e.target.value)}
+                    className="w-full rounded-lg bg-white/80 text-gray-800 px-2 py-2 outline-none focus:ring-2 focus:ring-travel-secondary"
+                  />
+                </label>
+                <label className="space-y-1">
+                  <span className="block opacity-90">{t.food}</span>
+                  <select
+                    value={foodPreference}
+                    onChange={(e) => setFoodPreference(e.target.value)}
+                    className="w-full rounded-lg bg-white/80 text-gray-800 px-2 py-2 outline-none focus:ring-2 focus:ring-travel-secondary"
+                  >
+                    <option>{t.local}</option>
+                    <option>{t.international}</option>
+                    <option>Fusion</option>
+                    <option>Street food</option>
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="block opacity-90">{t.price}</span>
+                  <select
+                    value={pricePreference}
+                    onChange={(e) => setPricePreference(e.target.value as 'Bajo' | 'Medio' | 'Alto')}
+                    className="w-full rounded-lg bg-white/80 text-gray-800 px-2 py-2 outline-none focus:ring-2 focus:ring-travel-secondary"
+                  >
+                    <option value="Bajo">{t.budgetFriendly}</option>
+                    <option value="Medio">{t.balanced}</option>
+                    <option value="Alto">{t.premium}</option>
+                  </select>
+                </label>
+                <label className="space-y-1">
+                  <span className="block opacity-90">{t.pace}</span>
+                  <select
+                    value={pacePreference}
+                    onChange={(e) => setPacePreference(e.target.value)}
+                    className="w-full rounded-lg bg-white/80 text-gray-800 px-2 py-2 outline-none focus:ring-2 focus:ring-travel-secondary"
+                  >
+                    <option>{t.relaxed}</option>
+                    <option>{t.explorer}</option>
+                    <option>{t.intense}</option>
+                  </select>
+                </label>
+                <label className="space-y-1 sm:col-span-2">
+                  <span className="block opacity-90">{t.vibe}</span>
+                  <select
+                    value={vibePreference}
+                    onChange={(e) => setVibePreference(e.target.value)}
+                    className="w-full rounded-lg bg-white/80 text-gray-800 px-2 py-2 outline-none focus:ring-2 focus:ring-travel-secondary"
+                  >
+                    <option>{t.cultural}</option>
+                    <option>{t.adventure}</option>
+                    <option>{t.nightlife}</option>
+                  </select>
+                </label>
+              </div>
             </div>
             <Button 
               onClick={handleGenerate} 
               fullWidth 
               disabled={loading}
-              className="mt-4 bg-travel-secondary text-travel-dark hover:bg-white border-none shadow-none"
+              className="lg:col-span-2 mt-1 bg-travel-secondary text-travel-dark hover:bg-white border-none shadow-none"
             >
               {loading ? (
                 <span className="flex items-center gap-2"><Sparkles className="animate-spin" size={18} /> {t.generating}</span>
@@ -100,7 +237,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
              </button>
            </div>
 
-           <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
              {itinerary.days.map((day) => (
                <div key={day.day} className={`rounded-2xl overflow-hidden shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
                  <div className="relative h-36">
@@ -154,6 +291,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                     ))}
                   </div>
                 </div>
+              </div>
              ))}
            </div>
            
