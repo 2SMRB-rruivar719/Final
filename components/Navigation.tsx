@@ -40,8 +40,10 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
             <button
               type="button"
               onClick={onToggleCollapse}
-              className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-full border ${
-                isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-600 hover:bg-gray-100'
+              className={`hidden lg:flex items-center justify-center w-8 h-8 rounded-full border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark
+                  ? 'border-slate-600 text-gray-200 hover:bg-slate-800 focus-visible:ring-offset-slate-900'
+                  : 'border-gray-200 text-gray-600 hover:bg-gray-100 focus-visible:ring-offset-white'
               }`}
               title={collapsed ? 'Desplegar menu' : 'Ocultar menu'}
             >
@@ -58,15 +60,24 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => onChangeView(item.id)}
-                className={`w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl text-left transition-all duration-200 ${
+                className={`group relative w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                  isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'
+                } ${
                   isActive
-                    ? 'bg-travel-primary text-white shadow-md'
-                    : (isDark ? 'text-gray-300 hover:bg-slate-800' : 'text-gray-600 hover:bg-gray-100')
+                    ? 'bg-travel-primary text-white shadow-lg shadow-travel-primary/25 scale-[1.01]'
+                    : (isDark ? 'text-gray-300 hover:bg-slate-800/90' : 'text-gray-600 hover:bg-white/90')
                 }`}
                 title={collapsed ? item.label : undefined}
               >
-                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                {isActive && (
+                  <span
+                    className="absolute left-1 top-1/2 h-8 w-1 -translate-y-1/2 rounded-full bg-white/90 shadow-sm"
+                    aria-hidden
+                  />
+                )}
+                <Icon size={20} strokeWidth={isActive ? 2.5 : 2} className={collapsed ? '' : 'ml-1'} />
                 {!collapsed && <span className="font-semibold text-sm">{item.label}</span>}
               </button>
             );
@@ -105,8 +116,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
             return (
               <button
                 key={item.id}
+                type="button"
                 onClick={() => onChangeView(item.id)}
-                className={`flex flex-col items-center gap-1 transition-colors duration-200 ${
+                className={`flex min-w-[3.25rem] flex-col items-center gap-1 rounded-xl px-1 py-1 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                  isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'
+                } ${
                   isActive ? 'text-travel-accent' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >

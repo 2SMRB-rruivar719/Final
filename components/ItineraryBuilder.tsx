@@ -120,7 +120,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
   return (
     <div className="p-4 max-w-5xl mx-auto mb-24 lg:mb-8 lg:py-8">
-      <div className="mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl text-white shadow-lg">
+      <div className="mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl text-white shadow-xl shadow-travel-primary/25 ring-1 ring-white/15">
         <h2 className="text-2xl font-bold mb-2">{t.title}</h2>
         <p className="opacity-90 mb-4 text-sm">{t.subtitle}</p>
         

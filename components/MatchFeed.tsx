@@ -127,6 +127,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         budgetPlaceholder: 'Any budget',
         noResults: 'No profiles match your search.',
         clearSearch: 'Clear filters',
+        loadingHint: 'Curating profiles that fit your trip…',
       }
     : {
         loading: 'La IA está buscando a tus compañeros ideales...',
@@ -153,8 +154,8 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         budgetPlaceholder: 'Cualquier presupuesto',
         noResults: 'No hay perfiles que coincidan con tu búsqueda.',
         clearSearch: 'Limpiar filtros',
+        loadingHint: 'Seleccionando perfiles que encajan con tu viaje…',
       };
-  const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [loading, setLoading] = useState(true);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
@@ -235,11 +236,51 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const currentCandidate = filteredCandidates[currentIndex];
   const visibleChannels = PUBLIC_CHANNELS.slice(channelStartIndex, channelStartIndex + 2);
 
+  const welcomeLine =
+    language === 'en'
+      ? `Hey, ${currentUser.name} — travelers heading to ${currentUser.destination} are one tap away.`
+      : `Hola, ${currentUser.name} — viajeros con destino a ${currentUser.destination} a un solo gesto.`;
+
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center h-[60vh] text-center p-6 lg:h-[70vh]">
-        <div className="w-16 h-16 border-4 border-travel-secondary border-t-travel-primary rounded-full animate-spin mb-4"></div>
-        <p className="text-travel-dark font-medium">{t.loading}</p>
+      <div className="relative mb-20 h-full px-4 py-6 animate-fade-in-up lg:mb-8 lg:px-8">
+        <div className="mx-auto max-w-7xl space-y-5">
+          <div
+            className={`h-14 rounded-2xl border ${
+              isDark ? 'border-slate-700 bg-slate-800/60' : 'border-gray-100 bg-white/80'
+            }`}
+          >
+            <div className="h-full w-full animate-pulse rounded-2xl bg-gradient-to-r from-slate-200/80 via-slate-100/90 to-slate-200/80 dark:from-slate-700/80 dark:via-slate-600/60 dark:to-slate-700/80" />
+          </div>
+          <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(420px,560px)_minmax(0,1fr)] lg:items-start">
+            <div
+              className={`hidden h-72 animate-pulse rounded-3xl border lg:block ${
+                isDark ? 'border-slate-700 bg-slate-800/50' : 'border-gray-100 bg-white/70'
+              }`}
+            />
+            <div
+              className={`overflow-hidden rounded-[2rem] border shadow-xl ${
+                isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'
+              }`}
+            >
+              <div className="aspect-[4/5] animate-pulse bg-gradient-to-br from-slate-200 to-slate-300 dark:from-slate-700 dark:to-slate-800" />
+              <div className="space-y-3 p-6">
+                <div className="h-5 w-2/3 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+                <div className="h-4 w-1/2 animate-pulse rounded-lg bg-slate-200 dark:bg-slate-700" />
+                <div className="h-20 animate-pulse rounded-xl bg-slate-100 dark:bg-slate-800" />
+              </div>
+            </div>
+            <div
+              className={`hidden h-64 animate-pulse rounded-3xl border lg:block ${
+                isDark ? 'border-slate-700 bg-slate-800/50' : 'border-gray-100 bg-white/70'
+              }`}
+            />
+          </div>
+          <p className={`text-center text-sm font-medium ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+            {t.loading}
+            <span className="mt-1 block text-xs font-normal opacity-80">{t.loadingHint}</span>
+          </p>
+        </div>
       </div>
     );
   }
@@ -273,6 +314,15 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   return (
     <div className="relative h-full px-4 py-4 mb-20 lg:mb-8 lg:px-8">
+      <div className="mx-auto mb-3 max-w-7xl">
+        <p
+          className={`text-sm font-medium leading-relaxed sm:text-base ${
+            isDark ? 'text-gray-300' : 'text-slate-600'
+          }`}
+        >
+          {welcomeLine}
+        </p>
+      </div>
       <div className="mx-auto w-full max-w-7xl mb-4 relative">
         <div className={`rounded-2xl border p-3 flex flex-col md:flex-row gap-3 ${
           isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'

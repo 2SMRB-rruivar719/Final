@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { Sparkles, Users, MapPin } from 'lucide-react';
 import { Navigation } from './components/Navigation';
 import { Onboarding } from './components/Onboarding';
 import { MatchFeed } from './components/MatchFeed';
@@ -17,6 +18,11 @@ interface SavedAccountEntry {
   profile: UserProfile;
   savedAt: string;
 }
+
+const AUTH_BG_CLASS =
+  "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')]";
+const AUTH_OVERLAY_CLASS =
+  "min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative";
 
 const readSavedAccounts = (): SavedAccountEntry[] => {
   try {
@@ -54,14 +60,26 @@ const AppInner: React.FC = () => {
         tagline: 'Find travel buddies, plan with AI and explore the world.',
         login: 'Sign in',
         register: 'Create account',
+        beta: 'Preview',
+        featureAi: 'AI itineraries in seconds',
+        featureMatch: 'Match with travelers like you',
+        featurePlaces: 'Places tailored to your style',
       }
     : {
         tagline: 'Encuentra compañeros de viaje, planifica con IA y explora el mundo.',
         login: 'Iniciar sesión',
         register: 'Crear cuenta',
+        beta: 'Vista previa',
+        featureAi: 'Rutas con IA en segundos',
+        featureMatch: 'Match con viajeros afines',
+        featurePlaces: 'Lugares según tu estilo',
       };
 
-  // Load user from local storage (mock persistence)
+  React.useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme === 'dark');
+    document.documentElement.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+  }, [theme]);
+
   React.useEffect(() => {
     const savedUser = localStorage.getItem('tm_user');
     if (savedUser) {
@@ -170,13 +188,35 @@ const AppInner: React.FC = () => {
     if (!currentUser) {
       if (authView === 'login') {
         return (
-          <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')] bg-cover bg-center">
-            <div className="min-h-screen bg-travel-primary/90 backdrop-blur-sm flex flex-col p-4 overflow-y-auto">
-              <Login
-                onLoginSuccess={handleLoginSuccess}
-                onBackToLanding={() => setAuthView('landing')}
-                language={language}
-              />
+          <div className={AUTH_BG_CLASS}>
+            <div className={AUTH_OVERLAY_CLASS}>
+              <div className="absolute top-4 right-4 flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
+                <button
+                  type="button"
+                  onClick={() => setLanguage('es')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    language === 'es' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  ES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage('en')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    language === 'en' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+              <div className="flex flex-1 flex-col pt-12">
+                <Login
+                  onLoginSuccess={handleLoginSuccess}
+                  onBackToLanding={() => setAuthView('landing')}
+                  language={language}
+                />
+              </div>
             </div>
           </div>
         );
@@ -184,10 +224,30 @@ const AppInner: React.FC = () => {
 
       if (authView === 'register') {
         return (
-          <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')] bg-cover bg-center">
-            <div className="min-h-screen bg-travel-primary/90 backdrop-blur-sm flex flex-col p-4 overflow-y-auto">
+          <div className={AUTH_BG_CLASS}>
+            <div className={AUTH_OVERLAY_CLASS}>
+              <div className="absolute top-4 right-4 flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
+                <button
+                  type="button"
+                  onClick={() => setLanguage('es')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    language === 'es' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  ES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage('en')}
+                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+                    language === 'en' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
               <div className="flex flex-col items-center justify-center gap-6 mt-10 mb-4 animate-fade-in-up">
-                <div className="bg-white/90 p-6 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl">
+                <div className="bg-white/90 p-6 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/40">
                   <Logo className="w-24 h-24" variant="icon" />
                 </div>
               </div>
@@ -203,36 +263,79 @@ const AppInner: React.FC = () => {
 
       // Landing inicial con botones de acceso
       return (
-        <div className="min-h-screen bg-[url('https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')] bg-cover bg-center">
-          <div className="min-h-screen bg-travel-primary/90 backdrop-blur-sm flex flex-col p-4 overflow-y-auto">
-             <div className="flex flex-col items-center justify-center gap-6 mt-16 mb-8 animate-fade-in-up">
-                {/* Logo Icon in Glass Bubble */}
-                <div className="bg-white/90 p-8 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl transform hover:scale-105 transition-transform duration-300">
-                  <Logo className="w-32 h-32" variant="icon" />
+        <div className={AUTH_BG_CLASS}>
+          <div className={AUTH_OVERLAY_CLASS}>
+            <header className="flex items-center justify-between gap-3 mb-2 max-w-lg mx-auto w-full shrink-0">
+              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
+                {t.beta}
+              </span>
+              <div className="flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
+                <button
+                  type="button"
+                  onClick={() => setLanguage('es')}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                    language === 'es' ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  ES
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLanguage('en')}
+                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                    language === 'en' ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
+                  }`}
+                >
+                  EN
+                </button>
+              </div>
+            </header>
+
+            <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 animate-fade-in-up">
+              <div className="bg-white/90 p-8 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/30 transition-transform duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)]">
+                <Logo className="w-32 h-32" variant="icon" />
+              </div>
+
+              <div className="bg-[#f4e8c1] p-5 px-8 rounded-2xl shadow-xl border-4 border-white/90 ring-1 ring-travel-accent/20">
+                <Logo className="w-auto" variant="text" />
+              </div>
+            </div>
+
+            <p className="text-center text-white/95 max-w-md mx-auto text-lg sm:text-xl font-semibold drop-shadow-md tracking-tight px-4 leading-snug">
+              {t.tagline}
+            </p>
+
+            <div className="grid max-w-md mx-auto w-full grid-cols-1 gap-2 px-2 mt-4 sm:grid-cols-3 sm:gap-3">
+              {[
+                { Icon: Sparkles, label: t.featureAi },
+                { Icon: Users, label: t.featureMatch },
+                { Icon: MapPin, label: t.featurePlaces },
+              ].map(({ Icon, label }) => (
+                <div
+                  key={label}
+                  className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-xs font-medium text-white/95 backdrop-blur-sm"
+                >
+                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+                    <Icon size={16} strokeWidth={2.2} />
+                  </span>
+                  <span className="leading-tight">{label}</span>
                 </div>
-                
-                {/* Text Logo with Cream Background (#f4e8c1) - Straight (removed rotation) */}
-                <div className="bg-[#f4e8c1] p-5 px-8 rounded-2xl shadow-xl border-4 border-white">
-                  <Logo className="w-auto" variant="text" />
-                </div>
-             </div>
-             
-             <p className="text-white/95 text-center mb-8 max-w-xs mx-auto text-lg font-medium drop-shadow-md tracking-wide">
-               {t.tagline}
-             </p>
-             <div className="w-full max-w-xs mx-auto space-y-3">
-               <Button fullWidth onClick={() => setAuthView('login')}>
-                 {t.login}
-               </Button>
-               <Button
-                 fullWidth
-                 variant="outline"
-                 onClick={() => setAuthView('register')}
-                 className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary"
-               >
-                 {t.register}
-               </Button>
-             </div>
+              ))}
+            </div>
+
+            <div className="w-full max-w-xs mx-auto space-y-3 mt-8 mb-6">
+              <Button fullWidth onClick={() => setAuthView('login')} className="shadow-lg shadow-black/20">
+                {t.login}
+              </Button>
+              <Button
+                fullWidth
+                variant="outline"
+                onClick={() => setAuthView('register')}
+                className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary"
+              >
+                {t.register}
+              </Button>
+            </div>
           </div>
         </div>
       );
@@ -313,9 +416,24 @@ const AppInner: React.FC = () => {
             : 'bg-gray-50 text-gray-800'
       }`}
     >
+      {isAuthenticated && (
+        <a
+          href="#main-content"
+          className="sr-only focus:fixed focus:left-4 focus:top-4 focus:z-[200] focus:m-0 focus:inline-flex focus:h-auto focus:w-auto focus:items-center focus:rounded-xl focus:bg-white focus:px-4 focus:py-2.5 focus:text-sm focus:font-semibold focus:text-travel-dark focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-travel-accent dark:focus:bg-slate-800 dark:focus:text-gray-100 dark:focus:ring-offset-0"
+        >
+          {language === 'en' ? 'Skip to main content' : 'Saltar al contenido principal'}
+        </a>
+      )}
       {isAuthenticated ? (
-        <div className={`min-h-screen transition-all duration-200 ${isNavCollapsed ? 'lg:pl-24' : 'lg:pl-72'}`}>
-          <div className="mx-auto w-full lg:max-w-[1360px]">{renderContent()}</div>
+        <div className={`min-h-screen transition-[padding] duration-300 ease-out ${isNavCollapsed ? 'lg:pl-24' : 'lg:pl-72'}`}>
+          <main
+            id="main-content"
+            key={currentView}
+            className="mx-auto w-full max-w-[1360px] tm-view-surface outline-none"
+            tabIndex={-1}
+          >
+            {renderContent()}
+          </main>
         </div>
       ) : (
         renderContent()

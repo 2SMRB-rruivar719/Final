@@ -1,4 +1,5 @@
 import React, { createContext, useCallback, useContext, useState } from 'react';
+import { CheckCircle2, Info, AlertCircle } from 'lucide-react';
 
 type ToastType = 'info' | 'success' | 'error';
 
@@ -22,41 +23,65 @@ export const useToast = (): ToastContextValue => {
   return ctx;
 };
 
+const toastStyles: Record<
+  ToastType,
+  { border: string; text: string; icon: string; Icon: typeof Info }
+> = {
+  success: {
+    border: 'border-emerald-200/80',
+    text: 'text-emerald-900',
+    icon: 'text-emerald-600',
+    Icon: CheckCircle2,
+  },
+  error: {
+    border: 'border-red-200/80',
+    text: 'text-red-900',
+    icon: 'text-red-600',
+    Icon: AlertCircle,
+  },
+  info: {
+    border: 'border-sky-200/80',
+    text: 'text-sky-950',
+    icon: 'text-sky-600',
+    Icon: Info,
+  },
+};
+
 export const ToastProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<Toast[]>([]);
 
   const showToast = useCallback((message: string, type: ToastType = 'info') => {
-    console.log(`[TOAST ${type.toUpperCase()}]`, message);
     const id = Date.now();
-    setToasts(prev => [...prev, { id, message, type }]);
+    setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
-      setToasts(prev => prev.filter(t => t.id !== id));
-    }, 3500);
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 4000);
   }, []);
 
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      {/* Contenedor de toasts */}
-      <div className="fixed inset-x-0 bottom-4 flex justify-center z-50 pointer-events-none">
-        <div className="flex flex-col gap-2 max-w-sm w-full px-4">
-          {toasts.map((toast) => (
-            <div
-              key={toast.id}
-              className={`pointer-events-auto rounded-xl px-4 py-3 shadow-lg text-sm border backdrop-blur bg-white/90 ${
-                toast.type === 'success'
-                  ? 'border-emerald-200 text-emerald-800'
-                  : toast.type === 'error'
-                  ? 'border-red-200 text-red-700'
-                  : 'border-sky-200 text-sky-800'
-              }`}
-            >
-              {toast.message}
-            </div>
-          ))}
+      <div
+        className="fixed inset-x-0 bottom-4 z-[100] flex justify-center pointer-events-none px-4"
+        aria-live="polite"
+        aria-relevant="additions"
+      >
+        <div className="flex w-full max-w-sm flex-col gap-2">
+          {toasts.map((toast) => {
+            const s = toastStyles[toast.type];
+            const Icon = s.Icon;
+            return (
+              <div
+                key={toast.id}
+                className={`pointer-events-auto flex items-start gap-3 rounded-2xl border px-4 py-3 text-sm shadow-xl backdrop-blur-md animate-tm-toast-in bg-white/95 ${s.border} ${s.text}`}
+              >
+                <Icon className={`mt-0.5 h-5 w-5 shrink-0 ${s.icon}`} strokeWidth={2.2} aria-hidden />
+                <p className="leading-snug font-medium">{toast.message}</p>
+              </div>
+            );
+          })}
         </div>
       </div>
     </ToastContext.Provider>
   );
 };
-
