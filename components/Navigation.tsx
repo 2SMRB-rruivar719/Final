@@ -2,6 +2,7 @@ import React from 'react';
 import { Home, MessageCircle, Map, User, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
+import { SafeImage } from './SafeImage';
 
 interface NavigationProps {
   currentView: string;
@@ -77,9 +78,11 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
             isDark ? 'bg-slate-800 border-slate-700' : 'bg-travel-secondary/50 border-travel-secondary/70'
           }`}>
             <div className="flex items-center gap-3 mb-2">
-              <img
+              <SafeImage
                 src={currentUser.avatarUrl}
                 alt={currentUser.name}
+                fallbackSeed={currentUser.id + currentUser.name}
+                variant="avatar"
                 className="w-11 h-11 rounded-full object-cover border-2 border-white"
               />
               <div className="min-w-0">

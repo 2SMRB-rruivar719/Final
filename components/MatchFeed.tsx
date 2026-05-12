@@ -2,6 +2,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
 import { Button } from './Button';
+import { SafeImage } from './SafeImage';
 import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface MatchFeedProps {
@@ -385,9 +386,11 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
             isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'
           } ${swipeDirection === 'left' ? 'swipe-left' : swipeDirection === 'right' ? 'swipe-right' : ''}`}>
             <div className="relative h-[58%] bg-gray-200">
-              <img
+              <SafeImage
                 src={currentCandidate.avatarUrl}
                 alt={currentCandidate.name}
+                fallbackSeed={currentCandidate.id + currentCandidate.name}
+                variant="avatar"
                 className="w-full h-full object-cover object-center"
               />
               <div className="absolute bottom-0 left-0 w-full bg-gradient-to-t from-black/75 to-transparent p-6 pt-20">
@@ -595,7 +598,13 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                 <article key={post.id} className={`rounded-2xl overflow-hidden border ${
                   isDark ? 'border-slate-700 bg-slate-800' : 'border-gray-100 bg-gray-50'
                 }`}>
-                  <img src={post.imageUrl} alt={post.place} className="w-full h-44 object-cover" />
+                  <SafeImage
+                    src={post.imageUrl}
+                    alt={post.place}
+                    fallbackSeed={`${activeChannel.destination}-${post.id}-${post.place}`}
+                    variant="photo"
+                    className="w-full h-44 object-cover"
+                  />
                   <div className="p-3">
                     <p className={`text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{post.place}</p>
                     <p className={`text-xs mb-2 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Reseña de {post.author}</p>

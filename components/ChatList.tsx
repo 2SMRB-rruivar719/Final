@@ -2,6 +2,7 @@ import React from 'react';
 import { UserProfile } from '../types';
 import { Circle, ChevronRight } from 'lucide-react';
 import { getAvatarByName } from '../services/avatarByName';
+import { SafeImage } from './SafeImage';
 
 interface ChatListProps {
   currentUser: UserProfile;
@@ -24,10 +25,12 @@ export const ChatList: React.FC<ChatListProps> = () => {
         {MOCK_CHATS.map((chat) => (
           <div key={chat.id} className="flex items-center gap-4 p-4 hover:bg-gray-50 transition-colors border-b border-gray-50 cursor-pointer">
             <div className="relative">
-              <img 
-                src={chat.img} 
-                alt={chat.name} 
-                className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`} 
+              <SafeImage
+                src={chat.img}
+                alt={chat.name}
+                fallbackSeed={chat.id + chat.name}
+                variant="avatar"
+                className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`}
               />
               {chat.unread > 0 && (
                 <span className="absolute -top-1 -right-1 bg-travel-accent text-white text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full border-2 border-white">

@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { UserProfile, Itinerary, LanguageCode, ThemeMode } from '../types';
 import { generateItinerary } from '../services/aiService';
 import { Button } from './Button';
+import { SafeImage } from './SafeImage';
+import { getPlaceActivityPhotoUrl, getPlaceBannerUrl } from '../services/placePhotos';
 import { Map, Clock, MapPin, Sparkles, Share2 } from 'lucide-react';
 
 interface ItineraryBuilderProps {
@@ -12,10 +14,6 @@ interface ItineraryBuilderProps {
 
 export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser, language, theme }) => {
   const isDark = theme === 'dark';
-  const getDayImage = (destination: string, day: number) =>
-    `https://source.unsplash.com/1200x800/?${encodeURIComponent(`${destination},travel,landmark`)}&sig=${day}`;
-  const getActivityImage = (destination: string, day: number, idx: number, hint: string) =>
-    `https://source.unsplash.com/600x420/?${encodeURIComponent(`${destination},${hint},travel`)}&sig=${day * 11 + idx}`;
   const t = language === 'en'
     ? {
         title: 'AI Planner',
@@ -241,15 +239,16 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
              {itinerary.days.map((day) => (
                <div key={day.day} className={`rounded-2xl overflow-hidden shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
                  <div className="relative h-36">
-                   <img
-                     src={getDayImage(currentUser.destination, day.day)}
-                     alt={`${currentUser.destination} day ${day.day}`}
+                   <SafeImage
+                     src={getPlaceBannerUrl(itinerary.destination, day.day)}
+                     alt={`${itinerary.destination} day ${day.day}`}
+                     fallbackSeed={`${itinerary.destination}-day-${day.day}`}
                      className="w-full h-full object-cover"
-                     loading="lazy"
+                     variant="photo"
                    />
                    <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
                    <div className="absolute bottom-3 left-3 text-white text-xs font-semibold tracking-wide uppercase">
-                     {currentUser.destination}
+                     {itinerary.destination}
                    </div>
                  </div>
                 <div className="p-5">
@@ -267,11 +266,12 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                         <div className={`rounded-xl overflow-hidden border ${
                           isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'
                         }`}>
-                          <img
-                            src={getActivityImage(currentUser.destination, day.day, idx, act.location)}
-                            alt={`${currentUser.destination} ${act.location}`}
+                          <SafeImage
+                            src={getPlaceActivityPhotoUrl(itinerary.destination, day.day, idx, act.location)}
+                            alt={`${act.location} · ${itinerary.destination}`}
+                            fallbackSeed={`${itinerary.destination}-${day.day}-${idx}-${act.location}`}
                             className="w-full h-28 object-cover"
-                            loading="lazy"
+                            variant="photo"
                           />
                           <div className="p-3">
                             <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">

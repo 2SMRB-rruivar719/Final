@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { UserProfile, ChatThreadType, ChatMember, LanguageCode, ThemeMode } from '../types';
 import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic, MoreVertical } from 'lucide-react';
 import { Button } from './Button';
+import { SafeImage } from './SafeImage';
 import { useToast } from './ToastProvider';
 import { getAvatarByName } from '../services/avatarByName';
 
@@ -377,9 +378,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   }`}
                 >
                   <button type="button" className="relative" onClick={(e) => { e.stopPropagation(); chat.isGroup ? openGroupMembers(chat) : openProfilePreview(chat); }}>
-                    <img
+                    <SafeImage
                       src={chat.avatarUrl}
                       alt={chat.name}
+                      fallbackSeed={chat.id + chat.name}
+                      variant="avatar"
                       className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`}
                     />
                     {chat.unread > 0 && (
@@ -406,7 +409,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         {desktopActiveChat && (
           <div className={`rounded-3xl border shadow-sm overflow-hidden flex flex-col ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
             <div className={`p-4 shadow-sm flex items-center gap-3 border-b ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
-              <img src={desktopActiveChat.avatarUrl} alt={desktopActiveChat.name} className="w-10 h-10 rounded-full object-cover" />
+              <SafeImage
+                src={desktopActiveChat.avatarUrl}
+                alt={desktopActiveChat.name}
+                fallbackSeed={desktopActiveChat.id + desktopActiveChat.name}
+                variant="avatar"
+                className="w-10 h-10 rounded-full object-cover"
+              />
               <div className="flex-1">
                 <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{desktopActiveChat.name}</h3>
                 <span className="text-xs text-green-500 font-medium">{t.online}</span>
@@ -451,9 +460,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 return (
                 <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                   <div className={`max-w-[78%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
-                    <img
+                    <SafeImage
                       src={author.avatarUrl}
                       alt={author.name}
+                      fallbackSeed={author.id + author.name}
+                      variant="avatar"
                       className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
                     />
                     <div className={`p-3 rounded-2xl ${
@@ -508,7 +519,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             <button onClick={() => setActiveChatId(null)} className="p-2 hover:bg-gray-100 rounded-full">
               <ChevronLeft size={24} className="text-gray-600" />
             </button>
-            <img src={activeChat.avatarUrl} alt={activeChat.name} className="w-10 h-10 rounded-full object-cover" />
+            <SafeImage
+              src={activeChat.avatarUrl}
+              alt={activeChat.name}
+              fallbackSeed={activeChat.id + activeChat.name}
+              variant="avatar"
+              className="w-10 h-10 rounded-full object-cover"
+            />
             <div className="flex-1">
               <h3 className={`font-bold ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{activeChat.name}</h3>
               <span className="text-xs text-green-500 font-medium">{t.online}</span>
@@ -553,9 +570,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               return (
               <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
                 <div className={`max-w-[80%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
-                  <img
+                  <SafeImage
                     src={author.avatarUrl}
                     alt={author.name}
+                    fallbackSeed={author.id + author.name}
+                    variant="avatar"
                     className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
                   />
                   <div className={`p-3 rounded-2xl ${
@@ -620,9 +639,11 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               >
                 <div className="relative">
                   <button type="button" onClick={(e) => { e.stopPropagation(); chat.isGroup ? openGroupMembers(chat) : openProfilePreview(chat); }}>
-                    <img
+                    <SafeImage
                       src={chat.avatarUrl}
                       alt={chat.name}
+                      fallbackSeed={chat.id + chat.name}
+                      variant="avatar"
                       className={`w-14 h-14 object-cover ${chat.isGroup ? 'rounded-xl' : 'rounded-full'}`}
                     />
                   </button>
@@ -683,7 +704,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             </div>
             <div className="p-5">
               <div className="flex items-center gap-4 mb-4">
-                <img src={profilePreview.avatarUrl} alt={profilePreview.name} className="w-20 h-20 rounded-full object-cover border-4 border-travel-secondary/60" />
+                <SafeImage
+                  src={profilePreview.avatarUrl}
+                  alt={profilePreview.name}
+                  fallbackSeed={(profilePreview.id || '') + profilePreview.name}
+                  variant="avatar"
+                  className="w-20 h-20 rounded-full object-cover border-4 border-travel-secondary/60"
+                />
                 <div>
                   <h4 className={`text-xl font-bold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>
                     {profilePreview.name}{profilePreview.age ? `, ${profilePreview.age}` : ''}
@@ -734,7 +761,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                       : 'border-gray-100 hover:bg-gray-50'
                   }`}
                 >
-                  <img src={member.avatarUrl} alt={member.name} className="w-12 h-12 rounded-full object-cover" />
+                  <SafeImage
+                    src={member.avatarUrl}
+                    alt={member.name}
+                    fallbackSeed={member.id + member.name}
+                    variant="avatar"
+                    className="w-12 h-12 rounded-full object-cover"
+                  />
                   <div className="flex-1 min-w-0">
                     <p className={`font-semibold truncate ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{member.name}, {member.age}</p>
                     <p className={`text-xs truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{member.destination}</p>
