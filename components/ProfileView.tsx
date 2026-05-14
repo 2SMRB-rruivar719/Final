@@ -136,7 +136,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Disable',
         accountSecurity: 'Account and security',
         profilePicture: 'Profile picture',
-        switchAccount: 'Switch account',
+        switchAccount: 'Switch profile',
         savedAccounts: 'Saved accounts',
         noSavedAccounts: 'No saved accounts yet.',
         useThisAccount: 'Use this account',
@@ -175,7 +175,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deactivate: 'Desactivar',
         accountSecurity: 'Cuenta y seguridad',
         profilePicture: 'Foto de perfil',
-        switchAccount: 'Cambiar cuenta',
+        switchAccount: 'Cambiar de perfil',
         savedAccounts: 'Cuentas guardadas',
         noSavedAccounts: 'Aún no tienes cuentas guardadas.',
         useThisAccount: 'Usar esta cuenta',
@@ -696,13 +696,26 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2 mt-2 grid grid-cols-1 gap-2 sm:grid-cols-2">
             <button
               type="button"
               onClick={onLogout}
-              className="w-full py-3 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-colors mt-2"
+              className={`w-full rounded-xl py-3 font-medium transition-colors ${
+                theme === 'dark'
+                  ? 'text-red-400 hover:bg-red-950/40'
+                  : 'text-red-500 hover:bg-red-50'
+              }`}
             >
-              Cerrar sesión
+              {t.logout}
+            </button>
+            <button
+              type="button"
+              onClick={handleOpenSwitchAccount}
+              className={`w-full rounded-xl py-3 font-medium transition-colors ${
+                theme === 'dark' ? 'text-gray-100 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-100'
+              }`}
+            >
+              {t.switchAccount}
             </button>
           </div>
         </div>
@@ -771,25 +784,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             >
               <Trash2 size={16} />
               <span className="font-semibold">{t.accountSecurity}</span>
-            </button>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <button
-              type="button"
-              onClick={onLogout}
-              className="w-full py-3 text-red-500 font-medium hover:bg-red-50 rounded-xl transition-colors"
-            >
-              {t.logout}
-            </button>
-            <button
-              type="button"
-              onClick={handleOpenSwitchAccount}
-              className={`w-full py-3 font-medium rounded-xl transition-colors ${
-                theme === 'dark' ? 'text-gray-100 hover:bg-slate-800' : 'text-gray-700 hover:bg-gray-100'
-              }`}
-            >
-              {t.switchAccount}
             </button>
           </div>
         </div>
