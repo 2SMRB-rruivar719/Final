@@ -15,6 +15,7 @@ import {
   Upload,
   Sparkles,
   Paintbrush,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
@@ -34,6 +35,7 @@ import {
 } from '../services/blockedUsers';
 import { getProfileAvatarFrame } from '../utils/avatarBorder';
 import { PROFILE_COVER_OPTIONS, profileCoverSectionClass } from '../utils/profileCover';
+import { UI_ACCENT_PRESETS } from '../utils/personalization';
 
 const AVATAR_RING_PRESETS: { color: string; key: string }[] = [
   { key: 'brand', color: '' },
@@ -203,6 +205,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deleteChat: 'Delete chat',
         chatRemoved: 'Chat removed.',
         unblockedOk: 'User unblocked.',
+        globalUiTitle: 'Whole app look',
+        globalUiSubtitle: 'Accent for buttons and your bubbles, larger text, and bubble shape — saved with your profile.',
+        accentLabel: 'Accent color',
+        accentCustomHex: 'Custom hex',
+        fontScaleLabel: 'Text size',
+        fontNormal: 'Normal',
+        fontLarge: 'Large',
+        bubbleStyleLabel: 'Chat bubble shape',
+        bubbleClassic: 'Classic',
+        bubblePill: 'Pill',
+        bubbleMinimal: 'Minimal',
       }
     : {
         profile: 'Perfil',
@@ -262,6 +275,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         deleteChat: 'Eliminar chat',
         chatRemoved: 'Chat eliminado.',
         unblockedOk: 'Usuario desbloqueado.',
+        globalUiTitle: 'Experiencia global',
+        globalUiSubtitle: 'Acento en botones y tus burbujas, texto más grande y forma del chat — se guarda con el perfil.',
+        accentLabel: 'Color de acento',
+        accentCustomHex: 'Hex libre',
+        fontScaleLabel: 'Tamaño del texto',
+        fontNormal: 'Normal',
+        fontLarge: 'Grande',
+        bubbleStyleLabel: 'Forma de las burbujas',
+        bubbleClassic: 'Clásico',
+        bubblePill: 'Pastilla',
+        bubbleMinimal: 'Minimal',
       };
 
   useEffect(() => {
@@ -325,6 +349,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         profileCoverId: (formData.profileCoverId || 'default').trim() || 'default',
         profileMoodEmoji: takeFirstGrapheme(formData.profileMoodEmoji),
         profileTagline: (formData.profileTagline || '').trim().slice(0, 48),
+        uiAccentColor: (formData.uiAccentColor || '').trim(),
+        fontScale: formData.fontScale === 'large' ? 'large' : '',
+        chatBubbleStyle:
+          formData.chatBubbleStyle === 'pill' || formData.chatBubbleStyle === 'minimal' ? formData.chatBubbleStyle : '',
         language: formData.language,
         theme: formData.theme,
       });
@@ -739,6 +767,129 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 placeholder={t.profileEmojiPlaceholder}
                 className={`${inputClass} text-center text-2xl tracking-tight`}
               />
+            </div>
+          </div>
+
+          <div
+            className={`rounded-3xl border p-5 sm:p-6 shadow-sm ${
+              theme === 'dark' ? 'border-slate-600/80 bg-slate-800/40' : 'border-gray-200/90 bg-white/90'
+            }`}
+          >
+            <div className="mb-4 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-center sm:gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-travel-primary/15 text-travel-primary">
+                <SlidersHorizontal size={20} />
+              </span>
+              <div>
+                <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>{t.globalUiTitle}</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t.globalUiSubtitle}</p>
+              </div>
+            </div>
+
+            <p className={`mb-2 text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.accentLabel}</p>
+            <div className="flex flex-wrap gap-2">
+              {UI_ACCENT_PRESETS.map((preset) => {
+                const cur = (formData.uiAccentColor || '').trim();
+                const active =
+                  preset.hex === '' ? cur === '' : cur.toLowerCase() === preset.hex.toLowerCase();
+                return (
+                  <button
+                    key={preset.key}
+                    type="button"
+                    title={preset.hex === '' ? t.ringBrand : preset.hex}
+                    onClick={() => setFormData((prev) => ({ ...prev, uiAccentColor: preset.hex }))}
+                    className={`h-9 min-w-[2.25rem] rounded-full border-2 px-3 text-[10px] font-bold uppercase tracking-wide transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-primary ${
+                      active
+                        ? 'border-travel-dark ring-2 ring-travel-primary ring-offset-2 dark:border-white dark:ring-offset-slate-900'
+                        : theme === 'dark'
+                          ? 'border-slate-600 text-gray-300 hover:bg-slate-700/80'
+                          : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                    }`}
+                    style={
+                      preset.hex
+                        ? {
+                            backgroundColor: `${preset.hex}22`,
+                            borderColor: active ? undefined : preset.hex,
+                            color: preset.hex,
+                          }
+                        : undefined
+                    }
+                  >
+                    {preset.hex === '' ? 'TM' : preset.key}
+                  </button>
+                );
+              })}
+            </div>
+            <div
+              className={`mt-3 flex flex-wrap items-center gap-3 rounded-2xl border px-3 py-2 ${
+                theme === 'dark' ? 'border-slate-600 bg-slate-800/60' : 'border-gray-200 bg-white/80'
+              }`}
+            >
+              <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.accentCustomHex}</span>
+              <input
+                type="color"
+                value={(formData.uiAccentColor || '').trim() || '#14b8a6'}
+                onChange={(e) => setFormData((prev) => ({ ...prev, uiAccentColor: e.target.value }))}
+                className="h-9 w-14 cursor-pointer overflow-hidden rounded-lg border-0 bg-transparent p-0 shadow-inner"
+                aria-label={t.accentCustomHex}
+              />
+            </div>
+
+            <p className={`mb-2 mt-5 text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.fontScaleLabel}</p>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: '' as const, label: t.fontNormal },
+                  { id: 'large' as const, label: t.fontLarge },
+                ] as const
+              ).map((opt) => {
+                const active = (formData.fontScale === 'large' ? 'large' : '') === opt.id;
+                return (
+                  <button
+                    key={opt.id || 'normal'}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, fontScale: opt.id }))}
+                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                      active
+                        ? 'bg-travel-primary text-white shadow-md shadow-travel-primary/30'
+                        : theme === 'dark'
+                          ? 'bg-slate-800 text-gray-300 ring-1 ring-slate-600 hover:bg-slate-700'
+                          : 'bg-white/90 text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+
+            <p className={`mb-2 mt-5 text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.bubbleStyleLabel}</p>
+            <div className="flex flex-wrap gap-2">
+              {(
+                [
+                  { id: '' as const, label: t.bubbleClassic },
+                  { id: 'pill' as const, label: t.bubblePill },
+                  { id: 'minimal' as const, label: t.bubbleMinimal },
+                ] as const
+              ).map((opt) => {
+                const cur = formData.chatBubbleStyle === 'pill' || formData.chatBubbleStyle === 'minimal' ? formData.chatBubbleStyle : '';
+                const active = cur === opt.id;
+                return (
+                  <button
+                    key={opt.id || 'classic'}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, chatBubbleStyle: opt.id }))}
+                    className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                      active
+                        ? 'bg-travel-primary text-white shadow-md shadow-travel-primary/30'
+                        : theme === 'dark'
+                          ? 'bg-slate-800 text-gray-300 ring-1 ring-slate-600 hover:bg-slate-700'
+                          : 'bg-white/90 text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'
+                    }`}
+                  >
+                    {opt.label}
+                  </button>
+                );
+              })}
             </div>
           </div>
 

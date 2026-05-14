@@ -16,9 +16,11 @@ export const Button: React.FC<ButtonProps> = ({
     'px-6 py-3 rounded-xl font-semibold transition-all duration-200 active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:active:scale-100 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 focus-visible:ring-offset-white';
   
   const variants = {
-    primary: 'bg-travel-primary text-white shadow-md hover:shadow-lg hover:bg-opacity-95',
+    primary:
+      'bg-[color:var(--tm-accent,#a0c1b9)] text-white shadow-md hover:shadow-lg hover:brightness-[0.97] active:brightness-95',
     secondary: 'bg-travel-secondary text-travel-dark shadow-sm hover:shadow-md hover:bg-opacity-95',
-    outline: 'border-2 border-travel-primary text-travel-primary hover:bg-travel-primary hover:text-white hover:shadow-md',
+    outline:
+      'border-2 border-[color:var(--tm-accent,#a0c1b9)] text-[color:var(--tm-accent,#a0c1b9)] hover:bg-[color:var(--tm-accent,#a0c1b9)] hover:text-white hover:shadow-md',
     ghost: 'bg-transparent text-travel-accent hover:bg-gray-100',
   };
 

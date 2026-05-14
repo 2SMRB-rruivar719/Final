@@ -13,6 +13,7 @@ import { Logo } from './components/Logo';
 import { Button } from './components/Button';
 import { ToastProvider, useToast } from './components/ToastProvider';
 import { updateUserProfile } from './services/api';
+import { syncPersonalizationRoot } from './utils/personalization';
 
 interface SavedAccountEntry {
   id: string;
@@ -189,6 +190,9 @@ const normalizeUser = (u: UserProfile): UserProfile => ({
   tripStartDate: u.tripStartDate || '',
   tripEndDate: u.tripEndDate || '',
   deletionScheduledAt: u.deletionScheduledAt ?? null,
+  uiAccentColor: (u.uiAccentColor || '').trim(),
+  fontScale: u.fontScale === 'large' ? 'large' : '',
+  chatBubbleStyle: u.chatBubbleStyle === 'pill' || u.chatBubbleStyle === 'minimal' ? u.chatBubbleStyle : '',
 });
 
 const AppInner: React.FC = () => {
@@ -229,6 +233,10 @@ const AppInner: React.FC = () => {
       /* ignore */
     }
   }, [theme]);
+
+  React.useEffect(() => {
+    syncPersonalizationRoot(currentUser);
+  }, [currentUser]);
 
   React.useEffect(() => {
     const savedUser = localStorage.getItem('tm_user');

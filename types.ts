@@ -34,6 +34,12 @@ export interface UserProfile {
   profileMoodEmoji?: string;
   /** Frase corta bajo el nombre en el perfil (máx. ~48 en UI). */
   profileTagline?: string;
+  /** Color de acento global (hex). Vacío = color de marca. */
+  uiAccentColor?: string;
+  /** Escala de texto en la app: normal o grande. */
+  fontScale?: '' | 'large';
+  /** Forma de las burbujas de chat (tuyas y recibidas). Vacío = clásico. */
+  chatBubbleStyle?: '' | 'pill' | 'minimal';
   destination: string;
   /** Resumen legible (p. ej. ida → vuelta); mantener por compatibilidad */
   dates: string;

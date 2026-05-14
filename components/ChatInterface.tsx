@@ -13,6 +13,7 @@ import {
   readBlockedUsers,
   CHATS_STORAGE_MUTATED_EVENT,
 } from '../services/blockedUsers';
+import { buildOutgoingMessageBubble, buildIncomingMessageBubble } from '../utils/personalization';
 
 interface ChatInterfaceProps {
   currentUser: UserProfile;
@@ -126,6 +127,14 @@ const directChatToMember = (chat: ChatThreadType): ChatMember | null => {
 
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme, initialTargetUser }) => {
   const isDark = theme === 'dark';
+  const outgoingBubble = useMemo(
+    () => buildOutgoingMessageBubble(currentUser.chatBubbleStyle, currentUser.uiAccentColor),
+    [currentUser.chatBubbleStyle, currentUser.uiAccentColor]
+  );
+  const incomingBubbleClass = useMemo(
+    () => buildIncomingMessageBubble(currentUser.chatBubbleStyle, isDark),
+    [currentUser.chatBubbleStyle, isDark]
+  );
   const chatStorageKey = `tm_chats_${currentUser.id}`;
   const t = language === 'en'
     ? {
@@ -661,9 +670,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               {desktopActiveChat.messages.map((msg, index) => {
                 const author = getAuthorMeta(desktopActiveChat, msg, index);
                 const authorColorClass = getAuthorColorClass(author.id);
+                const isMe = msg.sender === 'me';
                 return (
-                <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[78%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
+                <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                  <div className={`max-w-[78%] flex items-start gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                     <SafeImage
                       src={author.avatarUrl}
                       alt={author.name}
@@ -671,14 +681,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                       variant="avatar"
                       className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
                     />
-                    <div className={`p-3 rounded-2xl ${
-                    msg.sender === 'me'
-                      ? 'bg-travel-primary text-white rounded-tr-none'
-                      : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
-                  }`}>
+                    <div
+                      className={isMe ? outgoingBubble.className : incomingBubbleClass}
+                      style={isMe ? outgoingBubble.style : undefined}
+                    >
                     <p className={`text-[11px] font-bold mb-1 ${authorColorClass}`}>{author.name}</p>
                     <p className="text-sm">{msg.text}</p>
-                    <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
+                    <span className={`text-[10px] block text-right mt-1 ${isMe ? 'text-white/80' : 'text-gray-400'}`}>
                       {msg.timestamp}
                     </span>
                   </div>
@@ -708,7 +717,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
               <button
                 onClick={handleSend}
                 disabled={!newMessage.trim()}
-                className="w-10 h-10 bg-travel-primary text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:bg-opacity-90 transition-colors"
+                className="w-10 h-10 bg-[color:var(--tm-accent,#a0c1b9)] text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:brightness-110 transition-all"
               >
                 <Send size={18} />
               </button>
@@ -771,9 +780,10 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             {activeChat.messages.map((msg, index) => {
               const author = getAuthorMeta(activeChat, msg, index);
               const authorColorClass = getAuthorColorClass(author.id);
+              const isMe = msg.sender === 'me';
               return (
-              <div key={msg.id} className={`flex ${msg.sender === 'me' ? 'justify-end' : 'justify-start'}`}>
-                <div className={`max-w-[80%] flex items-start gap-2 ${msg.sender === 'me' ? 'flex-row-reverse' : ''}`}>
+              <div key={msg.id} className={`flex ${isMe ? 'justify-end' : 'justify-start'}`}>
+                <div className={`max-w-[80%] flex items-start gap-2 ${isMe ? 'flex-row-reverse' : ''}`}>
                   <SafeImage
                     src={author.avatarUrl}
                     alt={author.name}
@@ -781,14 +791,13 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                     variant="avatar"
                     className="w-7 h-7 rounded-full object-cover border border-white/20 mt-1"
                   />
-                  <div className={`p-3 rounded-2xl ${
-                  msg.sender === 'me'
-                    ? 'bg-travel-primary text-white rounded-tr-none'
-                    : (isDark ? 'bg-slate-800 text-gray-100 border border-slate-700 rounded-tl-none shadow-sm' : 'bg-white text-gray-800 border border-gray-100 rounded-tl-none shadow-sm')
-                }`}>
+                  <div
+                    className={isMe ? outgoingBubble.className : incomingBubbleClass}
+                    style={isMe ? outgoingBubble.style : undefined}
+                  >
                   <p className={`text-[11px] font-bold mb-1 ${authorColorClass}`}>{author.name}</p>
                   <p className="text-sm">{msg.text}</p>
-                  <span className={`text-[10px] block text-right mt-1 ${msg.sender === 'me' ? 'text-white/80' : 'text-gray-400'}`}>
+                  <span className={`text-[10px] block text-right mt-1 ${isMe ? 'text-white/80' : 'text-gray-400'}`}>
                     {msg.timestamp}
                   </span>
                 </div>
@@ -818,7 +827,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
             <button
               onClick={handleSend}
               disabled={!newMessage.trim()}
-              className="w-10 h-10 bg-travel-primary text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:bg-opacity-90 transition-colors"
+              className="w-10 h-10 bg-[color:var(--tm-accent,#a0c1b9)] text-white rounded-full flex items-center justify-center disabled:opacity-50 hover:brightness-110 transition-all"
             >
               <Send size={18} />
             </button>

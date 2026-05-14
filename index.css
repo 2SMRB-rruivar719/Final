@@ -17,6 +17,17 @@ body,
   min-height: 100vh;
 }
 
+/* Preferencia de tamaño de texto (editar perfil → Experiencia global) */
+html.tm-font-lg #root {
+  font-size: 106%;
+}
+
+@media (min-width: 1024px) {
+  html.tm-font-lg #root {
+    font-size: 108%;
+  }
+}
+
 ::selection {
   background-color: rgba(160, 193, 185, 0.45);
   color: #1e293b;
