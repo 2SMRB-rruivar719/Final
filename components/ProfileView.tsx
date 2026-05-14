@@ -12,6 +12,7 @@ import {
   CalendarClock,
   ImageIcon,
   Pencil,
+  Ban,
   KeyRound,
 } from 'lucide-react';
 import { Button } from './Button';
@@ -23,6 +24,13 @@ import {
   scheduleAccountDeletion,
   cancelScheduledDeletion,
 } from '../services/api';
+import type { BlockedUserEntry } from '../services/blockedUsers';
+import {
+  readBlockedUsers,
+  removeBlockedUser,
+  purgeDirectChatsWithPeer,
+  BLOCKLIST_CHANGED_EVENT,
+} from '../services/blockedUsers';
 
 interface ProfileViewProps {
   currentUser: UserProfile;
@@ -106,6 +114,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [passwordBusy, setPasswordBusy] = useState(false);
   const [switchAccountOpen, setSwitchAccountOpen] = useState(false);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccountEntry[]>([]);
+  const [blockedList, setBlockedList] = useState<BlockedUserEntry[]>([]);
   const { showToast } = useToast();
   const inputClass = `w-full p-3 border rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-sm ${
     theme === 'dark'
@@ -154,6 +163,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         pwdTooShort: 'New password must be at least 6 characters.',
         pwdMismatch: 'The new passwords do not match.',
         logout: 'Log out',
+        blockedAccounts: 'Blocked accounts',
+        blockedAccountsHint: 'These travelers cannot message you. You can unblock them or delete the saved chat only.',
+        noBlocked: 'No blocked accounts.',
+        unblock: 'Unblock',
+        deleteChat: 'Delete chat',
+        chatRemoved: 'Chat removed.',
+        unblockedOk: 'User unblocked.',
       }
     : {
         profile: 'Perfil',
@@ -193,6 +209,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         pwdTooShort: 'La nueva contraseña debe tener al menos 6 caracteres.',
         pwdMismatch: 'Las nuevas contraseñas no coinciden.',
         logout: 'Cerrar sesión',
+        blockedAccounts: 'Cuentas bloqueadas',
+        blockedAccountsHint: 'Estas personas no pueden escribirte. Puedes desbloquearlas o borrar solo el chat guardado.',
+        noBlocked: 'No tienes cuentas bloqueadas.',
+        unblock: 'Desbloquear',
+        deleteChat: 'Eliminar chat',
+        chatRemoved: 'Chat eliminado.',
+        unblockedOk: 'Usuario desbloqueado.',
       };
 
   useEffect(() => {
@@ -208,6 +231,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       setPasswordConfirm('');
     }
   }, [section]);
+
+  useEffect(() => {
+    if (section !== 'settings') return;
+    const refresh = () => setBlockedList(readBlockedUsers(currentUser.id));
+    refresh();
+    window.addEventListener(BLOCKLIST_CHANGED_EVENT, refresh);
+    return () => window.removeEventListener(BLOCKLIST_CHANGED_EVENT, refresh);
+  }, [section, currentUser.id]);
 
   const trip = useMemo(() => deriveTripDates(currentUser), [currentUser]);
 
@@ -400,6 +431,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const handleOpenSwitchAccount = () => {
     loadSavedAccounts();
     setSwitchAccountOpen(true);
+  };
+
+  const handleUnblockUser = (userId: string) => {
+    removeBlockedUser(currentUser.id, userId);
+    setBlockedList(readBlockedUsers(currentUser.id));
+    showToast(t.unblockedOk, 'success');
+  };
+
+  const handleDeleteChatWithUser = (userId: string) => {
+    purgeDirectChatsWithPeer(currentUser.id, userId);
+    showToast(t.chatRemoved, 'info');
   };
 
   if (isEditing) {
@@ -724,6 +766,55 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       {section === 'settings' && (
         <div className="space-y-4">
           <div>{appearanceBlock}</div>
+
+          <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
+            <h3 className={`text-xs font-bold uppercase mb-1 flex items-center gap-2 ${headingClass}`}>
+              <Ban size={16} className="text-travel-primary shrink-0" />
+              {t.blockedAccounts}
+            </h3>
+            <p className={`text-xs leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              {t.blockedAccountsHint}
+            </p>
+            {blockedList.length === 0 ? (
+              <p className={`text-sm ${bodyTextClass}`}>{t.noBlocked}</p>
+            ) : (
+              <ul className="space-y-2">
+                {blockedList.map((entry) => (
+                  <li
+                    key={entry.userId}
+                    className={`flex flex-col gap-3 rounded-xl border p-3 sm:flex-row sm:items-center sm:justify-between ${
+                      theme === 'dark' ? 'border-slate-700 bg-slate-900/40' : 'border-gray-200 bg-white'
+                    }`}
+                  >
+                    <div className="flex min-w-0 items-center gap-3">
+                      <img
+                        src={entry.avatarUrl || getFallbackAvatar(entry.name)}
+                        alt=""
+                        className="h-10 w-10 shrink-0 rounded-full object-cover"
+                      />
+                      <div className="min-w-0">
+                        <p className={`truncate font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-900'}`}>{entry.name}</p>
+                        <p className={`truncate text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{entry.userId}</p>
+                      </div>
+                    </div>
+                    <div className="flex flex-wrap gap-2 sm:justify-end">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        className="text-xs py-2"
+                        onClick={() => handleDeleteChatWithUser(entry.userId)}
+                      >
+                        {t.deleteChat}
+                      </Button>
+                      <Button type="button" className="text-xs py-2" onClick={() => handleUnblockUser(entry.userId)}>
+                        {t.unblock}
+                      </Button>
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </div>
 
           <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
             <h3 className={`text-xs font-bold uppercase mb-1 flex items-center gap-2 ${headingClass}`}>

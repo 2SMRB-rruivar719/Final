@@ -1,10 +1,17 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
-import { addLikedProfile } from '../services/likedProfiles';
+import { addLikedProfile, removeLikedProfile } from '../services/likedProfiles';
+import {
+  addBlockedUser,
+  isUserBlocked,
+  purgeDirectChatsWithPeer,
+  BLOCKLIST_CHANGED_EVENT,
+} from '../services/blockedUsers';
 import { Button } from './Button';
 import { SafeImage } from './SafeImage';
-import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
+import { useToast } from './ToastProvider';
 
 interface MatchFeedProps {
   currentUser: UserProfile;
@@ -129,6 +136,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         noResults: 'No profiles match your search.',
         clearSearch: 'Clear filters',
         loadingHint: 'Curating profiles that fit your trip…',
+        blockTraveler: 'Block',
+        blockConfirm: 'Block this traveler? Their chat will be removed and they will not appear in Explore.',
+        blockedToast: 'Traveler blocked.',
       }
     : {
         loading: 'La IA está buscando a tus compañeros ideales...',
@@ -156,7 +166,12 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         noResults: 'No hay perfiles que coincidan con tu búsqueda.',
         clearSearch: 'Limpiar filtros',
         loadingHint: 'Seleccionando perfiles que encajan con tu viaje…',
+        blockTraveler: 'Bloquear',
+        blockConfirm: '¿Bloquear a este viajero? Se borrará el chat y no aparecerá en Explorar.',
+        blockedToast: 'Viajero bloqueado.',
       };
+  const { showToast } = useToast();
+  const [blockRev, setBlockRev] = useState(0);
   const [loading, setLoading] = useState(true);
   const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -168,6 +183,12 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [channelStartIndex, setChannelStartIndex] = useState(0);
   const [activeChannel, setActiveChannel] = useState<PublicChannel | null>(null);
+
+  useEffect(() => {
+    const onBlock = () => setBlockRev((x) => x + 1);
+    window.addEventListener(BLOCKLIST_CHANGED_EVENT, onBlock);
+    return () => window.removeEventListener(BLOCKLIST_CHANGED_EVENT, onBlock);
+  }, []);
 
   useEffect(() => {
     const fetchMatches = async () => {
@@ -201,9 +222,16 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         return filterDate >= candidate.tripStartDate && filterDate <= candidate.tripEndDate;
       })();
 
-      return matchesSearch && matchesStyle && matchesBudget && matchesDate;
+      return matchesSearch && matchesStyle && matchesBudget && matchesDate && !isUserBlocked(currentUser.id, candidate.id);
     });
-  }, [budgetFilter, candidates, filterDate, searchTerm, styleFilter]);
+  }, [budgetFilter, candidates, filterDate, searchTerm, styleFilter, currentUser.id, blockRev]);
+
+  useEffect(() => {
+    if (filteredCandidates.length === 0) return;
+    if (currentIndex >= filteredCandidates.length) {
+      setCurrentIndex(filteredCandidates.length - 1);
+    }
+  }, [filteredCandidates.length, currentIndex]);
 
   const handleAction = (action: 'pass' | 'like') => {
     setSwipeDirection(action === 'pass' ? 'left' : 'right');
@@ -236,6 +264,16 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   const currentCandidate = filteredCandidates[currentIndex];
   const visibleChannels = PUBLIC_CHANNELS.slice(channelStartIndex, channelStartIndex + 2);
+
+  const handleBlockTraveler = () => {
+    const c = filteredCandidates[currentIndex];
+    if (!c) return;
+    if (!window.confirm(t.blockConfirm)) return;
+    addBlockedUser(currentUser.id, { userId: c.id, name: c.name, avatarUrl: c.avatarUrl });
+    purgeDirectChatsWithPeer(currentUser.id, c.id);
+    removeLikedProfile(c.id);
+    showToast(t.blockedToast, 'info');
+  };
 
   const welcomeLine =
     language === 'en'
@@ -499,6 +537,15 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
               className="w-14 h-14 rounded-full bg-white shadow-lg text-gray-400 flex items-center justify-center hover:bg-gray-50 hover:text-red-500 transition-colors border border-gray-100"
             >
               <X size={28} />
+            </button>
+
+            <button
+              type="button"
+              onClick={handleBlockTraveler}
+              title={t.blockTraveler}
+              className="w-12 h-12 rounded-full bg-white shadow-lg text-gray-500 flex items-center justify-center hover:bg-red-50 hover:text-red-600 transition-colors border border-gray-100"
+            >
+              <Ban size={22} />
             </button>
 
             <button

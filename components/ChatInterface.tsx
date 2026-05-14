@@ -5,6 +5,14 @@ import { Button } from './Button';
 import { SafeImage } from './SafeImage';
 import { useToast } from './ToastProvider';
 import { getAvatarByName } from '../services/avatarByName';
+import {
+  addBlockedUser,
+  getDirectChatPeerId,
+  isUserBlocked,
+  purgeDirectChatsWithPeer,
+  readBlockedUsers,
+  CHATS_STORAGE_MUTATED_EVENT,
+} from '../services/blockedUsers';
 
 interface ChatInterfaceProps {
   currentUser: UserProfile;
@@ -94,6 +102,13 @@ const INITIAL_CHATS: ChatThreadType[] = [
   },
 ];
 
+const filterChatsByBlocklist = (items: ChatThreadType[], blocked: Set<string>) =>
+  items.filter((chat) => {
+    if (chat.isGroup) return true;
+    const pid = getDirectChatPeerId(chat);
+    return !pid || !blocked.has(pid);
+  });
+
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme, initialTargetUser }) => {
   const isDark = theme === 'dark';
   const chatStorageKey = `tm_chats_${currentUser.id}`;
@@ -114,6 +129,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         groupMembers: 'Group members',
         participants: 'participants',
         noDescription: 'This user has no description yet.',
+        blockUser: 'Block user',
+        blockConfirm: 'Block this user? Their chat will be deleted and they will not appear in your inbox.',
+        blockedOk: 'User blocked.',
       }
     : {
         messages: 'Mensajes',
@@ -131,6 +149,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         groupMembers: 'Integrantes del grupo',
         participants: 'participantes',
         noDescription: 'Este usuario aun no tiene descripcion.',
+        blockUser: 'Bloquear usuario',
+        blockConfirm: '¿Bloquear a esta persona? Se eliminará el chat y no aparecerá en tu bandeja.',
+        blockedOk: 'Usuario bloqueado.',
       };
   const [chats, setChats] = useState<ChatThreadType[]>(() => {
     const withLeaderDefaults = (items: ChatThreadType[]) =>
@@ -139,13 +160,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
           ? { ...chat, leaderId: 'current-user' }
           : chat
       );
+    const blocked = new Set(readBlockedUsers(currentUser.id).map((e) => e.userId));
     try {
       const savedChats = localStorage.getItem(chatStorageKey);
-      if (!savedChats) return withLeaderDefaults(INITIAL_CHATS);
+      if (!savedChats) return filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked);
       const parsed = JSON.parse(savedChats) as ChatThreadType[];
-      return Array.isArray(parsed) && parsed.length ? withLeaderDefaults(parsed) : withLeaderDefaults(INITIAL_CHATS);
+      const base = Array.isArray(parsed) && parsed.length ? withLeaderDefaults(parsed) : withLeaderDefaults(INITIAL_CHATS);
+      return filterChatsByBlocklist(base, blocked);
     } catch {
-      return withLeaderDefaults(INITIAL_CHATS);
+      return filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked);
     }
   });
   const [activeChatId, setActiveChatId] = useState<string | null>(null);
@@ -165,26 +188,53 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
           ? { ...chat, leaderId: 'current-user' }
           : chat
       );
+    const blocked = new Set(readBlockedUsers(currentUser.id).map((e) => e.userId));
     try {
       const savedChats = localStorage.getItem(chatStorageKey);
       if (!savedChats) {
-        setChats(withLeaderDefaults(INITIAL_CHATS));
+        setChats(filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked));
         setActiveChatId(null);
         return;
       }
       const parsed = JSON.parse(savedChats) as ChatThreadType[];
       if (Array.isArray(parsed) && parsed.length) {
-        setChats(withLeaderDefaults(parsed));
+        setChats(filterChatsByBlocklist(withLeaderDefaults(parsed), blocked));
         setActiveChatId(null);
       } else {
-        setChats(withLeaderDefaults(INITIAL_CHATS));
+        setChats(filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked));
         setActiveChatId(null);
       }
     } catch {
-      setChats(withLeaderDefaults(INITIAL_CHATS));
+      setChats(filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked));
       setActiveChatId(null);
     }
   }, [chatStorageKey]);
+
+  useEffect(() => {
+    const syncFromStorage = () => {
+      const withLeaderDefaults = (items: ChatThreadType[]) =>
+        items.map((chat) =>
+          chat.isGroup && !chat.leaderId
+            ? { ...chat, leaderId: 'current-user' }
+            : chat
+        );
+      const blocked = new Set(readBlockedUsers(currentUser.id).map((e) => e.userId));
+      try {
+        const savedChats = localStorage.getItem(chatStorageKey);
+        if (!savedChats) {
+          setChats(filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked));
+          return;
+        }
+        const parsed = JSON.parse(savedChats) as ChatThreadType[];
+        const base = Array.isArray(parsed) && parsed.length ? withLeaderDefaults(parsed) : withLeaderDefaults(INITIAL_CHATS);
+        setChats(filterChatsByBlocklist(base, blocked));
+      } catch {
+        setChats(filterChatsByBlocklist(withLeaderDefaults(INITIAL_CHATS), blocked));
+      }
+    };
+    window.addEventListener(CHATS_STORAGE_MUTATED_EVENT, syncFromStorage);
+    return () => window.removeEventListener(CHATS_STORAGE_MUTATED_EVENT, syncFromStorage);
+  }, [chatStorageKey, currentUser.id]);
 
   useEffect(() => {
     try {
@@ -196,6 +246,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
 
   useEffect(() => {
     if (!initialTargetUser) return;
+    if (isUserBlocked(currentUser.id, initialTargetUser.id)) {
+      showToast(
+        language === 'en'
+          ? 'You blocked this traveler. Unblock them in Settings to chat again.'
+          : 'Has bloqueado a esta persona. Desbloquéala en Configuración para volver a chatear.',
+        'error'
+      );
+      return;
+    }
 
     const directChatId = `direct-${initialTargetUser.id}`;
     setChats((prevChats) => {
@@ -229,7 +288,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
       return [newDirectChat, ...prevChats];
     });
     setActiveChatId(directChatId);
-  }, [initialTargetUser, language, t.now]);
+  }, [initialTargetUser, language, currentUser.id, showToast]);
 
   const activeChat = chats.find(c => c.id === activeChatId);
   const desktopActiveChat = activeChat || chats[0] || null;
@@ -356,6 +415,24 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     );
     setGroupMembersPreview((prev) => (prev ? prev.filter((member) => member.id !== memberId) : prev));
     showToast(language === 'en' ? 'Member removed.' : 'Integrante expulsado.', 'info');
+  };
+
+  const handleBlockUserByPeerId = (peerId: string, name: string, avatarUrl?: string) => {
+    if (!peerId || peerId === currentUser.id) return;
+    if (!window.confirm(t.blockConfirm)) return;
+    addBlockedUser(currentUser.id, { userId: peerId, name, avatarUrl });
+    purgeDirectChatsWithPeer(currentUser.id, peerId);
+    setChats((prev) => prev.filter((c) => getDirectChatPeerId(c) !== peerId || c.isGroup));
+    setActiveChatId((aid) => {
+      if (!aid) return null;
+      if (aid === `direct-${peerId}` || aid === peerId) return null;
+      return aid;
+    });
+    setProfilePreview(null);
+    setProfileActionsOpen(false);
+    setGroupMembersPreview(null);
+    setGroupMembersChatId(null);
+    showToast(t.blockedOk, 'info');
   };
 
   return (
@@ -686,14 +763,35 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                   <div className={`absolute right-12 top-0 min-w-[190px] rounded-xl border p-2 shadow-xl ${
                     isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
                   }`}>
-                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+                    <button
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
+                        isDark ? 'text-gray-400 hover:bg-slate-800' : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                      disabled
+                    >
                       {language === 'en' ? 'Remove from friends' : 'Eliminar de amigos'}
                     </button>
-                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
+                    <button
+                      type="button"
+                      className={`w-full text-left px-3 py-2 rounded-lg text-sm ${
+                        isDark ? 'text-gray-400 hover:bg-slate-800' : 'text-gray-500 hover:bg-gray-50'
+                      }`}
+                      disabled
+                    >
                       {language === 'en' ? 'Report' : 'Reportar'}
                     </button>
-                    <button type="button" className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10">
-                      {language === 'en' ? 'Block user' : 'Bloquear a gente'}
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (!profilePreview) return;
+                        const peerId = getDirectChatPeerId(profilePreview);
+                        if (!peerId) return;
+                        handleBlockUserByPeerId(peerId, profilePreview.name, profilePreview.avatarUrl);
+                      }}
+                      className="w-full text-left px-3 py-2 rounded-lg text-sm text-red-400 hover:bg-red-500/10"
+                    >
+                      {t.blockUser}
                     </button>
                   </div>
                 )}
@@ -782,6 +880,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                       className="px-2.5 py-1 rounded-full text-[11px] font-semibold border border-red-400 text-red-400 hover:bg-red-500/10"
                     >
                       {language === 'en' ? 'Kick' : 'Echar'}
+                    </button>
+                  )}
+                  {member.id !== currentUser.id && (
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleBlockUserByPeerId(member.id, member.name, member.avatarUrl);
+                      }}
+                      className={`px-2.5 py-1 rounded-full text-[11px] font-semibold border ${
+                        isDark ? 'border-slate-600 text-gray-200 hover:bg-slate-800' : 'border-gray-200 text-gray-700 hover:bg-gray-50'
+                      }`}
+                    >
+                      {t.blockUser}
                     </button>
                   )}
                   <Users size={16} className={isDark ? 'text-gray-400' : 'text-gray-500'} />

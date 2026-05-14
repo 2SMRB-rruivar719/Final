@@ -447,6 +447,7 @@ const AppInner: React.FC = () => {
       case 'likes':
         return (
           <LikesView
+            currentUser={currentUser}
             language={language}
             theme={theme}
             onStartChat={(user) => {

@@ -1,17 +1,20 @@
 import React, { useMemo, useState } from 'react';
-import { Heart, MessageCircle, MapPin, Trash2 } from 'lucide-react';
+import { Heart, MessageCircle, MapPin, Trash2, Ban } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Button } from './Button';
 import { SafeImage } from './SafeImage';
 import { readLikedProfiles, removeLikedProfile } from '../services/likedProfiles';
+import { addBlockedUser, purgeDirectChatsWithPeer } from '../services/blockedUsers';
+import { useToast } from './ToastProvider';
 
 interface LikesViewProps {
+  currentUser: UserProfile;
   language: LanguageCode;
   theme: ThemeMode;
   onStartChat: (user: UserProfile) => void;
 }
 
-export const LikesView: React.FC<LikesViewProps> = ({ language, theme, onStartChat }) => {
+export const LikesView: React.FC<LikesViewProps> = ({ currentUser, language, theme, onStartChat }) => {
   const isDark = theme === 'dark';
   const [list, setList] = useState<UserProfile[]>(() => readLikedProfiles());
 
@@ -25,6 +28,9 @@ export const LikesView: React.FC<LikesViewProps> = ({ language, theme, onStartCh
             emptyHint: 'Open Explore and tap the heart on profiles you are interested in.',
             chat: 'Chat',
             remove: 'Remove',
+            block: 'Block',
+            blockConfirm: 'Block this traveler? Their chat will be deleted.',
+            blockedToast: 'Traveler blocked.',
           }
         : {
             title: 'Me gusta',
@@ -33,9 +39,23 @@ export const LikesView: React.FC<LikesViewProps> = ({ language, theme, onStartCh
             emptyHint: 'Abre Explorar y pulsa el corazón en los perfiles que te interesen.',
             chat: 'Chat',
             remove: 'Quitar',
+            block: 'Bloquear',
+            blockConfirm: '¿Bloquear a este viajero? Se eliminará el chat.',
+            blockedToast: 'Viajero bloqueado.',
           },
     [language]
   );
+
+  const { showToast } = useToast();
+
+  const handleBlock = (person: UserProfile) => {
+    if (!window.confirm(t.blockConfirm)) return;
+    addBlockedUser(currentUser.id, { userId: person.id, name: person.name, avatarUrl: person.avatarUrl });
+    purgeDirectChatsWithPeer(currentUser.id, person.id);
+    removeLikedProfile(person.id);
+    setList(readLikedProfiles());
+    showToast(t.blockedToast, 'info');
+  };
 
   const handleRemove = (id: string) => {
     removeLikedProfile(id);
@@ -92,7 +112,7 @@ export const LikesView: React.FC<LikesViewProps> = ({ language, theme, onStartCh
                     {person.destination}
                   </p>
                 </div>
-                <div className="flex shrink-0 items-center gap-2">
+                <div className="flex shrink-0 flex-wrap items-center justify-end gap-2">
                   <Button
                     type="button"
                     variant="outline"
@@ -103,6 +123,19 @@ export const LikesView: React.FC<LikesViewProps> = ({ language, theme, onStartCh
                     <MessageCircle className="h-4 w-4" />
                     <span className="hidden sm:inline">{t.chat}</span>
                   </Button>
+                  <button
+                    type="button"
+                    onClick={() => handleBlock(person)}
+                    className={`rounded-xl p-2 transition-colors ${
+                      isDark
+                        ? 'text-gray-400 hover:bg-slate-700 hover:text-orange-400'
+                        : 'text-gray-500 hover:bg-orange-50 hover:text-orange-700'
+                    }`}
+                    title={t.block}
+                    aria-label={t.block}
+                  >
+                    <Ban className="h-4 w-4" />
+                  </button>
                   <button
                     type="button"
                     onClick={() => handleRemove(person.id)}
