@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, MessageCircle, Map, User, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, MessageCircle, Map, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
 import { SafeImage } from './SafeImage';
@@ -33,7 +33,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
         ? 'ring-2 ring-travel-accent ring-offset-2 ring-offset-slate-900 bg-slate-800 border-slate-600'
         : 'ring-2 ring-travel-primary ring-offset-2 ring-offset-white bg-travel-secondary/60 border-travel-primary/40'
       : isDark
-        ? 'bg-slate-800 border-slate-700 hover:bg-slate-750'
+        ? 'bg-slate-800 border-slate-700 hover:bg-slate-700/80'
         : 'bg-travel-secondary/50 border-travel-secondary/70 hover:bg-travel-secondary/70'
   } ${isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'}`;
 

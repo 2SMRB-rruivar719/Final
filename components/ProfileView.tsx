@@ -8,8 +8,6 @@ import {
   ChevronLeft,
   Moon,
   SunMedium,
-  Settings,
-  User,
   Trash2,
   CalendarClock,
   ImageIcon,
@@ -139,6 +137,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         uploadFile: 'Upload file',
         applyPhoto: 'Apply photo',
         scheduledDeletion: 'Scheduled deletion',
+        profilePictureHint:
+          'Paste an image URL or upload a file (JPG, PNG, WEBP, max 4MB).',
         logout: 'Log out',
       }
     : {
@@ -168,6 +168,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         uploadFile: 'Subir archivo',
         applyPhoto: 'Aplicar foto',
         scheduledDeletion: 'Borrado programado',
+        profilePictureHint:
+          'Pega una URL de imagen o sube un archivo (JPG, PNG, WEBP, máx. 4MB).',
         logout: 'Cerrar sesión',
       };
 
@@ -535,7 +537,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          <div className="lg:col-span-2 flex justify-center">
+          <div className="lg:col-span-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button
               type="button"
               onClick={() => {
@@ -550,6 +552,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               className="px-6"
             >
               <Pencil size={16} /> {t.editProfile}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              className="px-6 border-travel-primary/40 text-travel-dark"
+              onClick={() => setSettingsPanel('photo')}
+            >
+              <ImageIcon size={16} /> {t.profilePicture}
             </Button>
           </div>
           <div className={`${cardClass} p-4 rounded-xl`}>
@@ -648,17 +658,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             </div>
           </div>
 
-          <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
-            <button
-              type="button"
-              onClick={() => setSettingsPanel('photo')}
-              className={`w-full text-left p-3 rounded-xl border flex items-center gap-2 ${
-                theme === 'dark' ? 'border-slate-700 hover:bg-slate-700/60' : 'border-gray-200 hover:bg-white'
-              }`}
-            >
-              <ImageIcon size={16} className="text-travel-accent" />
-              <span className="font-semibold">{t.profilePicture}</span>
-            </button>
+          <div className={`${cardClass} p-4 rounded-xl`}>
             <button
               type="button"
               onClick={() => setSettingsPanel('security')}
@@ -712,7 +712,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
             {settingsPanel === 'photo' && (
               <>
-                <p className="text-xs text-gray-500">Pega una URL de imagen (por ahora sin subida de archivos).</p>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t.profilePictureHint}</p>
                 <input
                   type="url"
                   value={avatarDraft}
