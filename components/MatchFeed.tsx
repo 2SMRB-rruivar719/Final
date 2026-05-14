@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { generatePotentialMatches } from '../services/aiService';
+import { addLikedProfile } from '../services/likedProfiles';
 import { Button } from './Button';
 import { SafeImage } from './SafeImage';
 import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight } from 'lucide-react';
@@ -206,9 +207,8 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   const handleAction = (action: 'pass' | 'like') => {
     setSwipeDirection(action === 'pass' ? 'left' : 'right');
-    if (action === 'like') {
-      // In a real app, this would create a match record
-      // Here we just simulate interest
+    if (action === 'like' && currentCandidate) {
+      addLikedProfile(currentCandidate);
     }
     setTimeout(() => {
       setCurrentIndex(prev => prev + 1);

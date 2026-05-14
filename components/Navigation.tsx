@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home, MessageCircle, Map, Settings, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Home, MessageCircle, Map, Settings, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
 import { SafeImage } from './SafeImage';
@@ -17,13 +17,32 @@ interface NavigationProps {
 export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language, theme, collapsed, onToggleCollapse }) => {
   const isDark = theme === 'dark';
   const t = language === 'en'
-    ? { profile: 'Profile', explore: 'Explore', trip: 'Trip', chat: 'Chat', settings: 'Settings', subtitle: 'Find your next travel buddy', desktopTip: 'Desktop mode optimized for quick swipes.' }
-    : { profile: 'Perfil', explore: 'Explorar', trip: 'Viaje', chat: 'Chat', settings: 'Configuración', subtitle: 'Encuentra tu próximo compañero de viaje', desktopTip: 'Modo desktop optimizado para swipes rápidos.' };
+    ? {
+        profile: 'Profile',
+        explore: 'Explore',
+        trip: 'Trip',
+        chat: 'Chat',
+        likes: 'Likes',
+        settings: 'Settings',
+        subtitle: 'Find your next travel buddy',
+        desktopTip: 'Desktop mode optimized for quick swipes.',
+      }
+    : {
+        profile: 'Perfil',
+        explore: 'Explorar',
+        trip: 'Viaje',
+        chat: 'Chat',
+        likes: 'Me gusta',
+        settings: 'Configuración',
+        subtitle: 'Encuentra tu próximo compañero de viaje',
+        desktopTip: 'Modo desktop optimizado para swipes rápidos.',
+      };
   /** Explorar primero; Perfil va en el bloque inferior (amarillo), no en esta lista */
   const mainNavItems = [
     { id: 'match', icon: Home, label: t.explore },
     { id: 'itinerary', icon: Map, label: t.trip },
     { id: 'chat', icon: MessageCircle, label: t.chat },
+    { id: 'likes', icon: Heart, label: t.likes },
     { id: 'settings', icon: Settings, label: t.settings },
   ];
 

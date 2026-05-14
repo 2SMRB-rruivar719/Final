@@ -6,6 +6,7 @@ import { MatchFeed } from './components/MatchFeed';
 import { ItineraryBuilder } from './components/ItineraryBuilder';
 import { ChatInterface } from './components/ChatInterface';
 import { ProfileView } from './components/ProfileView';
+import { LikesView } from './components/LikesView';
 import { Login } from './components/Login';
 import { LanguageCode, ThemeMode, UserProfile } from './types';
 import { Logo } from './components/Logo';
@@ -358,6 +359,17 @@ const AppInner: React.FC = () => {
         return <ItineraryBuilder currentUser={currentUser} language={language} theme={theme} />;
       case 'chat':
         return <ChatInterface currentUser={currentUser} language={language} theme={theme} initialTargetUser={chatTargetUser} />;
+      case 'likes':
+        return (
+          <LikesView
+            language={language}
+            theme={theme}
+            onStartChat={(user) => {
+              setChatTargetUser(user);
+              setCurrentView('chat');
+            }}
+          />
+        );
       case 'profile':
         return (
           <ProfileView
