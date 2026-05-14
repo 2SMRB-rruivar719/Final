@@ -384,6 +384,41 @@ app.put("/api/users/:id", async (req, res) => {
   }
 });
 
+// Cambiar contraseña (requiere contraseña actual)
+app.post("/api/users/:id/change-password", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { currentPassword, newPassword } = req.body;
+
+    if (!currentPassword || typeof currentPassword !== "string") {
+      return res.status(400).json({ error: "La contraseña actual es obligatoria." });
+    }
+    if (!newPassword || typeof newPassword !== "string" || newPassword.length < 6) {
+      return res
+        .status(400)
+        .json({ error: "La nueva contraseña debe tener al menos 6 caracteres." });
+    }
+
+    const user = await User.findById(id);
+    if (!user) {
+      return res.status(404).json({ error: "Usuario no encontrado." });
+    }
+
+    const match = await bcrypt.compare(currentPassword, user.passwordHash);
+    if (!match) {
+      return res.status(401).json({ error: "La contraseña actual no es correcta." });
+    }
+
+    user.passwordHash = await bcrypt.hash(newPassword, 10);
+    await user.save();
+
+    return res.json({ message: "Contraseña actualizada correctamente." });
+  } catch (err) {
+    console.error("[SERVER][CHANGE_PASSWORD]", err);
+    return res.status(500).json({ error: "Error al cambiar la contraseña." });
+  }
+});
+
 // Borrar cuenta de forma inmediata
 app.delete("/api/users/:id", async (req, res) => {
   try {

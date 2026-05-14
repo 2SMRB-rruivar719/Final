@@ -238,6 +238,32 @@ export async function updateUserProfile(
   return data as UserProfile;
 }
 
+export async function changePassword(
+  id: string,
+  currentPassword: string,
+  newPassword: string
+): Promise<{ message: string }> {
+  const res = await fetch(`${API_BASE_URL}/users/${id}/change-password`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ currentPassword, newPassword }),
+  });
+
+  const { data, text } = await parseJsonResponse(res);
+  if (!res.ok) {
+    const message =
+      (data && typeof data === "object" && (data.error || data.message)) ||
+      text ||
+      `Error al cambiar la contraseña (HTTP ${res.status})`;
+    throw new Error(message);
+  }
+  return {
+    message:
+      (data && typeof data === "object" && data.message) ||
+      "Contraseña actualizada correctamente.",
+  };
+}
+
 export async function deleteUserAccount(id: string): Promise<void> {
   const res = await fetch(`${API_BASE_URL}/users/${id}`, { method: "DELETE" });
   if (!res.ok) {

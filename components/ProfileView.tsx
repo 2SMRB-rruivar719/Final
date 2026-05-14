@@ -12,11 +12,13 @@ import {
   CalendarClock,
   ImageIcon,
   Pencil,
+  KeyRound,
 } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
 import {
   updateUserProfile,
+  changePassword,
   deleteUserAccount,
   scheduleAccountDeletion,
   cancelScheduledDeletion,
@@ -98,6 +100,10 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [avatarSrc, setAvatarSrc] = useState(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   const [deletionDateInput, setDeletionDateInput] = useState('');
   const [settingsPanel, setSettingsPanel] = useState<'photo' | 'security' | null>(null);
+  const [passwordCurrent, setPasswordCurrent] = useState('');
+  const [passwordNew, setPasswordNew] = useState('');
+  const [passwordConfirm, setPasswordConfirm] = useState('');
+  const [passwordBusy, setPasswordBusy] = useState(false);
   const [switchAccountOpen, setSwitchAccountOpen] = useState(false);
   const [savedAccounts, setSavedAccounts] = useState<SavedAccountEntry[]>([]);
   const { showToast } = useToast();
@@ -139,6 +145,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         scheduledDeletion: 'Scheduled deletion',
         profilePictureHint:
           'Paste an image URL or upload a file (JPG, PNG, WEBP, max 4MB).',
+        passwordSection: 'Password',
+        currentPasswordLabel: 'Current password',
+        newPasswordLabel: 'New password',
+        confirmPasswordLabel: 'Confirm new password',
+        changePasswordBtn: 'Change password',
+        pwdNeedCurrent: 'Enter your current password.',
+        pwdTooShort: 'New password must be at least 6 characters.',
+        pwdMismatch: 'The new passwords do not match.',
         logout: 'Log out',
       }
     : {
@@ -170,6 +184,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         scheduledDeletion: 'Borrado programado',
         profilePictureHint:
           'Pega una URL de imagen o sube un archivo (JPG, PNG, WEBP, máx. 4MB).',
+        passwordSection: 'Contraseña',
+        currentPasswordLabel: 'Contraseña actual',
+        newPasswordLabel: 'Nueva contraseña',
+        confirmPasswordLabel: 'Repite la nueva contraseña',
+        changePasswordBtn: 'Cambiar contraseña',
+        pwdNeedCurrent: 'Introduce tu contraseña actual.',
+        pwdTooShort: 'La nueva contraseña debe tener al menos 6 caracteres.',
+        pwdMismatch: 'Las nuevas contraseñas no coinciden.',
         logout: 'Cerrar sesión',
       };
 
@@ -178,6 +200,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     setAvatarDraft(currentUser.avatarUrl);
     setAvatarSrc(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   }, [currentUser]);
+
+  useEffect(() => {
+    if (section !== 'settings') {
+      setPasswordCurrent('');
+      setPasswordNew('');
+      setPasswordConfirm('');
+    }
+  }, [section]);
 
   const trip = useMemo(() => deriveTripDates(currentUser), [currentUser]);
 
@@ -336,6 +366,34 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       showToast(msg, 'error');
     } finally {
       setSaving(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!passwordCurrent.trim()) {
+      showToast(t.pwdNeedCurrent, 'error');
+      return;
+    }
+    if (!passwordNew || passwordNew.length < 6) {
+      showToast(t.pwdTooShort, 'error');
+      return;
+    }
+    if (passwordNew !== passwordConfirm) {
+      showToast(t.pwdMismatch, 'error');
+      return;
+    }
+    setPasswordBusy(true);
+    try {
+      const res = await changePassword(currentUser.id, passwordCurrent, passwordNew);
+      showToast(res.message, 'success');
+      setPasswordCurrent('');
+      setPasswordNew('');
+      setPasswordConfirm('');
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : 'No se pudo cambiar la contraseña.';
+      showToast(msg, 'error');
+    } finally {
+      setPasswordBusy(false);
     }
   };
 
@@ -538,25 +596,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
               alt="Perfil"
               onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
             />
-            <button
-              type="button"
-              onClick={() => {
-                const { start, end } = deriveTripDates(currentUser);
-                setFormData({
-                  ...currentUser,
-                  tripStartDate: currentUser.tripStartDate || start || '',
-                  tripEndDate: currentUser.tripEndDate || end || '',
-                });
-                setIsEditing(true);
-              }}
-              className="absolute bottom-0 right-0 bg-travel-accent text-white p-2 rounded-full border-2 border-white hover:bg-opacity-90 transition"
-              aria-label="Editar perfil"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-            </button>
           </div>
           <h2 className={`text-2xl font-bold mt-4 ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
             {currentUser.name}, {currentUser.age}
@@ -593,8 +632,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-          <div className="lg:col-span-2">{appearanceBlock}</div>
-
           <div className="lg:col-span-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button
               type="button"
@@ -673,6 +710,57 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'settings' && (
         <div className="space-y-4">
+          <div>{appearanceBlock}</div>
+
+          <div className={`${cardClass} p-4 rounded-xl space-y-3`}>
+            <h3 className={`text-xs font-bold uppercase mb-1 flex items-center gap-2 ${headingClass}`}>
+              <KeyRound size={16} className="text-travel-primary shrink-0" />
+              {t.passwordSection}
+            </h3>
+            <div className="space-y-2">
+              <label className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} htmlFor="pwd-current">
+                {t.currentPasswordLabel}
+              </label>
+              <input
+                id="pwd-current"
+                type="password"
+                autoComplete="current-password"
+                value={passwordCurrent}
+                onChange={(e) => setPasswordCurrent(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} htmlFor="pwd-new">
+                {t.newPasswordLabel}
+              </label>
+              <input
+                id="pwd-new"
+                type="password"
+                autoComplete="new-password"
+                value={passwordNew}
+                onChange={(e) => setPasswordNew(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <div className="space-y-2">
+              <label className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`} htmlFor="pwd-confirm">
+                {t.confirmPasswordLabel}
+              </label>
+              <input
+                id="pwd-confirm"
+                type="password"
+                autoComplete="new-password"
+                value={passwordConfirm}
+                onChange={(e) => setPasswordConfirm(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+            <Button type="button" fullWidth onClick={handleChangePassword} disabled={passwordBusy || saving}>
+              {passwordBusy ? t.saving : t.changePasswordBtn}
+            </Button>
+          </div>
+
           <div className={`${cardClass} p-4 rounded-xl`}>
             <button
               type="button"
