@@ -66,6 +66,7 @@ const userSchema = new mongoose.Schema(
     travelStyle: { type: [String], default: [] },
     interests: { type: [String], default: [] },
     avatarUrl: { type: String, default: "https://picsum.photos/seed/me/400/400" },
+    avatarBorderColor: { type: String, default: "" },
     destination: { type: String, required: true },
     dates: { type: String, default: "Próximamente" },
     tripStartDate: { type: String, default: "" },
@@ -198,6 +199,12 @@ app.post("/api/auth/register", async (req, res) => {
     if (travelStyle && Array.isArray(travelStyle)) userData.travelStyle = travelStyle;
     if (interests && Array.isArray(interests)) userData.interests = interests;
     if (avatarUrl && avatarUrl.trim()) userData.avatarUrl = avatarUrl.trim();
+    if (
+      typeof req.body.avatarBorderColor === "string" &&
+      req.body.avatarBorderColor.trim()
+    ) {
+      userData.avatarBorderColor = req.body.avatarBorderColor.trim().slice(0, 32);
+    }
     const start =
       typeof tripStartDate === "string" && tripStartDate.trim()
         ? tripStartDate.trim()

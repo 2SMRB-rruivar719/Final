@@ -3,6 +3,7 @@ import { Home, MessageCircle, Map, Settings, Heart, ChevronLeft, ChevronRight } 
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
 import { SafeImage } from './SafeImage';
+import { getProfileAvatarFrame } from '../utils/avatarBorder';
 
 interface NavigationProps {
   currentView: string;
@@ -45,6 +46,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
     { id: 'likes', icon: Heart, label: t.likes },
     { id: 'settings', icon: Settings, label: t.settings },
   ];
+
+  const navAvatarFrame = currentUser ? getProfileAvatarFrame(currentUser.avatarBorderColor) : { ringClass: '', ringStyle: {} };
 
   const profileCardClass = `mt-auto w-full rounded-2xl border text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
     currentView === 'profile'
@@ -121,7 +124,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
                 alt={currentUser.name}
                 fallbackSeed={currentUser.id + currentUser.name}
                 variant="avatar"
-                className="w-11 h-11 rounded-full object-cover border-2 border-white shrink-0"
+                className={`w-11 h-11 rounded-full object-cover shrink-0 ${navAvatarFrame.ringClass}`}
+                style={navAvatarFrame.ringStyle}
               />
               <div className="min-w-0 text-left">
                 <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.profile}</p>
@@ -145,7 +149,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
               alt={currentUser.name}
               fallbackSeed={currentUser.id + currentUser.name}
               variant="avatar"
-              className={`w-11 h-11 rounded-full object-cover border-2 border-white ${currentView === 'profile' ? 'ring-2 ring-travel-accent ring-offset-2 ring-offset-transparent' : ''}`}
+              className={`w-11 h-11 rounded-full object-cover ${navAvatarFrame.ringClass} ${currentView === 'profile' ? 'ring-2 ring-travel-accent ring-offset-2 ring-offset-transparent' : ''}`}
+              style={navAvatarFrame.ringStyle}
             />
           </button>
         )}
@@ -174,7 +179,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
                 alt=""
                 fallbackSeed={currentUser.id + currentUser.name}
                 variant="avatar"
-                className="w-9 h-9 rounded-full object-cover border-2 border-white"
+                className={`w-9 h-9 rounded-full object-cover ${navAvatarFrame.ringClass}`}
+                style={navAvatarFrame.ringStyle}
               />
               <span className="text-[9px] font-semibold leading-tight text-center">{t.profile}</span>
             </button>

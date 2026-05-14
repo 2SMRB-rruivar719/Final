@@ -24,6 +24,8 @@ export interface UserProfile {
   travelStyle: TravelStyle[];
   interests: string[];
   avatarUrl: string;
+  /** Color del borde del avatar (hex, ej. #f97316). Vacío = estilo por defecto de la app. */
+  avatarBorderColor?: string;
   destination: string;
   /** Resumen legible (p. ej. ida → vuelta); mantener por compatibilidad */
   dates: string;

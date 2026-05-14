@@ -3,7 +3,6 @@ import { UserProfile, LanguageCode, ThemeMode } from '../types';
 import {
   Plane,
   Save,
-  Camera,
   Globe2,
   ChevronLeft,
   Moon,
@@ -14,6 +13,8 @@ import {
   Pencil,
   Ban,
   KeyRound,
+  Upload,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
@@ -31,6 +32,19 @@ import {
   purgeDirectChatsWithPeer,
   BLOCKLIST_CHANGED_EVENT,
 } from '../services/blockedUsers';
+import { getProfileAvatarFrame } from '../utils/avatarBorder';
+
+const AVATAR_RING_PRESETS: { color: string; key: string }[] = [
+  { key: 'brand', color: '' },
+  { key: 'sunset', color: '#f97316' },
+  { key: 'violet', color: '#a855f7' },
+  { key: 'lagoon', color: '#06b6d4' },
+  { key: 'rose', color: '#ec4899' },
+  { key: 'jade', color: '#22c55e' },
+  { key: 'gold', color: '#eab308' },
+  { key: 'ember', color: '#ef4444' },
+  { key: 'slate', color: '#64748b' },
+];
 
 interface ProfileViewProps {
   currentUser: UserProfile;
@@ -152,8 +166,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         uploadFile: 'Upload file',
         applyPhoto: 'Apply photo',
         scheduledDeletion: 'Scheduled deletion',
-        profilePictureHint:
-          'Paste an image URL or upload a file (JPG, PNG, WEBP, max 4MB).',
+        profilePictureHint: 'Upload a file (JPG, PNG, WEBP, max 4MB), then apply.',
+        pickPhoto: 'Choose photo',
+        avatarLookTitle: 'Your look',
+        avatarLookSubtitle: 'Upload a photo and pick a frame that feels like you.',
+        ringFrameLabel: 'Avatar frame',
+        ringBrand: 'Brand',
+        ringCustom: 'Custom color',
+        saveAvatarHint: 'Changes are saved with “Save changes”.',
         passwordSection: 'Password',
         currentPasswordLabel: 'Current password',
         newPasswordLabel: 'New password',
@@ -198,8 +218,14 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         uploadFile: 'Subir archivo',
         applyPhoto: 'Aplicar foto',
         scheduledDeletion: 'Borrado programado',
-        profilePictureHint:
-          'Pega una URL de imagen o sube un archivo (JPG, PNG, WEBP, máx. 4MB).',
+        profilePictureHint: 'Sube un archivo (JPG, PNG, WEBP, máx. 4MB) y pulsa aplicar.',
+        pickPhoto: 'Elegir foto',
+        avatarLookTitle: 'Tu look',
+        avatarLookSubtitle: 'Sube una foto y elige un marco que te represente.',
+        ringFrameLabel: 'Marco del avatar',
+        ringBrand: 'Marca',
+        ringCustom: 'Color libre',
+        saveAvatarHint: 'Los cambios del marco y la foto se guardan con «Guardar cambios».',
         passwordSection: 'Contraseña',
         currentPasswordLabel: 'Contraseña actual',
         newPasswordLabel: 'Nueva contraseña',
@@ -274,6 +300,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         travelStyle: formData.travelStyle,
         interests: formData.interests,
         avatarUrl: formData.avatarUrl,
+        avatarBorderColor: (formData.avatarBorderColor || '').trim(),
         language: formData.language,
         theme: formData.theme,
       });
@@ -297,13 +324,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   };
 
   const handleApplyAvatar = async () => {
-    if (!avatarDraft.trim()) {
-      showToast('Introduce una URL de imagen válida.', 'error');
+    const draft = avatarDraft.trim();
+    if (!draft.startsWith('data:') && !/^https?:\/\//i.test(draft)) {
+      showToast(
+        language === 'en' ? 'Upload an image first (JPG, PNG or WEBP).' : 'Primero sube una imagen (JPG, PNG o WEBP).',
+        'error'
+      );
       return;
     }
     setSaving(true);
     try {
-      const updated = await updateUserProfile(currentUser.id, { avatarUrl: avatarDraft.trim() });
+      const updated = await updateUserProfile(currentUser.id, { avatarUrl: draft });
       onUpdateUser(updated);
       setFormData(updated);
       showToast('Foto de perfil actualizada.', 'success');
@@ -313,6 +344,27 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     } finally {
       setSaving(false);
     }
+  };
+
+  const handleEditProfileAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      showToast(language === 'en' ? 'Pick a valid image file.' : 'Selecciona un archivo de imagen válido.', 'error');
+      return;
+    }
+    if (file.size > 4 * 1024 * 1024) {
+      showToast(language === 'en' ? 'Image too large (max 4MB).' : 'La imagen es demasiado grande (máximo 4MB).', 'error');
+      return;
+    }
+    try {
+      const dataUrl = await fileToDataUrl(file);
+      setFormData((prev) => ({ ...prev, avatarUrl: dataUrl }));
+      showToast(language === 'en' ? 'Photo updated in the form. Save to keep it.' : 'Foto actualizada en el formulario. Guarda para conservarla.', 'info');
+    } catch {
+      showToast(language === 'en' ? 'Could not read the file.' : 'No se pudo leer el archivo.', 'error');
+    }
+    e.target.value = '';
   };
 
   const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -444,6 +496,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     showToast(t.chatRemoved, 'info');
   };
 
+  const editAvatarFrame = getProfileAvatarFrame(formData.avatarBorderColor);
+  const ringCustomValue = formData.avatarBorderColor?.trim() || '#f59e0b';
+
   if (isEditing) {
     return (
       <div className={`p-6 max-w-2xl mx-auto min-h-screen pb-24 lg:pb-10 lg:rounded-3xl lg:border lg:shadow-sm ${
@@ -457,29 +512,141 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         </div>
 
         <div className="space-y-6">
-          <div className="flex justify-center mb-6">
-            <div className="relative">
-              <img
-                src={formData.avatarUrl}
-                className="w-28 h-28 rounded-full object-cover opacity-90 border-4 border-travel-secondary"
-                alt="Perfil"
-                onError={() => setFormData((prev) => ({ ...prev, avatarUrl: getFallbackAvatar(prev.name) }))}
-              />
-              <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <Camera className="text-gray-800 bg-white/50 p-2 rounded-full w-10 h-10" />
+          <div
+            className={`relative overflow-hidden rounded-3xl border p-6 sm:p-8 ${
+              theme === 'dark'
+                ? 'border-slate-600/80 bg-gradient-to-br from-slate-800 via-slate-900 to-slate-950'
+                : 'border-travel-primary/15 bg-gradient-to-br from-amber-50/90 via-white to-sky-50/80'
+            }`}
+          >
+            <div
+              className={`pointer-events-none absolute -right-16 -top-16 h-48 w-48 rounded-full blur-3xl ${
+                theme === 'dark' ? 'bg-fuchsia-600/25' : 'bg-travel-primary/25'
+              }`}
+              aria-hidden
+            />
+            <div
+              className={`pointer-events-none absolute -bottom-20 -left-10 h-56 w-56 rounded-full blur-3xl ${
+                theme === 'dark' ? 'bg-cyan-500/20' : 'bg-sky-300/30'
+              }`}
+              aria-hidden
+            />
+
+            <div className="relative flex flex-col items-center text-center">
+              <div className="mb-1 inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold uppercase tracking-wide shadow-sm bg-white/70 text-travel-dark border-travel-primary/20 dark:bg-slate-800/90 dark:text-amber-100/90 dark:border-slate-600">
+                <Sparkles size={14} className="text-travel-primary shrink-0" />
+                {t.avatarLookTitle}
+              </div>
+              <p className={`mt-2 max-w-sm text-sm leading-relaxed ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                {t.avatarLookSubtitle}
+              </p>
+
+              <div className="relative mt-6">
+                <div
+                  className={`absolute inset-0 -m-3 rounded-full blur-xl opacity-70 ${
+                    formData.avatarBorderColor?.trim()
+                      ? ''
+                      : 'bg-gradient-to-tr from-travel-primary/40 to-travel-secondary/50'
+                  }`}
+                  style={
+                    formData.avatarBorderColor?.trim()
+                      ? { background: `${formData.avatarBorderColor}55` }
+                      : undefined
+                  }
+                  aria-hidden
+                />
+                <div className="relative">
+                  <img
+                    src={formData.avatarUrl}
+                    className={`relative z-10 h-32 w-32 rounded-full object-cover shadow-xl ${editAvatarFrame.ringClass}`}
+                    style={editAvatarFrame.ringStyle}
+                    alt=""
+                    onError={() => setFormData((prev) => ({ ...prev, avatarUrl: getFallbackAvatar(prev.name) }))}
+                  />
+                  <label
+                    className={`absolute bottom-0 right-0 z-20 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full border-2 border-white shadow-lg transition hover:scale-105 active:scale-95 ${
+                      theme === 'dark' ? 'bg-travel-primary text-white' : 'bg-travel-primary text-white'
+                    }`}
+                  >
+                    <input type="file" accept="image/*" className="sr-only" onChange={handleEditProfileAvatarFile} />
+                    <Upload size={18} strokeWidth={2.2} aria-hidden />
+                    <span className="sr-only">{t.pickPhoto}</span>
+                  </label>
+                </div>
+              </div>
+
+              <p className={`mt-4 text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t.saveAvatarHint}</p>
+
+              <div className="mt-6 w-full max-w-md">
+                <p
+                  className={`mb-3 flex items-center justify-center gap-2 text-xs font-bold uppercase tracking-wider ${
+                    theme === 'dark' ? 'text-gray-400' : 'text-gray-500'
+                  }`}
+                >
+                  <span className="h-px flex-1 max-w-[4rem] bg-gradient-to-r from-transparent to-current opacity-40" />
+                  {t.ringFrameLabel}
+                  <span className="h-px flex-1 max-w-[4rem] bg-gradient-to-l from-transparent to-current opacity-40" />
+                </p>
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  {AVATAR_RING_PRESETS.map((preset) => {
+                    const active =
+                      preset.color === ''
+                        ? !formData.avatarBorderColor?.trim()
+                        : formData.avatarBorderColor?.trim().toLowerCase() === preset.color.toLowerCase();
+                    return (
+                      <button
+                        key={preset.key}
+                        type="button"
+                        title={preset.color === '' ? t.ringBrand : preset.color}
+                        onClick={() =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            avatarBorderColor: preset.color === '' ? '' : preset.color,
+                          }))
+                        }
+                        className={`relative h-10 w-10 rounded-full border-2 transition hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-primary focus-visible:ring-offset-2 ${
+                          active
+                            ? 'border-travel-dark ring-2 ring-travel-primary ring-offset-2 dark:border-white dark:ring-offset-slate-900'
+                            : theme === 'dark'
+                              ? 'border-slate-600'
+                              : 'border-white shadow-md'
+                        }`}
+                        style={
+                          preset.color
+                            ? {
+                                background: `linear-gradient(145deg, ${preset.color}, ${preset.color}cc)`,
+                                boxShadow: `0 4px 14px -4px ${preset.color}`,
+                              }
+                            : {
+                                background: 'linear-gradient(145deg, #fbbf24, #f97316)',
+                              }
+                        }
+                      >
+                        {preset.color === '' && (
+                          <span className="absolute inset-0 flex items-center justify-center text-[9px] font-bold text-white drop-shadow">
+                            TM
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+                <div
+                  className={`mt-4 flex items-center justify-center gap-3 rounded-2xl border px-3 py-2 ${
+                    theme === 'dark' ? 'border-slate-600 bg-slate-800/60' : 'border-gray-200 bg-white/80'
+                  }`}
+                >
+                  <span className={`text-xs font-medium ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.ringCustom}</span>
+                  <input
+                    type="color"
+                    value={ringCustomValue}
+                    onChange={(e) => setFormData((prev) => ({ ...prev, avatarBorderColor: e.target.value }))}
+                    className="h-9 w-14 cursor-pointer overflow-hidden rounded-lg border-0 bg-transparent p-0 shadow-inner"
+                    aria-label={t.ringCustom}
+                  />
+                </div>
               </div>
             </div>
-          </div>
-
-          <div className="space-y-2">
-            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>URL de la foto</label>
-            <input
-              type="url"
-              value={formData.avatarUrl}
-              onChange={(e) => setFormData({ ...formData, avatarUrl: e.target.value })}
-              className={inputClass}
-              placeholder="https://..."
-            />
           </div>
 
           <div className="space-y-2">
@@ -578,6 +745,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
+  const profileHeaderFrame = getProfileAvatarFrame(currentUser.avatarBorderColor);
+
   const appearanceBlock = (
     <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
       <h3 className={`text-xs font-bold uppercase mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`}>{t.appearanceLanguage}</h3>
@@ -634,7 +803,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className="relative inline-block">
             <img
               src={avatarSrc}
-              className="w-28 h-28 rounded-full border-4 border-travel-secondary object-cover"
+              className={`w-28 h-28 rounded-full object-cover ${profileHeaderFrame.ringClass}`}
+              style={profileHeaderFrame.ringStyle}
               alt="Perfil"
               onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
             />
@@ -901,13 +1071,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             {settingsPanel === 'photo' && (
               <>
                 <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t.profilePictureHint}</p>
-                <input
-                  type="url"
-                  value={avatarDraft}
-                  onChange={(e) => setAvatarDraft(e.target.value)}
-                  className={inputClass}
-                  placeholder="https://..."
-                />
                 <input
                   type="file"
                   accept="image/*"
