@@ -132,29 +132,53 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
         )}
       </aside>
 
-      <nav className={`lg:hidden fixed bottom-0 left-0 w-full px-6 py-3 pb-6 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 ${
+      <nav className={`lg:hidden fixed bottom-0 left-0 w-full px-2 pt-2 pb-4 shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] z-50 ${
         isDark ? 'bg-slate-900 border-t border-slate-700' : 'bg-white border-t border-gray-200'
       }`}>
-        <div className="flex justify-between items-center max-w-md mx-auto">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isActive = currentView === item.id;
-            return (
-              <button
-                key={item.id}
-                type="button"
-                onClick={() => onChangeView(item.id)}
-                className={`flex min-w-[3.25rem] flex-col items-center gap-1 rounded-xl px-1 py-1 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
-                  isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'
-                } ${
-                  isActive ? 'text-travel-accent' : 'text-gray-400 hover:text-gray-600'
-                }`}
-              >
-                <Icon size={24} strokeWidth={isActive ? 2.5 : 2} />
-                <span className="text-[10px] font-medium">{item.label}</span>
-              </button>
-            );
-          })}
+        <div className="flex items-end justify-center gap-1 max-w-lg mx-auto">
+          {currentUser && (
+            <button
+              type="button"
+              onClick={() => onChangeView('profile')}
+              className={`flex min-w-[3.5rem] max-w-[4.25rem] flex-col items-center gap-0.5 rounded-xl px-1.5 py-1 transition-all active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent ${
+                currentView === 'profile'
+                  ? isDark
+                    ? 'bg-slate-800 ring-1 ring-travel-accent text-travel-accent'
+                    : 'bg-travel-secondary/60 ring-1 ring-travel-primary/50 text-travel-primary'
+                  : isDark
+                    ? 'bg-slate-800/80 text-gray-300'
+                    : 'bg-travel-secondary/40 text-travel-dark'
+              }`}
+            >
+              <SafeImage
+                src={currentUser.avatarUrl}
+                alt=""
+                fallbackSeed={currentUser.id + currentUser.name}
+                variant="avatar"
+                className="w-9 h-9 rounded-full object-cover border-2 border-white"
+              />
+              <span className="text-[9px] font-semibold leading-tight text-center">{t.profile}</span>
+            </button>
+          )}
+          <div className="flex flex-1 justify-between items-end min-w-0 gap-0.5">
+            {mainNavItems.map((item) => {
+              const Icon = item.icon;
+              const isActive = currentView === item.id;
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => onChangeView(item.id)}
+                  className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                    isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'
+                  } ${isActive ? 'text-travel-accent' : 'text-gray-400 hover:text-gray-600'}`}
+                >
+                  <Icon size={22} strokeWidth={isActive ? 2.5 : 2} />
+                  <span className="text-[9px] font-medium text-center leading-tight line-clamp-2">{item.label}</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       </nav>
     </>
