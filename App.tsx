@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, Users, MapPin } from 'lucide-react';
+import { Sparkles, Users, MapPin, Moon, SunMedium } from 'lucide-react';
 import { Navigation } from './components/Navigation';
 import { Onboarding } from './components/Onboarding';
 import { MatchFeed } from './components/MatchFeed';
@@ -22,9 +22,12 @@ interface SavedAccountEntry {
 
 const AUTH_BG_CLASS =
   "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')]";
-/** Móvil: columna única como antes. Escritorio (lg+): fila con panel de marca y panel de acción. */
-const AUTH_OVERLAY_CLASS =
-  "min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative lg:flex-row lg:items-stretch lg:justify-between lg:gap-0 lg:bg-gradient-to-r lg:from-slate-900/88 lg:via-[#2c3e50]/78 lg:to-slate-900/86 lg:p-0 lg:overflow-x-hidden lg:overflow-y-hidden";
+
+/** Panel de autenticación: oscuro o claro según el tema de la app. */
+const authOverlayClass = (isDark: boolean) =>
+  isDark
+    ? 'min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative lg:flex-row lg:items-stretch lg:justify-between lg:gap-0 lg:bg-gradient-to-r lg:from-slate-900/88 lg:via-[#2c3e50]/78 lg:to-slate-900/86 lg:p-0 lg:overflow-x-hidden lg:overflow-y-hidden'
+    : 'min-h-screen bg-gradient-to-b from-white/92 via-amber-50/88 to-travel-secondary/45 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative lg:flex-row lg:items-stretch lg:justify-between lg:gap-0 lg:bg-gradient-to-r lg:from-white/94 lg:via-amber-50/85 lg:to-sky-50/50 lg:p-0 lg:overflow-x-hidden lg:overflow-y-hidden';
 
 type AuthHeroVariant = 'landing' | 'login' | 'register';
 
@@ -40,7 +43,8 @@ const AuthDesktopHero: React.FC<{
   variant: AuthHeroVariant;
   language: LanguageCode;
   t: AuthHeroStrings;
-}> = ({ variant, language, t }) => {
+  isDark: boolean;
+}> = ({ variant, language, t, isDark }) => {
   const features = [
     { Icon: Sparkles, label: t.featureAi },
     { Icon: Users, label: t.featureMatch },
@@ -59,18 +63,34 @@ const AuthDesktopHero: React.FC<{
       ? 'Tell us how you travel and we will match you with people on your wavelength.'
       : 'Cuéntanos cómo viajas y te conectaremos con gente afín.';
 
+  const asideShell = isDark
+    ? 'border-r border-white/10 bg-black/25 shadow-[inset_-1px_0_0_rgba(255,255,255,0.08)]'
+    : 'border-r border-slate-200/70 bg-white/70 shadow-[inset_-1px_0_0_rgba(15,23,42,0.06)]';
+  const logoTile = isDark
+    ? 'border-white/25 bg-white/12 ring-1 ring-white/35'
+    : 'border-slate-200/90 bg-white ring-1 ring-travel-primary/20';
+  const betaBadge = isDark
+    ? 'border-white/25 bg-white/10 text-white/95'
+    : 'border-slate-300/80 bg-travel-secondary/50 text-travel-dark';
+  const heroTitle = isDark ? 'text-white drop-shadow-md' : 'text-slate-900';
+  const heroMuted = isDark ? 'text-white/85' : 'text-slate-600';
+  const featureCard = isDark
+    ? 'border-white/15 bg-white/10 text-white/95'
+    : 'border-slate-200/90 bg-white/95 text-slate-800';
+  const featureIcon = isDark ? 'bg-white/20 text-white' : 'bg-travel-secondary/50 text-travel-dark';
+
   return (
     <aside
-      className="relative hidden min-h-0 flex-1 flex-col justify-center gap-8 border-white/10 bg-black/25 px-8 py-10 shadow-[inset_-1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-md lg:flex xl:max-w-[min(520px,42vw)] xl:px-14 xl:py-14"
+      className={`relative hidden min-h-0 flex-1 flex-col justify-center gap-8 px-8 py-10 backdrop-blur-md lg:flex xl:max-w-[min(520px,42vw)] xl:px-14 xl:py-14 ${asideShell}`}
       aria-hidden="true"
     >
       <div className="flex flex-col gap-6">
         <div className="flex flex-wrap items-center gap-4">
-          <div className="rounded-[2rem] border border-white/25 bg-white/12 p-5 shadow-2xl ring-1 ring-white/35">
+          <div className={`rounded-[2rem] border p-5 shadow-2xl ${logoTile}`}>
             <Logo className="h-20 w-20 xl:h-24 xl:w-24" variant="icon" />
           </div>
           {variant === 'landing' && (
-            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/95">
+            <span className={`inline-flex items-center rounded-full border px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] ${betaBadge}`}>
               {t.beta}
             </span>
           )}
@@ -83,15 +103,19 @@ const AuthDesktopHero: React.FC<{
           <p className="text-xs font-bold uppercase tracking-[0.22em] text-travel-secondary">{registerTitle}</p>
         )}
 
-        <h1 className="max-w-lg text-balance text-2xl font-bold leading-snug text-white drop-shadow-md lg:text-3xl xl:text-[2.15rem] xl:leading-tight">
+        <h1 className={`max-w-lg text-balance text-2xl font-bold leading-snug lg:text-3xl xl:text-[2.15rem] xl:leading-tight ${heroTitle}`}>
           {variant === 'landing' ? t.tagline : variant === 'login' ? loginLead : registerLead}
         </h1>
 
         {variant !== 'landing' && (
-          <p className="max-w-md text-sm leading-relaxed text-white/85">{t.tagline}</p>
+          <p className={`max-w-md text-sm leading-relaxed ${heroMuted}`}>{t.tagline}</p>
         )}
 
-        <div className="hidden rounded-2xl border border-white/15 bg-[#f4e8c1]/95 p-4 shadow-lg ring-1 ring-travel-accent/25 xl:block xl:max-w-sm">
+        <div
+          className={`hidden rounded-2xl border p-4 shadow-lg xl:block xl:max-w-sm ${
+            isDark ? 'border-white/15 bg-[#f4e8c1]/95 ring-1 ring-travel-accent/25' : 'border-slate-200/80 bg-[#f4e8c1]/95 ring-1 ring-travel-accent/20'
+          }`}
+        >
           <Logo className="w-auto" variant="text" />
         </div>
       </div>
@@ -100,9 +124,9 @@ const AuthDesktopHero: React.FC<{
         {features.map(({ Icon, label }) => (
           <li
             key={label}
-            className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-left text-sm font-medium text-white/95 backdrop-blur-sm"
+            className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-left text-sm font-medium backdrop-blur-sm ${featureCard}`}
           >
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+            <span className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-xl ${featureIcon}`}>
               <Icon size={18} strokeWidth={2.2} />
             </span>
             <span className="leading-snug">{label}</span>
@@ -113,14 +137,36 @@ const AuthDesktopHero: React.FC<{
   );
 };
 
-const authLangToggleClass = (active: boolean) =>
+const authLangToggleClass = (active: boolean, isDark: boolean) =>
   `rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-    active ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+    active
+      ? 'bg-travel-primary text-white shadow'
+      : isDark
+        ? 'text-white/80 hover:text-white'
+        : 'text-slate-600 hover:text-travel-dark'
   }`;
 
-const authLangToggleClassLanding = (active: boolean) =>
+const authLangToggleClassLanding = (active: boolean, isDark: boolean) =>
   `rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-    active ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
+    active
+      ? 'bg-travel-primary text-white shadow-md'
+      : isDark
+        ? 'text-white/80 hover:text-white'
+        : 'text-slate-600 hover:text-travel-dark'
+  }`;
+
+const authChromeBar = (isDark: boolean) =>
+  isDark ? 'border-white/15 bg-black/25' : 'border-slate-300/60 bg-white/70';
+
+const authThemeToggleBtn = (active: boolean, isDark: boolean) =>
+  `flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+    active
+      ? isDark
+        ? 'bg-white text-travel-dark shadow'
+        : 'bg-travel-primary text-white shadow'
+      : isDark
+        ? 'text-white/70 hover:bg-white/10 hover:text-white'
+        : 'text-slate-500 hover:bg-slate-100 hover:text-travel-dark'
   }`;
 
 const readSavedAccounts = (): SavedAccountEntry[] => {
@@ -177,6 +223,11 @@ const AppInner: React.FC = () => {
   React.useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark');
     document.documentElement.style.colorScheme = theme === 'dark' ? 'dark' : 'light';
+    try {
+      localStorage.setItem('tm_theme', theme);
+    } catch {
+      /* ignore */
+    }
   }, [theme]);
 
   React.useEffect(() => {
@@ -186,6 +237,15 @@ const AppInner: React.FC = () => {
       setCurrentUser(parsedUser);
       setLanguage(parsedUser.language || 'es');
       setTheme(parsedUser.theme || 'light');
+    } else {
+      try {
+        const storedTheme = localStorage.getItem('tm_theme');
+        if (storedTheme === 'dark' || storedTheme === 'light') {
+          setTheme(storedTheme);
+        }
+      } catch {
+        /* ignore */
+      }
     }
   }, []);
 
@@ -285,25 +345,54 @@ const AppInner: React.FC = () => {
 
   const renderContent = () => {
     if (!currentUser) {
+      const authDark = theme === 'dark';
+
       if (authView === 'login') {
         return (
           <div className={AUTH_BG_CLASS}>
-            <div className={AUTH_OVERLAY_CLASS}>
-              <AuthDesktopHero variant="login" language={language} t={t} />
-              <div className="relative flex min-h-0 flex-1 flex-col lg:max-w-[min(520px,48vw)] lg:shrink-0 lg:overflow-y-auto lg:bg-slate-950/45 lg:px-8 lg:py-10 lg:backdrop-blur-md xl:px-12">
-                <div className="absolute right-4 top-4 z-10 flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md lg:right-8 lg:top-8">
-                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es')}>
-                    ES
-                  </button>
-                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en')}>
-                    EN
-                  </button>
+            <div className={authOverlayClass(authDark)}>
+              <AuthDesktopHero variant="login" language={language} t={t} isDark={authDark} />
+              <div
+                className={`relative flex min-h-0 flex-1 flex-col lg:max-w-[min(520px,48vw)] lg:shrink-0 lg:overflow-y-auto lg:px-8 lg:py-10 lg:backdrop-blur-md xl:px-12 ${
+                  authDark ? 'lg:bg-slate-950/45' : 'lg:bg-white/85'
+                }`}
+              >
+                <div className="absolute right-4 top-4 z-10 flex items-center gap-2 lg:right-8 lg:top-8">
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'light'}
+                      onClick={() => setTheme('light')}
+                      className={authThemeToggleBtn(theme === 'light', authDark)}
+                      title={language === 'en' ? 'Light mode' : 'Modo claro'}
+                    >
+                      <SunMedium size={17} strokeWidth={2.2} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'dark'}
+                      onClick={() => setTheme('dark')}
+                      className={authThemeToggleBtn(theme === 'dark', authDark)}
+                      title={language === 'en' ? 'Dark mode' : 'Modo oscuro'}
+                    >
+                      <Moon size={17} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es', authDark)}>
+                      ES
+                    </button>
+                    <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en', authDark)}>
+                      EN
+                    </button>
+                  </div>
                 </div>
                 <div className="flex flex-1 flex-col pt-12 lg:justify-center lg:pt-16 lg:pb-12">
                   <Login
                     onLoginSuccess={handleLoginSuccess}
                     onBackToLanding={() => setAuthView('landing')}
                     language={language}
+                    theme={theme}
                   />
                 </div>
               </div>
@@ -315,19 +404,51 @@ const AppInner: React.FC = () => {
       if (authView === 'register') {
         return (
           <div className={AUTH_BG_CLASS}>
-            <div className={AUTH_OVERLAY_CLASS}>
-              <AuthDesktopHero variant="register" language={language} t={t} />
-              <div className="relative flex min-h-0 flex-1 flex-col lg:max-w-[min(560px,50vw)] lg:shrink-0 lg:overflow-y-auto lg:bg-slate-950/45 lg:px-6 lg:py-8 lg:backdrop-blur-md xl:max-w-[min(600px,46vw)] xl:px-10">
-                <div className="absolute right-4 top-4 z-10 flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md lg:right-8 lg:top-8">
-                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es')}>
-                    ES
-                  </button>
-                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en')}>
-                    EN
-                  </button>
+            <div className={authOverlayClass(authDark)}>
+              <AuthDesktopHero variant="register" language={language} t={t} isDark={authDark} />
+              <div
+                className={`relative flex min-h-0 flex-1 flex-col lg:max-w-[min(560px,50vw)] lg:shrink-0 lg:overflow-y-auto lg:px-6 lg:py-8 lg:backdrop-blur-md xl:max-w-[min(600px,46vw)] xl:px-10 ${
+                  authDark ? 'lg:bg-slate-950/45' : 'lg:bg-white/85'
+                }`}
+              >
+                <div className="absolute right-4 top-4 z-10 flex items-center gap-2 lg:right-8 lg:top-8">
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'light'}
+                      onClick={() => setTheme('light')}
+                      className={authThemeToggleBtn(theme === 'light', authDark)}
+                      title={language === 'en' ? 'Light mode' : 'Modo claro'}
+                    >
+                      <SunMedium size={17} strokeWidth={2.2} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'dark'}
+                      onClick={() => setTheme('dark')}
+                      className={authThemeToggleBtn(theme === 'dark', authDark)}
+                      title={language === 'en' ? 'Dark mode' : 'Modo oscuro'}
+                    >
+                      <Moon size={17} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es', authDark)}>
+                      ES
+                    </button>
+                    <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en', authDark)}>
+                      EN
+                    </button>
+                  </div>
                 </div>
                 <div className="mt-10 mb-4 flex flex-col items-center justify-center gap-6 animate-fade-in-up lg:hidden">
-                  <div className="rounded-[2.5rem] border border-white/50 bg-white/90 p-6 shadow-2xl ring-1 ring-white/40 backdrop-blur-md">
+                  <div
+                    className={`rounded-[2.5rem] border p-6 shadow-2xl ring-1 backdrop-blur-md ${
+                      authDark
+                        ? 'border-white/50 bg-white/90 ring-white/40'
+                        : 'border-slate-200/90 bg-white ring-travel-primary/10'
+                    }`}
+                  >
                     <Logo className="h-24 w-24" variant="icon" />
                   </div>
                 </div>
@@ -336,6 +457,7 @@ const AppInner: React.FC = () => {
                     onComplete={handleOnboardingComplete}
                     onCancel={() => setAuthView('landing')}
                     language={language}
+                    theme={theme}
                   />
                 </div>
               </div>
@@ -347,40 +469,88 @@ const AppInner: React.FC = () => {
       // Landing inicial con botones de acceso
       return (
         <div className={AUTH_BG_CLASS}>
-          <div className={AUTH_OVERLAY_CLASS}>
-            <AuthDesktopHero variant="landing" language={language} t={t} />
+          <div className={authOverlayClass(authDark)}>
+            <AuthDesktopHero variant="landing" language={language} t={t} isDark={authDark} />
 
-            <div className="flex min-h-0 flex-1 flex-col lg:max-w-[min(440px,40vw)] lg:shrink-0 lg:justify-center lg:overflow-y-auto lg:bg-slate-950/40 lg:px-10 lg:py-12 lg:backdrop-blur-md xl:px-14">
+            <div
+              className={`flex min-h-0 flex-1 flex-col lg:max-w-[min(440px,40vw)] lg:shrink-0 lg:justify-center lg:overflow-y-auto lg:px-10 lg:py-12 lg:backdrop-blur-md xl:px-14 ${
+                authDark ? 'lg:bg-slate-950/40' : 'lg:bg-white/82'
+              }`}
+            >
               <header className="mx-auto mb-2 flex w-full max-w-lg shrink-0 items-center justify-between gap-3 lg:mx-0 lg:mb-8 lg:max-w-none">
-                <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 lg:hidden">
+                <span
+                  className={`inline-flex items-center rounded-full border px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] lg:hidden ${
+                    authDark
+                      ? 'border-white/20 bg-white/10 text-white/90'
+                      : 'border-slate-300/80 bg-white/90 text-travel-dark'
+                  }`}
+                >
                   {t.beta}
                 </span>
                 <span className="hidden lg:inline" aria-hidden="true" />
-                <div className="ml-auto flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md">
-                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClassLanding(language === 'es')}>
-                    ES
-                  </button>
-                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClassLanding(language === 'en')}>
-                    EN
-                  </button>
+                <div className="ml-auto flex items-center gap-2">
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'light'}
+                      onClick={() => setTheme('light')}
+                      className={authThemeToggleBtn(theme === 'light', authDark)}
+                      title={language === 'en' ? 'Light mode' : 'Modo claro'}
+                    >
+                      <SunMedium size={17} strokeWidth={2.2} />
+                    </button>
+                    <button
+                      type="button"
+                      aria-pressed={theme === 'dark'}
+                      onClick={() => setTheme('dark')}
+                      className={authThemeToggleBtn(theme === 'dark', authDark)}
+                      title={language === 'en' ? 'Dark mode' : 'Modo oscuro'}
+                    >
+                      <Moon size={17} strokeWidth={2.2} />
+                    </button>
+                  </div>
+                  <div className={`flex rounded-full border p-0.5 backdrop-blur-md ${authChromeBar(authDark)}`}>
+                    <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClassLanding(language === 'es', authDark)}>
+                      ES
+                    </button>
+                    <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClassLanding(language === 'en', authDark)}>
+                      EN
+                    </button>
+                  </div>
                 </div>
               </header>
 
               <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 animate-fade-in-up lg:flex-none lg:items-stretch lg:py-0">
                 <div className="lg:hidden flex flex-col items-center gap-6">
-                  <div className="bg-white/90 p-8 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/30 transition-transform duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)]">
+                  <div
+                    className={`rounded-[2.5rem] border p-8 shadow-2xl ring-1 backdrop-blur-md transition-transform duration-300 hover:scale-[1.02] ${
+                      authDark
+                        ? 'border-white/50 bg-white/90 ring-white/30 hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)]'
+                        : 'border-slate-200/90 bg-white ring-travel-primary/10 hover:shadow-xl'
+                    }`}
+                  >
                     <Logo className="w-32 h-32" variant="icon" />
                   </div>
-                  <div className="bg-[#f4e8c1] p-5 px-8 rounded-2xl shadow-xl border-4 border-white/90 ring-1 ring-travel-accent/20">
+                  <div
+                    className={`rounded-2xl p-5 px-8 shadow-xl ring-1 ${
+                      authDark
+                        ? 'border-4 border-white/90 bg-[#f4e8c1] ring-travel-accent/20'
+                        : 'border-2 border-slate-200/80 bg-[#f4e8c1] ring-travel-accent/15'
+                    }`}
+                  >
                     <Logo className="w-auto" variant="text" />
                   </div>
                 </div>
 
-                <p className="text-center text-white/95 max-w-md mx-auto text-lg sm:text-xl font-semibold drop-shadow-md tracking-tight px-4 leading-snug lg:hidden">
+                <p
+                  className={`mx-auto max-w-md px-4 text-center text-lg font-semibold leading-snug tracking-tight sm:text-xl lg:hidden ${
+                    authDark ? 'text-white/95 drop-shadow-md' : 'text-slate-800'
+                  }`}
+                >
                   {t.tagline}
                 </p>
 
-                <div className="grid max-w-md mx-auto w-full grid-cols-1 gap-2 px-2 mt-4 sm:grid-cols-3 sm:gap-3 lg:hidden">
+                <div className="mx-auto mt-4 grid w-full max-w-md grid-cols-1 gap-2 px-2 sm:grid-cols-3 sm:gap-3 lg:hidden">
                   {[
                     { Icon: Sparkles, label: t.featureAi },
                     { Icon: Users, label: t.featureMatch },
@@ -388,9 +558,17 @@ const AppInner: React.FC = () => {
                   ].map(({ Icon, label }) => (
                     <div
                       key={label}
-                      className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-xs font-medium text-white/95 backdrop-blur-sm"
+                      className={`flex items-center gap-2 rounded-2xl border px-3 py-2.5 text-left text-xs font-medium backdrop-blur-sm ${
+                        authDark
+                          ? 'border-white/15 bg-white/10 text-white/95'
+                          : 'border-slate-200/90 bg-white/95 text-slate-800'
+                      }`}
                     >
-                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+                      <span
+                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-xl ${
+                          authDark ? 'bg-white/20 text-white' : 'bg-travel-secondary/45 text-travel-dark'
+                        }`}
+                      >
                         <Icon size={16} strokeWidth={2.2} />
                       </span>
                       <span className="leading-tight">{label}</span>
@@ -402,20 +580,34 @@ const AppInner: React.FC = () => {
                   <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-travel-secondary">
                     {language === 'en' ? 'Get started' : 'Comienza'}
                   </p>
-                  <p className="mb-8 max-w-sm text-balance text-xl font-semibold leading-snug text-white drop-shadow">
-                    {language === 'en' ? 'Sign in or create an account to start matching.' : 'Inicia sesión o crea una cuenta para empezar a hacer match.'}
+                  <p
+                    className={`mb-8 max-w-sm text-balance text-xl font-semibold leading-snug ${
+                      authDark ? 'text-white drop-shadow' : 'text-slate-800'
+                    }`}
+                  >
+                    {language === 'en'
+                      ? 'Sign in or create an account to start matching.'
+                      : 'Inicia sesión o crea una cuenta para empezar a hacer match.'}
                   </p>
                 </div>
 
-                <div className="mx-auto mt-8 w-full max-w-xs space-y-3 mb-6 lg:mx-0 lg:mt-0 lg:max-w-none">
-                  <Button fullWidth onClick={() => setAuthView('login')} className="shadow-lg shadow-black/20 lg:py-3.5 lg:text-base">
+                <div className="mx-auto mb-6 mt-8 w-full max-w-xs space-y-3 lg:mx-0 lg:mt-0 lg:max-w-none">
+                  <Button
+                    fullWidth
+                    onClick={() => setAuthView('login')}
+                    className={authDark ? 'shadow-lg shadow-black/20 lg:py-3.5 lg:text-base' : 'shadow-md lg:py-3.5 lg:text-base'}
+                  >
                     {t.login}
                   </Button>
                   <Button
                     fullWidth
                     variant="outline"
                     onClick={() => setAuthView('register')}
-                    className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary lg:py-3.5 lg:text-base"
+                    className={
+                      authDark
+                        ? 'border-white/80 bg-white/10 text-white backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary lg:py-3.5 lg:text-base'
+                        : 'border-travel-primary/50 bg-white/90 text-travel-dark shadow-sm backdrop-blur-sm hover:bg-travel-primary hover:text-white lg:py-3.5 lg:text-base'
+                    }
                   >
                     {t.register}
                   </Button>
@@ -507,11 +699,13 @@ const AppInner: React.FC = () => {
   return (
     <div
       className={`min-h-screen font-sans ${
-        isDark
-          ? 'bg-slate-900 text-gray-100'
-          : isAuthenticated
-            ? 'bg-gradient-to-br from-[#f9f9f9] via-white to-travel-secondary/30 text-gray-800'
-            : 'bg-gray-50 text-gray-800'
+        isAuthenticated
+          ? isDark
+            ? 'bg-slate-900 text-gray-100'
+            : 'bg-gradient-to-br from-[#f9f9f9] via-white to-travel-secondary/30 text-gray-800'
+          : isDark
+            ? 'bg-slate-950 text-gray-100'
+            : 'bg-amber-50/40 text-gray-800'
       }`}
     >
       {isAuthenticated && (

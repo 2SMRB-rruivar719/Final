@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Button } from './Button';
 import { loginUser, recoverAccount } from '../services/api';
-import { LanguageCode, UserProfile } from '../types';
+import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { ChevronLeft } from 'lucide-react';
 import { useToast } from './ToastProvider';
 
@@ -9,9 +9,10 @@ interface LoginProps {
   onLoginSuccess: (user: UserProfile) => void;
   onBackToLanding: () => void;
   language: LanguageCode;
+  theme?: ThemeMode;
 }
 
-export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, language }) => {
+export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, language, theme = 'light' }) => {
   const saveAccountForQuickSwitch = (user: UserProfile) => {
     try {
       const raw = localStorage.getItem('tm_saved_accounts');
@@ -51,8 +52,23 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
-  const inputClass = 'w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
-  const labelClass = 'text-sm font-medium text-gray-800';
+  const isDark = theme === 'dark';
+  const inputClass = isDark
+    ? 'w-full p-3 border border-slate-600 rounded-xl focus:ring-2 focus:ring-travel-secondary focus:outline-none bg-slate-800/90 text-gray-100 placeholder:text-gray-400'
+    : 'w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
+  const labelClass = isDark ? 'text-sm font-medium text-gray-200' : 'text-sm font-medium text-gray-800';
+  const cardClass = isDark
+    ? 'mx-auto mt-10 mb-20 flex h-full w-full max-w-md animate-fade-in flex-col rounded-2xl border border-white/15 bg-slate-900/80 p-6 shadow-xl backdrop-blur-md lg:mx-0 lg:mt-4 lg:mb-8 lg:max-w-md lg:p-8'
+    : 'mx-auto mt-10 mb-20 flex h-full w-full max-w-md animate-fade-in flex-col rounded-2xl border border-slate-200/90 bg-white/95 p-6 shadow-xl backdrop-blur-sm lg:mx-0 lg:mt-4 lg:mb-8 lg:max-w-md lg:p-8';
+  const titleClass = isDark ? 'mb-6 text-center text-2xl font-bold text-gray-100 lg:text-left lg:text-3xl' : 'mb-6 text-center text-2xl font-bold text-travel-dark lg:text-left lg:text-3xl';
+  const backBtnClass = isDark
+    ? 'flex items-center gap-1 self-start text-left text-sm text-gray-300 hover:text-travel-secondary'
+    : 'flex items-center gap-1 self-start text-left text-sm text-gray-700 hover:text-travel-primary';
+  const linkBtnClass = isDark
+    ? 'mt-3 self-start text-sm text-travel-secondary hover:text-amber-200 hover:underline lg:mt-4'
+    : 'mt-3 self-start text-sm text-gray-700 hover:text-travel-accent hover:underline lg:mt-4';
+  const recoverTitleClass = isDark ? 'text-sm font-semibold text-gray-100' : 'text-sm font-semibold text-gray-800';
+  const dividerClass = isDark ? 'mt-4 space-y-3 border-t border-slate-600 pt-4 lg:mt-6 lg:pt-6' : 'mt-4 space-y-3 border-t border-gray-200 pt-4 lg:mt-6 lg:pt-6';
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -145,12 +161,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
   };
 
   return (
-    <div className="mx-auto mt-10 mb-20 flex h-full w-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/90 p-6 shadow-xl backdrop-blur-sm lg:mx-0 lg:mt-4 lg:mb-8 lg:max-w-md lg:p-8">
+    <div className={cardClass}>
       <div className="mb-2 shrink-0">
         <button
           type="button"
           onClick={onBackToLanding}
-          className="flex items-center gap-1 self-start text-left text-sm text-gray-700 hover:text-travel-primary"
+          className={backBtnClass}
         >
           <ChevronLeft size={18} />
           <span>{t.back}</span>
@@ -158,7 +174,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       </div>
 
       <div className="min-w-0 flex-1">
-        <h2 className="mb-6 text-center text-2xl font-bold text-travel-dark lg:text-left lg:text-3xl">
+        <h2 className={titleClass}>
           {t.title}
         </h2>
 
@@ -205,7 +221,7 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
 
         <button
           type="button"
-          className="mt-3 self-start text-sm text-gray-700 hover:text-travel-accent hover:underline lg:mt-4"
+          className={linkBtnClass}
           onClick={() => {
             setShowRecover((prev) => !prev);
             setError(null);
@@ -221,9 +237,9 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
         {showRecover && (
           <form
             onSubmit={handleRecover}
-            className="mt-4 space-y-3 border-t border-gray-200 pt-4 lg:mt-6 lg:pt-6"
+            className={dividerClass}
           >
-            <h3 className="text-sm font-semibold text-gray-800">{t.recoverTitle}</h3>
+            <h3 className={recoverTitleClass}>{t.recoverTitle}</h3>
             <input
               type="email"
               className={inputClass}

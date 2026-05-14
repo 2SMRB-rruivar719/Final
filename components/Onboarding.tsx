@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { UserProfile, TravelStyle, UserRole, LanguageCode, UserSex } from '../types';
+import { UserProfile, TravelStyle, UserRole, LanguageCode, UserSex, ThemeMode } from '../types';
 import { Button } from './Button';
 import { Compass, Calendar, DollarSign, MapPin, User, Check, ChevronLeft } from 'lucide-react';
 import { registerUser, RegisterPayload } from '../services/api';
@@ -9,9 +9,10 @@ interface OnboardingProps {
   onComplete: (profile: UserProfile) => void;
   onCancel?: () => void;
   language: LanguageCode;
+  theme?: ThemeMode;
 }
 
-export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, language }) => {
+export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, language, theme = 'light' }) => {
   const t = language === 'en'
     ? {
         back: 'Back',
@@ -69,8 +70,20 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const { showToast } = useToast();
-  const inputClass = 'w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
-  const labelClass = 'text-sm font-medium text-gray-800';
+  const isDark = theme === 'dark';
+  const shellClass = isDark
+    ? 'mx-auto flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-white/15 bg-slate-900/75 p-6 shadow-xl backdrop-blur-md mt-4 mb-20 lg:mx-0 lg:mb-10 lg:mt-0 lg:max-h-[min(720px,calc(100vh-7rem))] lg:max-w-xl lg:overflow-y-auto lg:p-8 xl:max-w-2xl'
+    : 'mx-auto flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-slate-200/90 bg-white/90 p-6 shadow-xl backdrop-blur-sm mt-4 mb-20 lg:mx-0 lg:mb-10 lg:mt-0 lg:max-h-[min(720px,calc(100vh-7rem))] lg:max-w-xl lg:overflow-y-auto lg:p-8 xl:max-w-2xl';
+  const inputClass = isDark
+    ? 'w-full p-3 border border-slate-600 rounded-xl focus:ring-2 focus:ring-travel-secondary focus:outline-none bg-slate-800/90 text-gray-100 placeholder:text-gray-400'
+    : 'w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
+  const labelClass = isDark ? 'text-sm font-medium text-gray-200' : 'text-sm font-medium text-gray-800';
+  const backBtnClass = isDark
+    ? 'flex items-center gap-1 text-sm text-gray-300 mb-4 hover:text-travel-secondary text-left'
+    : 'flex items-center gap-1 text-sm text-gray-700 mb-4 hover:text-travel-primary text-left';
+  const progressTrack = isDark ? 'w-full bg-slate-700 h-2 rounded-full mb-8' : 'w-full bg-gray-200 h-2 rounded-full mb-8';
+  const stepTitleClass = isDark ? 'text-2xl font-bold text-gray-100 text-center' : 'text-2xl font-bold text-travel-dark text-center';
+  const dateHintClass = isDark ? 'text-xs text-gray-400 block mb-1' : 'text-xs text-gray-700 block mb-1';
 
   const tripDatesAreValid = (): boolean => {
     const start = formData.tripStartDate?.trim();
@@ -220,7 +233,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         interests: formData.interests || [],
         avatarUrl: formData.avatarUrl,
         language,
-        theme: 'light',
+        theme,
       };
       console.log('[API][REGISTER] Enviando petición de registro a backend', {
         endpoint: '/api/auth/register',
@@ -302,18 +315,18 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   };
 
   return (
-    <div className="mx-auto flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/50 p-6 shadow-xl backdrop-blur-sm mt-4 mb-20 lg:mx-0 lg:mb-10 lg:mt-0 lg:max-h-[min(720px,calc(100vh-7rem))] lg:max-w-xl lg:overflow-y-auto lg:p-8 xl:max-w-2xl">
+    <div className={shellClass}>
       <button
         type="button"
         onClick={handleBack}
-        className="flex items-center gap-1 text-sm text-gray-700 mb-4 hover:text-travel-primary text-left"
+        className={backBtnClass}
       >
         <ChevronLeft size={18} />
         <span>{t.back}</span>
       </button>
       <div className="flex-1">
         {/* Progress Bar */}
-        <div className="w-full bg-gray-200 h-2 rounded-full mb-8">
+        <div className={progressTrack}>
           <div 
             className="bg-travel-primary h-2 rounded-full transition-all duration-300"
             style={{ width: `${(step / 3) * 100}%` }}
@@ -322,7 +335,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 1 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.aboutYou}</h2>
+            <h2 className={stepTitleClass}>{t.aboutYou}</h2>
             
             <div className="space-y-2">
               <label className={`${labelClass} flex items-center gap-2`}>
@@ -356,7 +369,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
               </label>
               <div className="grid grid-cols-2 gap-2">
                 <div>
-                  <span className="text-xs text-gray-700 block mb-1">{t.outbound}</span>
+                  <span className={dateHintClass}>{t.outbound}</span>
                   <input
                     type="date"
                     className={`${inputClass} text-sm`}
@@ -368,7 +381,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                   />
                 </div>
                 <div>
-                  <span className="text-xs text-gray-700 block mb-1">{t.return}</span>
+                  <span className={dateHintClass}>{t.return}</span>
                   <input
                     type="date"
                     className={`${inputClass} text-sm`}
@@ -503,7 +516,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 2 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.travelStyle}</h2>
+            <h2 className={stepTitleClass}>{t.travelStyle}</h2>
             
             <div className="space-y-2">
               <label className={`${labelClass} flex items-center gap-2`}>
@@ -551,7 +564,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
         {step === 3 && (
           <div className="space-y-6">
-            <h2 className="text-2xl font-bold text-travel-dark text-center">{t.interests}</h2>
+            <h2 className={stepTitleClass}>{t.interests}</h2>
             <p className="text-gray-700 text-center text-sm">Escribe tus intereses separados por comas para mejorar el matching con IA.</p>
             
             <textarea
