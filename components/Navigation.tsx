@@ -47,7 +47,9 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
     { id: 'settings', icon: Settings, label: t.settings },
   ];
 
-  const navAvatarFrame = currentUser ? getProfileAvatarFrame(currentUser.avatarBorderColor) : { ringClass: '', ringStyle: {} };
+  const navAvatarFrame = currentUser
+    ? getProfileAvatarFrame(currentUser.avatarBorderColor, currentUser.avatarRingStyle)
+    : { ringClass: '', ringStyle: {} };
 
   const profileCardClass = `mt-auto w-full rounded-2xl border text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
     currentView === 'profile'

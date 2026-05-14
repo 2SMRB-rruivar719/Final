@@ -26,6 +26,14 @@ export interface UserProfile {
   avatarUrl: string;
   /** Color del borde del avatar (hex, ej. #f97316). Vacío = estilo por defecto de la app. */
   avatarBorderColor?: string;
+  /** Estilo del borde: sólido, doble anillo o brillo. */
+  avatarRingStyle?: 'solid' | 'double' | 'glow' | '';
+  /** Fondo del bloque superior del perfil (preset). */
+  profileCoverId?: string;
+  /** Un emoji junto al nombre (1 carácter visual aprox.). */
+  profileMoodEmoji?: string;
+  /** Frase corta bajo el nombre en el perfil (máx. ~48 en UI). */
+  profileTagline?: string;
   destination: string;
   /** Resumen legible (p. ej. ida → vuelta); mantener por compatibilidad */
   dates: string;

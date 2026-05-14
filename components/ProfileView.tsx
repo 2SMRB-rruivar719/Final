@@ -9,12 +9,12 @@ import {
   SunMedium,
   Trash2,
   CalendarClock,
-  ImageIcon,
   Pencil,
   Ban,
   KeyRound,
   Upload,
   Sparkles,
+  Paintbrush,
 } from 'lucide-react';
 import { Button } from './Button';
 import { useToast } from './ToastProvider';
@@ -33,6 +33,7 @@ import {
   BLOCKLIST_CHANGED_EVENT,
 } from '../services/blockedUsers';
 import { getProfileAvatarFrame } from '../utils/avatarBorder';
+import { PROFILE_COVER_OPTIONS, profileCoverSectionClass } from '../utils/profileCover';
 
 const AVATAR_RING_PRESETS: { color: string; key: string }[] = [
   { key: 'brand', color: '' },
@@ -97,6 +98,12 @@ const fileToDataUrl = (file: File) =>
     reader.readAsDataURL(file);
   });
 
+const takeFirstGrapheme = (raw?: string) => {
+  const t = (raw || '').trim();
+  if (!t) return '';
+  return [...t][0] ?? '';
+};
+
 interface SavedAccountEntry {
   id: string;
   profile: UserProfile;
@@ -118,10 +125,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
   const [isEditing, setIsEditing] = useState(false);
   const [formData, setFormData] = useState<UserProfile>(currentUser);
   const [saving, setSaving] = useState(false);
-  const [avatarDraft, setAvatarDraft] = useState(currentUser.avatarUrl);
   const [avatarSrc, setAvatarSrc] = useState(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   const [deletionDateInput, setDeletionDateInput] = useState('');
-  const [settingsPanel, setSettingsPanel] = useState<'photo' | 'security' | null>(null);
+  const [settingsPanel, setSettingsPanel] = useState<'security' | null>(null);
   const [passwordCurrent, setPasswordCurrent] = useState('');
   const [passwordNew, setPasswordNew] = useState('');
   const [passwordConfirm, setPasswordConfirm] = useState('');
@@ -158,22 +164,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         activate: 'Enable',
         deactivate: 'Disable',
         accountSecurity: 'Account and security',
-        profilePicture: 'Profile picture',
         switchAccount: 'Switch profile',
         savedAccounts: 'Saved accounts',
         noSavedAccounts: 'No saved accounts yet.',
         useThisAccount: 'Use this account',
-        uploadFile: 'Upload file',
-        applyPhoto: 'Apply photo',
         scheduledDeletion: 'Scheduled deletion',
-        profilePictureHint: 'Upload a file (JPG, PNG, WEBP, max 4MB), then apply.',
         pickPhoto: 'Choose photo',
         avatarLookTitle: 'Your look',
-        avatarLookSubtitle: 'Upload a photo and pick a frame that feels like you.',
-        ringFrameLabel: 'Avatar frame',
+        avatarLookSubtitle: 'Upload a photo, frame, and vibe — save when you are ready.',
+        ringFrameLabel: 'Frame color',
         ringBrand: 'Brand',
         ringCustom: 'Custom color',
-        saveAvatarHint: 'Changes are saved with “Save changes”.',
+        ringStyleLabel: 'Frame style',
+        ringStyleSolid: 'Solid',
+        ringStyleDouble: 'Double',
+        ringStyleGlow: 'Glow',
+        saveAvatarHint: 'Photo, frame, and vibe are saved with “Save changes”.',
+        vibeSectionTitle: 'Your profile vibe',
+        vibeSectionSubtitle: 'Backdrop, a short line, and a fun emoji next to your name.',
+        profileBackdropLabel: 'Header backdrop',
+        profileTaglineLabel: 'Tagline under your name',
+        profileTaglinePlaceholder: 'e.g. Chasing sunsets & cheap flights',
+        profileEmojiLabel: 'Emoji badge',
+        profileEmojiPlaceholder: '✈️',
         passwordSection: 'Password',
         currentPasswordLabel: 'Current password',
         newPasswordLabel: 'New password',
@@ -210,22 +223,29 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         activate: 'Activar',
         deactivate: 'Desactivar',
         accountSecurity: 'Cuenta y seguridad',
-        profilePicture: 'Foto de perfil',
         switchAccount: 'Cambiar de perfil',
         savedAccounts: 'Cuentas guardadas',
         noSavedAccounts: 'Aún no tienes cuentas guardadas.',
         useThisAccount: 'Usar esta cuenta',
-        uploadFile: 'Subir archivo',
-        applyPhoto: 'Aplicar foto',
         scheduledDeletion: 'Borrado programado',
-        profilePictureHint: 'Sube un archivo (JPG, PNG, WEBP, máx. 4MB) y pulsa aplicar.',
         pickPhoto: 'Elegir foto',
         avatarLookTitle: 'Tu look',
-        avatarLookSubtitle: 'Sube una foto y elige un marco que te represente.',
-        ringFrameLabel: 'Marco del avatar',
+        avatarLookSubtitle: 'Sube foto, marco y estilo; todo se guarda al final.',
+        ringFrameLabel: 'Color del marco',
         ringBrand: 'Marca',
         ringCustom: 'Color libre',
-        saveAvatarHint: 'Los cambios del marco y la foto se guardan con «Guardar cambios».',
+        ringStyleLabel: 'Estilo del marco',
+        ringStyleSolid: 'Sólido',
+        ringStyleDouble: 'Doble',
+        ringStyleGlow: 'Brillo',
+        saveAvatarHint: 'Foto, marco y vibe se guardan con «Guardar cambios».',
+        vibeSectionTitle: 'Tu vibe de perfil',
+        vibeSectionSubtitle: 'Fondo del encabezado, una frase corta y un emoji junto al nombre.',
+        profileBackdropLabel: 'Fondo del perfil',
+        profileTaglineLabel: 'Frase bajo tu nombre',
+        profileTaglinePlaceholder: 'ej. Nómada digital · café y mapas',
+        profileEmojiLabel: 'Emoji junto al nombre',
+        profileEmojiPlaceholder: '✈️',
         passwordSection: 'Contraseña',
         currentPasswordLabel: 'Contraseña actual',
         newPasswordLabel: 'Nueva contraseña',
@@ -246,7 +266,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   useEffect(() => {
     setFormData(currentUser);
-    setAvatarDraft(currentUser.avatarUrl);
     setAvatarSrc(currentUser.avatarUrl || getFallbackAvatar(currentUser.name));
   }, [currentUser]);
 
@@ -301,12 +320,16 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         interests: formData.interests,
         avatarUrl: formData.avatarUrl,
         avatarBorderColor: (formData.avatarBorderColor || '').trim(),
+        avatarRingStyle:
+          formData.avatarRingStyle === 'double' || formData.avatarRingStyle === 'glow' ? formData.avatarRingStyle : '',
+        profileCoverId: (formData.profileCoverId || 'default').trim() || 'default',
+        profileMoodEmoji: takeFirstGrapheme(formData.profileMoodEmoji),
+        profileTagline: (formData.profileTagline || '').trim().slice(0, 48),
         language: formData.language,
         theme: formData.theme,
       });
       onUpdateUser(updated);
       setFormData(updated);
-      setAvatarDraft(updated.avatarUrl);
       setIsEditing(false);
       showToast('Perfil actualizado.', 'success');
     } catch (e: unknown) {
@@ -319,31 +342,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
   const handleCancel = () => {
     setFormData(currentUser);
-    setAvatarDraft(currentUser.avatarUrl);
     setIsEditing(false);
-  };
-
-  const handleApplyAvatar = async () => {
-    const draft = avatarDraft.trim();
-    if (!draft.startsWith('data:') && !/^https?:\/\//i.test(draft)) {
-      showToast(
-        language === 'en' ? 'Upload an image first (JPG, PNG or WEBP).' : 'Primero sube una imagen (JPG, PNG o WEBP).',
-        'error'
-      );
-      return;
-    }
-    setSaving(true);
-    try {
-      const updated = await updateUserProfile(currentUser.id, { avatarUrl: draft });
-      onUpdateUser(updated);
-      setFormData(updated);
-      showToast('Foto de perfil actualizada.', 'success');
-    } catch (e: unknown) {
-      const msg = e instanceof Error ? e.message : 'No se pudo actualizar la foto.';
-      showToast(msg, 'error');
-    } finally {
-      setSaving(false);
-    }
   };
 
   const handleEditProfileAvatarFile = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -365,27 +364,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
       showToast(language === 'en' ? 'Could not read the file.' : 'No se pudo leer el archivo.', 'error');
     }
     e.target.value = '';
-  };
-
-  const handleAvatarFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    if (!file.type.startsWith('image/')) {
-      showToast('Selecciona un archivo de imagen válido.', 'error');
-      return;
-    }
-    if (file.size > 4 * 1024 * 1024) {
-      showToast('La imagen es demasiado grande (máximo 4MB).', 'error');
-      return;
-    }
-    try {
-      const dataUrl = await fileToDataUrl(file);
-      setAvatarDraft(dataUrl);
-      setAvatarSrc(dataUrl);
-      showToast('Imagen cargada. Pulsa en aplicar para guardar.', 'info');
-    } catch {
-      showToast('No se pudo leer el archivo.', 'error');
-    }
   };
 
   const handleDeleteNow = async () => {
@@ -496,7 +474,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     showToast(t.chatRemoved, 'info');
   };
 
-  const editAvatarFrame = getProfileAvatarFrame(formData.avatarBorderColor);
+  const editAvatarFrame = getProfileAvatarFrame(formData.avatarBorderColor, formData.avatarRingStyle);
   const ringCustomValue = formData.avatarBorderColor?.trim() || '#f59e0b';
 
   if (isEditing) {
@@ -645,7 +623,122 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                     aria-label={t.ringCustom}
                   />
                 </div>
+                <div className="mt-5 w-full">
+                  <p
+                    className={`mb-2 text-center text-[10px] font-bold uppercase tracking-wider ${
+                      theme === 'dark' ? 'text-gray-500' : 'text-gray-500'
+                    }`}
+                  >
+                    {t.ringStyleLabel}
+                  </p>
+                  <div className="flex flex-wrap justify-center gap-2">
+                    {(
+                      [
+                        { id: '' as const, label: t.ringStyleSolid },
+                        { id: 'double' as const, label: t.ringStyleDouble },
+                        { id: 'glow' as const, label: t.ringStyleGlow },
+                      ] as const
+                    ).map((opt) => {
+                      const active =
+                        opt.id === ''
+                          ? formData.avatarRingStyle !== 'double' && formData.avatarRingStyle !== 'glow'
+                          : formData.avatarRingStyle === opt.id;
+                      return (
+                        <button
+                          key={opt.id || 'solid'}
+                          type="button"
+                          onClick={() =>
+                            setFormData((prev) => ({
+                              ...prev,
+                              avatarRingStyle: opt.id,
+                            }))
+                          }
+                          className={`rounded-full px-4 py-2 text-xs font-semibold transition ${
+                            active
+                              ? 'bg-travel-primary text-white shadow-md shadow-travel-primary/30'
+                              : theme === 'dark'
+                                ? 'bg-slate-800 text-gray-300 ring-1 ring-slate-600 hover:bg-slate-700'
+                                : 'bg-white/90 text-gray-700 ring-1 ring-gray-200 hover:bg-gray-50'
+                          }`}
+                        >
+                          {opt.label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
+            </div>
+          </div>
+
+          <div
+            className={`rounded-3xl border p-5 sm:p-6 shadow-sm ${
+              theme === 'dark' ? 'border-slate-600/80 bg-slate-800/40' : 'border-gray-200/90 bg-white/90'
+            }`}
+          >
+            <div className="mb-4 flex flex-col items-center gap-1 text-center sm:flex-row sm:justify-center sm:gap-3">
+              <span className="inline-flex h-10 w-10 items-center justify-center rounded-2xl bg-travel-primary/15 text-travel-primary">
+                <Paintbrush size={20} />
+              </span>
+              <div>
+                <h3 className={`text-sm font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>{t.vibeSectionTitle}</h3>
+                <p className={`text-xs ${theme === 'dark' ? 'text-gray-500' : 'text-gray-500'}`}>{t.vibeSectionSubtitle}</p>
+              </div>
+            </div>
+
+            <p className={`mb-2 text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.profileBackdropLabel}</p>
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+              {PROFILE_COVER_OPTIONS.map((opt) => {
+                const active = (formData.profileCoverId || 'default') === opt.id;
+                const preview = profileCoverSectionClass(opt.id, theme);
+                return (
+                  <button
+                    key={opt.id}
+                    type="button"
+                    onClick={() => setFormData((prev) => ({ ...prev, profileCoverId: opt.id }))}
+                    className={`group relative overflow-hidden rounded-2xl border-2 p-0 text-left transition hover:scale-[1.02] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-primary ${
+                      active
+                        ? 'border-travel-primary ring-2 ring-travel-primary/40'
+                        : theme === 'dark'
+                          ? 'border-slate-600 hover:border-slate-500'
+                          : 'border-gray-200 hover:border-gray-300'
+                    }`}
+                  >
+                    <div className={`h-14 w-full ${preview}`} aria-hidden />
+                    <span
+                      className={`block px-2 py-1.5 text-center text-[10px] font-bold uppercase tracking-wide ${
+                        theme === 'dark' ? 'bg-slate-900/85 text-gray-200' : 'bg-white/90 text-gray-700'
+                      }`}
+                    >
+                      {language === 'en' ? opt.labelEn : opt.labelEs}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+
+            <div className="mt-4 space-y-2">
+              <label className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.profileTaglineLabel}</label>
+              <input
+                type="text"
+                value={formData.profileTagline || ''}
+                maxLength={48}
+                onChange={(e) => setFormData({ ...formData, profileTagline: e.target.value })}
+                placeholder={t.profileTaglinePlaceholder}
+                className={inputClass}
+              />
+            </div>
+
+            <div className="mt-3 space-y-2">
+              <label className={`text-xs font-semibold ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>{t.profileEmojiLabel}</label>
+              <input
+                type="text"
+                value={formData.profileMoodEmoji || ''}
+                maxLength={8}
+                onChange={(e) => setFormData({ ...formData, profileMoodEmoji: e.target.value })}
+                placeholder={t.profileEmojiPlaceholder}
+                className={`${inputClass} text-center text-2xl tracking-tight`}
+              />
             </div>
           </div>
 
@@ -745,7 +838,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
-  const profileHeaderFrame = getProfileAvatarFrame(currentUser.avatarBorderColor);
+  const profileHeaderFrame = getProfileAvatarFrame(currentUser.avatarBorderColor, currentUser.avatarRingStyle);
+  const profileCoverClass = profileCoverSectionClass(currentUser.profileCoverId, theme);
 
   const appearanceBlock = (
     <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
@@ -799,21 +893,43 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         : 'bg-white lg:border-gray-100'
     }`}>
       {section === 'profile' && (
-        <div className="text-center mb-6 mt-6">
-          <div className="relative inline-block">
-            <img
-              src={avatarSrc}
-              className={`w-28 h-28 rounded-full object-cover ${profileHeaderFrame.ringClass}`}
-              style={profileHeaderFrame.ringStyle}
-              alt="Perfil"
-              onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
-            />
+        <div className={`-mx-6 -mt-2 mb-6 rounded-b-[2rem] px-6 pb-8 pt-8 ${profileCoverClass}`}>
+          <div className="text-center">
+            <div className="relative inline-block">
+              <img
+                src={avatarSrc}
+                className={`w-28 h-28 rounded-full object-cover ${profileHeaderFrame.ringClass}`}
+                style={profileHeaderFrame.ringStyle}
+                alt="Perfil"
+                onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
+              />
+            </div>
+            <h2
+              className={`mt-4 flex flex-wrap items-center justify-center gap-2 text-2xl font-bold ${
+                theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'
+              }`}
+            >
+              {currentUser.profileMoodEmoji ? (
+                <span className="select-none text-3xl leading-none" aria-hidden>
+                  {takeFirstGrapheme(currentUser.profileMoodEmoji)}
+                </span>
+              ) : null}
+              <span>
+                {currentUser.name}, {currentUser.age}
+              </span>
+            </h2>
+            {currentUser.profileTagline?.trim() ? (
+              <p
+                className={`mx-auto mt-2 max-w-md text-sm font-medium italic ${
+                  theme === 'dark' ? 'text-amber-200/90' : 'text-travel-primary'
+                }`}
+              >
+                {currentUser.profileTagline.trim()}
+              </p>
+            ) : null}
+            <p className={`mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>{currentUser.country}</p>
+            <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} mt-1 text-sm`}>{currentUser.email}</p>
           </div>
-          <h2 className={`text-2xl font-bold mt-4 ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
-            {currentUser.name}, {currentUser.age}
-          </h2>
-          <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}>{currentUser.country}</p>
-          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm mt-1`}>{currentUser.email}</p>
         </div>
       )}
 
@@ -853,20 +969,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                   ...currentUser,
                   tripStartDate: currentUser.tripStartDate || start || '',
                   tripEndDate: currentUser.tripEndDate || end || '',
+                  profileCoverId: currentUser.profileCoverId || 'default',
                 });
                 setIsEditing(true);
               }}
               className="px-6"
             >
               <Pencil size={16} /> {t.editProfile}
-            </Button>
-            <Button
-              type="button"
-              variant="outline"
-              className="px-6 border-travel-primary/40 text-travel-dark"
-              onClick={() => setSettingsPanel('photo')}
-            >
-              <ImageIcon size={16} /> {t.profilePicture}
             </Button>
           </div>
           <div className={`${cardClass} p-4 rounded-xl`}>
@@ -1056,9 +1165,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
             theme === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-200'
           }`}>
             <div className="flex items-center justify-between">
-              <h3 className={`font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>
-                {settingsPanel === 'photo' ? t.profilePicture : t.accountSecurity}
-              </h3>
+              <h3 className={`font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-gray-800'}`}>{t.accountSecurity}</h3>
               <button
                 type="button"
                 onClick={() => setSettingsPanel(null)}
@@ -1067,24 +1174,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
                 <ChevronLeft size={18} className={theme === 'dark' ? 'text-gray-300' : 'text-gray-600'} />
               </button>
             </div>
-
-            {settingsPanel === 'photo' && (
-              <>
-                <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{t.profilePictureHint}</p>
-                <input
-                  type="file"
-                  accept="image/*"
-                  onChange={handleAvatarFileChange}
-                  className={`${theme === 'dark' ? 'text-gray-200 file:bg-slate-700 file:text-white file:border-slate-600' : 'text-gray-700 file:bg-gray-100 file:text-gray-800 file:border-gray-300'} block w-full text-sm file:mr-3 file:py-2 file:px-3 file:rounded-lg file:border`}
-                />
-                <p className={`text-[11px] ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>
-                  {t.uploadFile}: JPG, PNG, WEBP (max 4MB)
-                </p>
-                <Button type="button" variant="outline" fullWidth onClick={handleApplyAvatar} disabled={saving}>
-                  {t.applyPhoto}
-                </Button>
-              </>
-            )}
 
             {settingsPanel === 'security' && (
               <>
