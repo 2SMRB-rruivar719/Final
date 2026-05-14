@@ -32,6 +32,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         travelStyle: 'Your travel style',
         begin: 'Start Adventure',
         creating: 'Creating account...',
+        invalidTripDates: 'Return date must be on or after departure. Please enter valid travel dates.',
       }
     : {
         back: 'Volver',
@@ -52,6 +53,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         travelStyle: 'Tu estilo de viaje',
         begin: 'Comenzar Aventura',
         creating: 'Creando cuenta...',
+        invalidTripDates: 'La fecha de ida no puede ser posterior a la fecha de vuelta. Indica fechas de viaje válidas.',
       };
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<UserProfile>>({
@@ -69,6 +71,13 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   const { showToast } = useToast();
   const inputClass = 'w-full p-3 border border-gray-200 rounded-xl focus:ring-2 focus:ring-travel-primary focus:outline-none text-gray-900 placeholder:text-gray-500';
   const labelClass = 'text-sm font-medium text-gray-800';
+
+  const tripDatesAreValid = (): boolean => {
+    const start = formData.tripStartDate?.trim();
+    const end = formData.tripEndDate?.trim();
+    if (!start || !end) return true;
+    return start <= end;
+  };
 
   const buildDebugSnapshot = () => ({
     step,
@@ -123,6 +132,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         setError(msg);
         return;
       }
+
+      if (!tripDatesAreValid()) {
+        const msg = t.invalidTripDates;
+        console.warn('[VALIDATION][REGISTER] Fechas de viaje inválidas', { snapshot: buildDebugSnapshot() });
+        setError(msg);
+        showToast(msg, 'error');
+        return;
+      }
     }
     
     console.log('[FLOW] Avanzando al siguiente paso de onboarding', { from: step, to: step + 1 });
@@ -171,6 +188,14 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
       const msg = 'Las contraseñas no coinciden.';
       console.warn('[VALIDATION][REGISTER] Fallo validación final', { msg, snapshot: buildDebugSnapshot() });
       setError(msg);
+      return;
+    }
+
+    if (!tripDatesAreValid()) {
+      const msg = t.invalidTripDates;
+      console.warn('[VALIDATION][REGISTER] Fechas inválidas al completar', { snapshot: buildDebugSnapshot() });
+      setError(msg);
+      showToast(msg, 'error');
       return;
     }
 
@@ -336,7 +361,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     type="date"
                     className={`${inputClass} text-sm`}
                     value={formData.tripStartDate || ''}
-                    onChange={e => setFormData({ ...formData, tripStartDate: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, tripStartDate: e.target.value });
+                      if (error) setError(null);
+                    }}
                   />
                 </div>
                 <div>
@@ -345,7 +373,10 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
                     type="date"
                     className={`${inputClass} text-sm`}
                     value={formData.tripEndDate || ''}
-                    onChange={e => setFormData({ ...formData, tripEndDate: e.target.value })}
+                    onChange={e => {
+                      setFormData({ ...formData, tripEndDate: e.target.value });
+                      if (error) setError(null);
+                    }}
                   />
                 </div>
               </div>
