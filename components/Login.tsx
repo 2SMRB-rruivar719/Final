@@ -145,8 +145,8 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
   };
 
   return (
-    <div className="mx-auto mt-10 mb-20 flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/90 p-6 shadow-xl backdrop-blur-sm lg:mt-8 lg:mb-12 lg:max-w-4xl lg:flex-row lg:items-stretch lg:gap-10 lg:p-8 xl:max-w-5xl">
-      <div className="mb-2 shrink-0 lg:mb-0 lg:flex lg:w-44 lg:flex-col lg:pt-1">
+    <div className="mx-auto mt-10 mb-20 flex h-full w-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/90 p-6 shadow-xl backdrop-blur-sm lg:mx-0 lg:mt-4 lg:mb-8 lg:max-w-md lg:p-8">
+      <div className="mb-2 shrink-0">
         <button
           type="button"
           onClick={onBackToLanding}
@@ -158,11 +158,11 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
       </div>
 
       <div className="min-w-0 flex-1">
-        <h2 className="mb-6 text-center text-2xl font-bold text-travel-dark lg:mb-8 lg:text-left lg:text-3xl">
+        <h2 className="mb-6 text-center text-2xl font-bold text-travel-dark lg:text-left lg:text-3xl">
           {t.title}
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-4 lg:space-y-0">
+        <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">
             <label className={labelClass} htmlFor="login-email">
               {t.email}
@@ -192,12 +192,12 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
             />
           </div>
           {error && (
-            <p className="rounded-xl border border-red-100 bg-red-50 p-2 text-sm text-red-500 lg:col-span-2">
+            <p className="rounded-xl border border-red-100 bg-red-50 p-2 text-sm text-red-500">
               {error}
             </p>
           )}
-          <div className="lg:col-span-2 lg:flex lg:justify-end">
-            <Button type="submit" fullWidth className="lg:w-auto lg:min-w-[200px] lg:px-10" disabled={loading}>
+          <div>
+            <Button type="submit" fullWidth disabled={loading}>
               {loading ? t.loggingIn : t.login}
             </Button>
           </div>
@@ -221,32 +221,32 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
         {showRecover && (
           <form
             onSubmit={handleRecover}
-            className="mt-4 space-y-3 border-t border-gray-200 pt-4 lg:mt-6 lg:space-y-0 lg:pt-6 lg:grid lg:grid-cols-3 lg:gap-x-4 lg:gap-y-4"
+            className="mt-4 space-y-3 border-t border-gray-200 pt-4 lg:mt-6 lg:pt-6"
           >
-            <h3 className="text-sm font-semibold text-gray-800 lg:col-span-3 lg:mb-0">{t.recoverTitle}</h3>
+            <h3 className="text-sm font-semibold text-gray-800">{t.recoverTitle}</h3>
             <input
               type="email"
-              className={`${inputClass} lg:col-span-1`}
+              className={inputClass}
               placeholder={t.accountEmail}
               value={recoverEmail}
               onChange={(e) => setRecoverEmail(e.target.value)}
             />
             <input
               type="password"
-              className={`${inputClass} lg:col-span-1`}
+              className={inputClass}
               placeholder={t.newPassword}
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
             />
             <input
               type="password"
-              className={`${inputClass} lg:col-span-1`}
+              className={inputClass}
               placeholder={t.repeatPassword}
               value={confirmNewPassword}
               onChange={(e) => setConfirmNewPassword(e.target.value)}
             />
-            <div className="lg:col-span-3 lg:flex lg:justify-end">
-              <Button type="submit" fullWidth className="lg:w-auto lg:min-w-[200px] lg:px-10" disabled={recoverLoading}>
+            <div>
+              <Button type="submit" fullWidth disabled={recoverLoading}>
                 {recoverLoading ? t.updating : t.updatePassword}
               </Button>
             </div>

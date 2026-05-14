@@ -22,8 +22,106 @@ interface SavedAccountEntry {
 
 const AUTH_BG_CLASS =
   "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')]";
+/** Móvil: columna única como antes. Escritorio (lg+): fila con panel de marca y panel de acción. */
 const AUTH_OVERLAY_CLASS =
-  "min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative";
+  "min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative lg:flex-row lg:items-stretch lg:justify-between lg:gap-0 lg:bg-gradient-to-r lg:from-slate-900/88 lg:via-[#2c3e50]/78 lg:to-slate-900/86 lg:p-0 lg:overflow-x-hidden lg:overflow-y-hidden";
+
+type AuthHeroVariant = 'landing' | 'login' | 'register';
+
+interface AuthHeroStrings {
+  tagline: string;
+  featureAi: string;
+  featureMatch: string;
+  featurePlaces: string;
+  beta: string;
+}
+
+const AuthDesktopHero: React.FC<{
+  variant: AuthHeroVariant;
+  language: LanguageCode;
+  t: AuthHeroStrings;
+}> = ({ variant, language, t }) => {
+  const features = [
+    { Icon: Sparkles, label: t.featureAi },
+    { Icon: Users, label: t.featureMatch },
+    { Icon: MapPin, label: t.featurePlaces },
+  ] as const;
+
+  const loginTitle = language === 'en' ? 'Welcome back' : 'Bienvenido de nuevo';
+  const loginLead =
+    language === 'en'
+      ? 'Pick up your trips, chats and itineraries where you left them.'
+      : 'Retoma tus viajes, chats e itinerarios justo donde los dejaste.';
+
+  const registerTitle = language === 'en' ? 'Create your account' : 'Crea tu cuenta';
+  const registerLead =
+    language === 'en'
+      ? 'Tell us how you travel and we will match you with people on your wavelength.'
+      : 'Cuéntanos cómo viajas y te conectaremos con gente afín.';
+
+  return (
+    <aside
+      className="relative hidden min-h-0 flex-1 flex-col justify-center gap-8 border-white/10 bg-black/25 px-8 py-10 shadow-[inset_-1px_0_0_rgba(255,255,255,0.08)] backdrop-blur-md lg:flex xl:max-w-[min(520px,42vw)] xl:px-14 xl:py-14"
+      aria-hidden="true"
+    >
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="rounded-[2rem] border border-white/25 bg-white/12 p-5 shadow-2xl ring-1 ring-white/35">
+            <Logo className="h-20 w-20 xl:h-24 xl:w-24" variant="icon" />
+          </div>
+          {variant === 'landing' && (
+            <span className="inline-flex items-center rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-white/95">
+              {t.beta}
+            </span>
+          )}
+        </div>
+
+        {variant === 'login' && (
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-travel-secondary">{loginTitle}</p>
+        )}
+        {variant === 'register' && (
+          <p className="text-xs font-bold uppercase tracking-[0.22em] text-travel-secondary">{registerTitle}</p>
+        )}
+
+        <h1 className="max-w-lg text-balance text-2xl font-bold leading-snug text-white drop-shadow-md lg:text-3xl xl:text-[2.15rem] xl:leading-tight">
+          {variant === 'landing' ? t.tagline : variant === 'login' ? loginLead : registerLead}
+        </h1>
+
+        {variant !== 'landing' && (
+          <p className="max-w-md text-sm leading-relaxed text-white/85">{t.tagline}</p>
+        )}
+
+        <div className="hidden rounded-2xl border border-white/15 bg-[#f4e8c1]/95 p-4 shadow-lg ring-1 ring-travel-accent/25 xl:block xl:max-w-sm">
+          <Logo className="w-auto" variant="text" />
+        </div>
+      </div>
+
+      <ul className="mt-2 flex flex-col gap-3">
+        {features.map(({ Icon, label }) => (
+          <li
+            key={label}
+            className="flex items-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-4 py-3 text-left text-sm font-medium text-white/95 backdrop-blur-sm"
+          >
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+              <Icon size={18} strokeWidth={2.2} />
+            </span>
+            <span className="leading-snug">{label}</span>
+          </li>
+        ))}
+      </ul>
+    </aside>
+  );
+};
+
+const authLangToggleClass = (active: boolean) =>
+  `rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+    active ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
+  }`;
+
+const authLangToggleClassLanding = (active: boolean) =>
+  `rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+    active ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
+  }`;
 
 const readSavedAccounts = (): SavedAccountEntry[] => {
   try {
@@ -191,32 +289,23 @@ const AppInner: React.FC = () => {
         return (
           <div className={AUTH_BG_CLASS}>
             <div className={AUTH_OVERLAY_CLASS}>
-              <div className="absolute top-4 right-4 flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
-                <button
-                  type="button"
-                  onClick={() => setLanguage('es')}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    language === 'es' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  ES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLanguage('en')}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    language === 'en' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
-              <div className="flex flex-1 flex-col pt-12 lg:justify-center lg:pt-8 lg:pb-12 lg:px-6 xl:px-10">
-                <Login
-                  onLoginSuccess={handleLoginSuccess}
-                  onBackToLanding={() => setAuthView('landing')}
-                  language={language}
-                />
+              <AuthDesktopHero variant="login" language={language} t={t} />
+              <div className="relative flex min-h-0 flex-1 flex-col lg:max-w-[min(520px,48vw)] lg:shrink-0 lg:overflow-y-auto lg:bg-slate-950/45 lg:px-8 lg:py-10 lg:backdrop-blur-md xl:px-12">
+                <div className="absolute right-4 top-4 z-10 flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md lg:right-8 lg:top-8">
+                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es')}>
+                    ES
+                  </button>
+                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en')}>
+                    EN
+                  </button>
+                </div>
+                <div className="flex flex-1 flex-col pt-12 lg:justify-center lg:pt-16 lg:pb-12">
+                  <Login
+                    onLoginSuccess={handleLoginSuccess}
+                    onBackToLanding={() => setAuthView('landing')}
+                    language={language}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -227,36 +316,29 @@ const AppInner: React.FC = () => {
         return (
           <div className={AUTH_BG_CLASS}>
             <div className={AUTH_OVERLAY_CLASS}>
-              <div className="absolute top-4 right-4 flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
-                <button
-                  type="button"
-                  onClick={() => setLanguage('es')}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    language === 'es' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  ES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLanguage('en')}
-                  className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-                    language === 'en' ? 'bg-white text-travel-dark shadow' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
-              <div className="flex flex-col items-center justify-center gap-6 mt-10 mb-4 animate-fade-in-up">
-                <div className="bg-white/90 p-6 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/40">
-                  <Logo className="w-24 h-24" variant="icon" />
+              <AuthDesktopHero variant="register" language={language} t={t} />
+              <div className="relative flex min-h-0 flex-1 flex-col lg:max-w-[min(560px,50vw)] lg:shrink-0 lg:overflow-y-auto lg:bg-slate-950/45 lg:px-6 lg:py-8 lg:backdrop-blur-md xl:max-w-[min(600px,46vw)] xl:px-10">
+                <div className="absolute right-4 top-4 z-10 flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md lg:right-8 lg:top-8">
+                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClass(language === 'es')}>
+                    ES
+                  </button>
+                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClass(language === 'en')}>
+                    EN
+                  </button>
+                </div>
+                <div className="mt-10 mb-4 flex flex-col items-center justify-center gap-6 animate-fade-in-up lg:hidden">
+                  <div className="rounded-[2.5rem] border border-white/50 bg-white/90 p-6 shadow-2xl ring-1 ring-white/40 backdrop-blur-md">
+                    <Logo className="h-24 w-24" variant="icon" />
+                  </div>
+                </div>
+                <div className="flex flex-1 flex-col pb-8 lg:pb-10">
+                  <Onboarding
+                    onComplete={handleOnboardingComplete}
+                    onCancel={() => setAuthView('landing')}
+                    language={language}
+                  />
                 </div>
               </div>
-              <Onboarding
-                onComplete={handleOnboardingComplete}
-                onCancel={() => setAuthView('landing')}
-                language={language}
-              />
             </div>
           </div>
         );
@@ -266,76 +348,79 @@ const AppInner: React.FC = () => {
       return (
         <div className={AUTH_BG_CLASS}>
           <div className={AUTH_OVERLAY_CLASS}>
-            <header className="flex items-center justify-between gap-3 mb-2 max-w-lg mx-auto w-full shrink-0">
-              <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90">
-                {t.beta}
-              </span>
-              <div className="flex rounded-full bg-black/25 p-0.5 backdrop-blur-md border border-white/15">
-                <button
-                  type="button"
-                  onClick={() => setLanguage('es')}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                    language === 'es' ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  ES
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setLanguage('en')}
-                  className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
-                    language === 'en' ? 'bg-white text-travel-dark shadow-md' : 'text-white/80 hover:text-white'
-                  }`}
-                >
-                  EN
-                </button>
-              </div>
-            </header>
+            <AuthDesktopHero variant="landing" language={language} t={t} />
 
-            <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 animate-fade-in-up">
-              <div className="bg-white/90 p-8 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/30 transition-transform duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)]">
-                <Logo className="w-32 h-32" variant="icon" />
-              </div>
-
-              <div className="bg-[#f4e8c1] p-5 px-8 rounded-2xl shadow-xl border-4 border-white/90 ring-1 ring-travel-accent/20">
-                <Logo className="w-auto" variant="text" />
-              </div>
-            </div>
-
-            <p className="text-center text-white/95 max-w-md mx-auto text-lg sm:text-xl font-semibold drop-shadow-md tracking-tight px-4 leading-snug">
-              {t.tagline}
-            </p>
-
-            <div className="grid max-w-md mx-auto w-full grid-cols-1 gap-2 px-2 mt-4 sm:grid-cols-3 sm:gap-3">
-              {[
-                { Icon: Sparkles, label: t.featureAi },
-                { Icon: Users, label: t.featureMatch },
-                { Icon: MapPin, label: t.featurePlaces },
-              ].map(({ Icon, label }) => (
-                <div
-                  key={label}
-                  className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-xs font-medium text-white/95 backdrop-blur-sm"
-                >
-                  <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
-                    <Icon size={16} strokeWidth={2.2} />
-                  </span>
-                  <span className="leading-tight">{label}</span>
+            <div className="flex min-h-0 flex-1 flex-col lg:max-w-[min(440px,40vw)] lg:shrink-0 lg:justify-center lg:overflow-y-auto lg:bg-slate-950/40 lg:px-10 lg:py-12 lg:backdrop-blur-md xl:px-14">
+              <header className="mx-auto mb-2 flex w-full max-w-lg shrink-0 items-center justify-between gap-3 lg:mx-0 lg:mb-8 lg:max-w-none">
+                <span className="inline-flex items-center rounded-full border border-white/20 bg-white/10 px-3 py-1 text-[10px] font-bold uppercase tracking-[0.2em] text-white/90 lg:hidden">
+                  {t.beta}
+                </span>
+                <span className="hidden lg:inline" aria-hidden="true" />
+                <div className="ml-auto flex rounded-full border border-white/15 bg-black/25 p-0.5 backdrop-blur-md">
+                  <button type="button" onClick={() => setLanguage('es')} className={authLangToggleClassLanding(language === 'es')}>
+                    ES
+                  </button>
+                  <button type="button" onClick={() => setLanguage('en')} className={authLangToggleClassLanding(language === 'en')}>
+                    EN
+                  </button>
                 </div>
-              ))}
-            </div>
+              </header>
 
-            <div className="w-full max-w-xs mx-auto space-y-3 mt-8 mb-6">
-              <Button fullWidth onClick={() => setAuthView('login')} className="shadow-lg shadow-black/20">
-                {t.login}
-              </Button>
-              <Button
-                fullWidth
-                variant="outline"
-                onClick={() => setAuthView('register')}
-                className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary"
-              >
-                {t.register}
-              </Button>
+              <div className="flex flex-1 flex-col items-center justify-center gap-6 py-6 animate-fade-in-up lg:flex-none lg:items-stretch lg:py-0">
+                <div className="lg:hidden flex flex-col items-center gap-6">
+                  <div className="bg-white/90 p-8 rounded-[2.5rem] backdrop-blur-md border border-white/50 shadow-2xl ring-1 ring-white/30 transition-transform duration-300 hover:scale-[1.02] hover:shadow-[0_25px_50px_-12px_rgba(0,0,0,0.35)]">
+                    <Logo className="w-32 h-32" variant="icon" />
+                  </div>
+                  <div className="bg-[#f4e8c1] p-5 px-8 rounded-2xl shadow-xl border-4 border-white/90 ring-1 ring-travel-accent/20">
+                    <Logo className="w-auto" variant="text" />
+                  </div>
+                </div>
+
+                <p className="text-center text-white/95 max-w-md mx-auto text-lg sm:text-xl font-semibold drop-shadow-md tracking-tight px-4 leading-snug lg:hidden">
+                  {t.tagline}
+                </p>
+
+                <div className="grid max-w-md mx-auto w-full grid-cols-1 gap-2 px-2 mt-4 sm:grid-cols-3 sm:gap-3 lg:hidden">
+                  {[
+                    { Icon: Sparkles, label: t.featureAi },
+                    { Icon: Users, label: t.featureMatch },
+                    { Icon: MapPin, label: t.featurePlaces },
+                  ].map(({ Icon, label }) => (
+                    <div
+                      key={label}
+                      className="flex items-center gap-2 rounded-2xl border border-white/15 bg-white/10 px-3 py-2.5 text-left text-xs font-medium text-white/95 backdrop-blur-sm"
+                    >
+                      <span className="flex h-8 w-8 shrink-0 items-center justify-center rounded-xl bg-white/20 text-white">
+                        <Icon size={16} strokeWidth={2.2} />
+                      </span>
+                      <span className="leading-tight">{label}</span>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="hidden lg:block">
+                  <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-travel-secondary">
+                    {language === 'en' ? 'Get started' : 'Comienza'}
+                  </p>
+                  <p className="mb-8 max-w-sm text-balance text-xl font-semibold leading-snug text-white drop-shadow">
+                    {language === 'en' ? 'Sign in or create an account to start matching.' : 'Inicia sesión o crea una cuenta para empezar a hacer match.'}
+                  </p>
+                </div>
+
+                <div className="mx-auto mt-8 w-full max-w-xs space-y-3 mb-6 lg:mx-0 lg:mt-0 lg:max-w-none">
+                  <Button fullWidth onClick={() => setAuthView('login')} className="shadow-lg shadow-black/20 lg:py-3.5 lg:text-base">
+                    {t.login}
+                  </Button>
+                  <Button
+                    fullWidth
+                    variant="outline"
+                    onClick={() => setAuthView('register')}
+                    className="border-white/80 text-white bg-white/10 backdrop-blur-sm shadow-md hover:bg-white hover:text-travel-primary lg:py-3.5 lg:text-base"
+                  >
+                    {t.register}
+                  </Button>
+                </div>
+              </div>
             </div>
           </div>
         </div>

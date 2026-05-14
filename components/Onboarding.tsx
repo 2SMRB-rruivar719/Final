@@ -302,7 +302,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
   };
 
   return (
-    <div className="flex flex-col h-full p-6 max-w-md mx-auto animate-fade-in bg-white/50 backdrop-blur-sm rounded-2xl shadow-xl mt-4 mb-20 border border-white">
+    <div className="mx-auto flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/50 p-6 shadow-xl backdrop-blur-sm mt-4 mb-20 lg:mx-0 lg:mb-10 lg:mt-0 lg:max-h-[min(720px,calc(100vh-7rem))] lg:max-w-xl lg:overflow-y-auto lg:p-8 xl:max-w-2xl">
       <button
         type="button"
         onClick={handleBack}
