@@ -1,6 +1,6 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { UserProfile, ChatThreadType, ChatMember, LanguageCode, ThemeMode } from '../types';
-import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic, MoreVertical } from 'lucide-react';
+import { ChevronLeft, Send, Phone, Video, MapPin, X, Users, Mic, MoreVertical, Plus, UsersRound, Check } from 'lucide-react';
 import { Button } from './Button';
 import { SafeImage } from './SafeImage';
 import { useToast } from './ToastProvider';
@@ -109,6 +109,21 @@ const filterChatsByBlocklist = (items: ChatThreadType[], blocked: Set<string>) =
     return !pid || !blocked.has(pid);
   });
 
+const directChatToMember = (chat: ChatThreadType): ChatMember | null => {
+  if (chat.isGroup) return null;
+  const id = getDirectChatPeerId(chat);
+  if (!id) return null;
+  return {
+    id,
+    name: chat.name,
+    avatarUrl: chat.avatarUrl,
+    age: chat.age ?? 25,
+    sex: chat.sex ?? 'hombre',
+    bio: chat.bio ?? '',
+    destination: chat.destination ?? '',
+  };
+};
+
 export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, language, theme, initialTargetUser }) => {
   const isDark = theme === 'dark';
   const chatStorageKey = `tm_chats_${currentUser.id}`;
@@ -132,6 +147,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         blockUser: 'Block user',
         blockConfirm: 'Block this user? Their chat will be deleted and they will not appear in your inbox.',
         blockedOk: 'User blocked.',
+        newGroup: 'New group',
+        newGroupSubtitle: 'Name your trip crew and invite travelers you already chat with.',
+        groupNameLabel: 'Group name',
+        groupNamePlaceholder: 'e.g. Weekend in Lisbon',
+        pickTravelers: 'Add travelers',
+        pickTravelersHint: 'Pick from your direct chats (at least one).',
+        noDirectChats: 'No direct chats yet. Say hi to someone in Explore first.',
+        createGroup: 'Create group',
+        cancel: 'Cancel',
+        needMembers: 'Add at least one traveler to the group.',
+        groupCreated: 'Group created.',
       }
     : {
         messages: 'Mensajes',
@@ -152,6 +178,17 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         blockUser: 'Bloquear usuario',
         blockConfirm: '¿Bloquear a esta persona? Se eliminará el chat y no aparecerá en tu bandeja.',
         blockedOk: 'Usuario bloqueado.',
+        newGroup: 'Nuevo grupo',
+        newGroupSubtitle: 'Pon nombre a la tripulación e invita a viajeros con los que ya chateas.',
+        groupNameLabel: 'Nombre del grupo',
+        groupNamePlaceholder: 'Ej. Fin de semana en Lisboa',
+        pickTravelers: 'Añadir viajeros',
+        pickTravelersHint: 'Elige de tus chats directos (al menos uno).',
+        noDirectChats: 'Aún no tienes chats directos. Saluda a alguien en Explorar primero.',
+        createGroup: 'Crear grupo',
+        cancel: 'Cancelar',
+        needMembers: 'Añade al menos un viajero al grupo.',
+        groupCreated: 'Grupo creado.',
       };
   const [chats, setChats] = useState<ChatThreadType[]>(() => {
     const withLeaderDefaults = (items: ChatThreadType[]) =>
@@ -178,6 +215,9 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
   const [groupMembersTitle, setGroupMembersTitle] = useState('');
   const [groupMembersChatId, setGroupMembersChatId] = useState<string | null>(null);
   const [profileActionsOpen, setProfileActionsOpen] = useState(false);
+  const [createGroupOpen, setCreateGroupOpen] = useState(false);
+  const [newGroupName, setNewGroupName] = useState('');
+  const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const { showToast } = useToast();
   const nameColors = ['text-sky-400', 'text-emerald-400', 'text-fuchsia-400', 'text-amber-400', 'text-rose-400', 'text-cyan-400'];
 
@@ -435,13 +475,100 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     showToast(t.blockedOk, 'info');
   };
 
+  const directChatsForPicker = useMemo(() => {
+    return chats
+      .filter((c) => !c.isGroup)
+      .map((c) => ({ chat: c, member: directChatToMember(c) }))
+      .filter((x): x is { chat: ChatThreadType; member: ChatMember } => x.member !== null);
+  }, [chats]);
+
+  const openCreateGroupModal = () => {
+    setNewGroupName('');
+    setSelectedMemberIds([]);
+    setCreateGroupOpen(true);
+  };
+
+  const toggleMemberForGroup = (memberId: string) => {
+    setSelectedMemberIds((prev) =>
+      prev.includes(memberId) ? prev.filter((id) => id !== memberId) : [...prev, memberId]
+    );
+  };
+
+  const handleCreateGroup = () => {
+    if (selectedMemberIds.length === 0) {
+      showToast(t.needMembers, 'error');
+      return;
+    }
+    const members: ChatMember[] = [];
+    for (const id of selectedMemberIds) {
+      const row = directChatsForPicker.find((x) => x.member.id === id);
+      if (row) members.push(row.member);
+    }
+    if (members.length === 0) {
+      showToast(t.needMembers, 'error');
+      return;
+    }
+    const trimmed = newGroupName.trim();
+    const groupName =
+      trimmed ||
+      (language === 'en' ? `Group · ${currentUser.destination}` : `Grupo · ${currentUser.destination}`);
+    const gid = `group-${Date.now()}`;
+    const nMembers = members.length;
+    const welcome =
+      language === 'en'
+        ? `You created "${groupName}". ${nMembers} traveler${nMembers === 1 ? ' is' : 's are'} in — break the ice!`
+        : `Has creado "${groupName}". ${nMembers} viajero${nMembers === 1 ? '' : 's'} dentro — ¡romped el hielo!`;
+    const newGroup: ChatThreadType = {
+      id: gid,
+      name: groupName,
+      avatarUrl: `https://picsum.photos/seed/g${Date.now()}/300/300`,
+      lastMessage: language === 'en' ? 'New group — say hi!' : 'Nuevo grupo — ¡saludad!',
+      lastMessageTime: t.now,
+      unread: 0,
+      isGroup: true,
+      leaderId: currentUser.id,
+      members,
+      messages: [
+        {
+          id: `g-init-${gid}`,
+          text: welcome,
+          sender: 'me',
+          timestamp: t.now,
+          authorId: currentUser.id,
+          authorName: currentUser.name,
+          authorAvatarUrl: currentUser.avatarUrl,
+        },
+      ],
+    };
+    setChats((prev) => [newGroup, ...prev]);
+    setActiveChatId(gid);
+    setCreateGroupOpen(false);
+    setNewGroupName('');
+    setSelectedMemberIds([]);
+    showToast(t.groupCreated, 'success');
+  };
+
   return (
     <>
       <div className="hidden lg:grid lg:grid-cols-[360px_1fr] gap-6 h-[calc(100vh-4rem)] p-6">
         <div className={`rounded-3xl border shadow-sm overflow-hidden ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
-          <div className={`p-5 border-b ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
-            <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
-            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{currentUser.destination} · {chats.length} {t.activeChats}</p>
+          <div className={`p-5 border-b flex items-start justify-between gap-3 ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
+            <div className="min-w-0 flex-1">
+              <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
+              <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{currentUser.destination} · {chats.length} {t.activeChats}</p>
+            </div>
+            <button
+              type="button"
+              onClick={openCreateGroupModal}
+              title={t.newGroup}
+              className={`group flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl shadow-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark
+                  ? 'bg-gradient-to-br from-travel-primary to-travel-accent text-white ring-1 ring-white/15 hover:brightness-110 focus-visible:ring-offset-slate-900'
+                  : 'bg-gradient-to-br from-travel-primary to-travel-accent text-white ring-1 ring-travel-primary/30 hover:shadow-lg hover:scale-[1.03] focus-visible:ring-offset-white'
+              }`}
+            >
+              <Plus size={24} strokeWidth={2.4} className="transition-transform group-hover:rotate-90" />
+            </button>
           </div>
           <div className="h-[calc(100%-92px)] overflow-y-auto">
             {chats.map((chat) => {
@@ -699,8 +826,20 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         </div>
       ) : (
         <div className={`lg:hidden flex flex-col h-full max-w-2xl mx-auto shadow-sm min-h-screen ${isDark ? 'bg-slate-900' : 'bg-white'}`}>
-          <div className={`p-4 border-b sticky top-0 z-10 ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
-            <h1 className={`text-2xl font-bold ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
+          <div className={`p-4 border-b sticky top-0 z-10 flex items-center justify-between gap-3 ${isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-100 bg-white'}`}>
+            <h1 className={`text-2xl font-bold min-w-0 ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{t.messages}</h1>
+            <button
+              type="button"
+              onClick={openCreateGroupModal}
+              title={t.newGroup}
+              className={`group flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl shadow-md transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark
+                  ? 'bg-gradient-to-br from-travel-primary to-travel-accent text-white ring-1 ring-white/15 hover:brightness-110 focus-visible:ring-offset-slate-900'
+                  : 'bg-gradient-to-br from-travel-primary to-travel-accent text-white ring-1 ring-travel-primary/30 hover:shadow-lg hover:scale-[1.03] focus-visible:ring-offset-white'
+              }`}
+            >
+              <Plus size={22} strokeWidth={2.4} className="transition-transform group-hover:rotate-90" />
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto pb-24">
@@ -742,6 +881,137 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
                 </div>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {createGroupOpen && (
+        <div className="fixed inset-0 z-[95] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+          <div
+            className={`flex max-h-[min(92vh,820px)] w-full max-w-lg flex-col overflow-hidden rounded-t-[2rem] border shadow-2xl sm:rounded-[2rem] ${
+              isDark ? 'border-slate-700 bg-slate-900' : 'border-gray-200 bg-white'
+            }`}
+          >
+            <div className="relative overflow-hidden bg-gradient-to-r from-travel-primary via-travel-primary to-travel-accent px-5 pb-10 pt-8 text-white">
+              <div className="absolute -right-10 -top-10 h-36 w-36 rounded-full bg-white/10 blur-2xl" />
+              <div className="absolute -bottom-8 left-8 h-28 w-28 rounded-full bg-black/10" />
+              <div className="relative flex items-start justify-between gap-3">
+                <div className="flex min-w-0 gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-white/20 ring-1 ring-white/35 shadow-inner">
+                    <UsersRound size={26} strokeWidth={2} />
+                  </span>
+                  <div className="min-w-0">
+                    <h2 className="text-xl font-bold tracking-tight">{t.newGroup}</h2>
+                    <p className="mt-1 max-w-[300px] text-sm leading-snug text-white/90">{t.newGroupSubtitle}</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setCreateGroupOpen(false)}
+                  className="shrink-0 rounded-xl p-2 text-white/90 transition-colors hover:bg-white/15"
+                  aria-label={t.cancel}
+                >
+                  <X size={22} />
+                </button>
+              </div>
+            </div>
+
+            <div className="min-h-0 flex-1 space-y-5 overflow-y-auto px-4 py-5 sm:px-6">
+              <div>
+                <label
+                  htmlFor="tm-new-group-name"
+                  className={`mb-1.5 block text-xs font-bold uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-500'}`}
+                >
+                  {t.groupNameLabel}
+                </label>
+                <input
+                  id="tm-new-group-name"
+                  type="text"
+                  value={newGroupName}
+                  onChange={(e) => setNewGroupName(e.target.value)}
+                  placeholder={t.groupNamePlaceholder}
+                  className={`w-full rounded-xl border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-travel-primary/45 ${
+                    isDark
+                      ? 'border-slate-600 bg-slate-800 text-gray-100 placeholder-gray-500'
+                      : 'border-gray-200 bg-gray-50 text-gray-900 placeholder-gray-500'
+                  }`}
+                />
+              </div>
+
+              <div>
+                <h3 className={`mb-1 text-xs font-bold uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                  {t.pickTravelers}
+                </h3>
+                <p className={`mb-3 text-xs leading-relaxed ${isDark ? 'text-gray-500' : 'text-gray-600'}`}>{t.pickTravelersHint}</p>
+                {directChatsForPicker.length === 0 ? (
+                  <p
+                    className={`rounded-2xl border px-4 py-8 text-center text-sm leading-relaxed ${
+                      isDark ? 'border-slate-700 bg-slate-800/60 text-gray-400' : 'border-gray-100 bg-gray-50 text-gray-600'
+                    }`}
+                  >
+                    {t.noDirectChats}
+                  </p>
+                ) : (
+                  <div className="grid gap-2 sm:grid-cols-2">
+                    {directChatsForPicker.map(({ member }) => {
+                      const selected = selectedMemberIds.includes(member.id);
+                      return (
+                        <button
+                          key={member.id}
+                          type="button"
+                          onClick={() => toggleMemberForGroup(member.id)}
+                          className={`flex items-center gap-3 rounded-xl border p-3 text-left transition-all ${
+                            selected
+                              ? isDark
+                                ? 'border-travel-accent bg-travel-primary/15 ring-2 ring-travel-accent/45'
+                                : 'border-travel-primary bg-travel-secondary/50 ring-2 ring-travel-primary/25 shadow-sm'
+                              : isDark
+                                ? 'border-slate-700 bg-slate-800/80 hover:border-slate-600'
+                                : 'border-gray-100 bg-white hover:border-gray-200 hover:shadow-sm'
+                          }`}
+                        >
+                          <div className="relative shrink-0">
+                            <SafeImage
+                              src={member.avatarUrl}
+                              alt={member.name}
+                              fallbackSeed={member.id + member.name}
+                              variant="avatar"
+                              className="h-11 w-11 rounded-full object-cover ring-2 ring-white/40"
+                            />
+                            {selected && (
+                              <span className="absolute -bottom-0.5 -right-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-travel-accent text-white shadow-md ring-2 ring-white">
+                                <Check size={12} strokeWidth={3} />
+                              </span>
+                            )}
+                          </div>
+                          <div className="min-w-0 flex-1">
+                            <p className={`truncate text-sm font-semibold ${isDark ? 'text-gray-100' : 'text-gray-900'}`}>{member.name}</p>
+                            <p className={`truncate text-xs ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>{member.destination}</p>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            <div
+              className={`flex gap-3 border-t px-4 py-4 sm:px-6 ${isDark ? 'border-slate-700 bg-slate-900/95' : 'border-gray-100 bg-gray-50/95'}`}
+            >
+              <Button type="button" variant="outline" fullWidth className="py-3" onClick={() => setCreateGroupOpen(false)}>
+                {t.cancel}
+              </Button>
+              <Button
+                type="button"
+                fullWidth
+                className="py-3 shadow-md shadow-travel-primary/20"
+                onClick={handleCreateGroup}
+                disabled={selectedMemberIds.length === 0}
+              >
+                {t.createGroup}
+              </Button>
+            </div>
           </div>
         </div>
       )}
