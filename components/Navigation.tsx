@@ -39,7 +39,7 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
 
   return (
     <>
-      <aside className={`hidden lg:flex fixed left-0 top-0 h-screen backdrop-blur-xl z-50 flex-col py-6 shadow-xl transition-all duration-200 ${
+      <aside className={`hidden lg:flex fixed left-0 top-0 h-screen backdrop-blur-xl z-50 flex-col py-6 shadow-xl transition-all duration-200 overflow-y-auto ${
         collapsed ? 'w-24 px-3' : 'w-72 px-5'
       } ${
         isDark ? 'border-r border-slate-700/80 bg-slate-900/90' : 'border-r border-white/60 bg-white/80'
@@ -63,8 +63,8 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
           {!collapsed && <p className={`text-xs mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.subtitle}</p>}
         </div>
 
-        <nav className="space-y-2">
-          {navItems.map((item) => {
+        <nav className="space-y-2 flex-1 min-h-0">
+          {mainNavItems.map((item) => {
             const Icon = item.icon;
             const isActive = currentView === item.id;
             return (
@@ -95,24 +95,40 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
         </nav>
 
         {currentUser && !collapsed && (
-          <div className={`mt-auto p-4 rounded-2xl border ${
-            isDark ? 'bg-slate-800 border-slate-700' : 'bg-travel-secondary/50 border-travel-secondary/70'
-          }`}>
+          <button type="button" onClick={() => onChangeView('profile')} className={`${profileCardClass} p-4`}>
             <div className="flex items-center gap-3 mb-2">
               <SafeImage
                 src={currentUser.avatarUrl}
                 alt={currentUser.name}
                 fallbackSeed={currentUser.id + currentUser.name}
                 variant="avatar"
-                className="w-11 h-11 rounded-full object-cover border-2 border-white"
+                className="w-11 h-11 rounded-full object-cover border-2 border-white shrink-0"
               />
-              <div className="min-w-0">
+              <div className="min-w-0 text-left">
+                <p className={`text-[10px] font-bold uppercase tracking-wide ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.profile}</p>
                 <p className={`font-semibold text-sm truncate ${isDark ? 'text-gray-100' : 'text-travel-dark'}`}>{currentUser.name}</p>
                 <p className={`text-xs truncate ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>{currentUser.destination}</p>
               </div>
             </div>
             <p className={`text-[11px] ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.desktopTip}</p>
-          </div>
+          </button>
+        )}
+
+        {currentUser && collapsed && (
+          <button
+            type="button"
+            onClick={() => onChangeView('profile')}
+            title={t.profile}
+            className={`${profileCardClass} p-2 flex justify-center`}
+          >
+            <SafeImage
+              src={currentUser.avatarUrl}
+              alt={currentUser.name}
+              fallbackSeed={currentUser.id + currentUser.name}
+              variant="avatar"
+              className={`w-11 h-11 rounded-full object-cover border-2 border-white ${currentView === 'profile' ? 'ring-2 ring-travel-accent ring-offset-2 ring-offset-transparent' : ''}`}
+            />
+          </button>
         )}
       </aside>
 
