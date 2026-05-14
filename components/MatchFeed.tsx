@@ -157,6 +157,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
         loadingHint: 'Seleccionando perfiles que encajan con tu viaje…',
       };
   const [loading, setLoading] = useState(true);
+  const [candidates, setCandidates] = useState<UserProfile[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [swipeDirection, setSwipeDirection] = useState<'left' | 'right' | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
