@@ -145,93 +145,120 @@ export const Login: React.FC<LoginProps> = ({ onLoginSuccess, onBackToLanding, l
   };
 
   return (
-    <div className="flex flex-col h-full p-6 max-w-md mx-auto animate-fade-in bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl mt-10 mb-20 border border-white">
-      <button
-        onClick={onBackToLanding}
-        className="flex items-center gap-1 text-sm text-gray-700 mb-4 hover:text-travel-primary text-left"
-      >
-        <ChevronLeft size={18} />
-        <span>{t.back}</span>
-      </button>
-      <h2 className="text-2xl font-bold text-travel-dark text-center mb-6">{t.title}</h2>
-      <form onSubmit={handleSubmit} className="space-y-4">
-        <div className="space-y-2">
-          <label className={labelClass}>{t.email}</label>
-          <input
-            type="email"
-            className={inputClass}
-            placeholder="tucorreo@ejemplo.com"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </div>
-        <div className="space-y-2">
-          <label className={labelClass}>{t.password}</label>
-          <input
-            type="password"
-            className={inputClass}
-            placeholder="••••••••"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        </div>
-        {error && (
-          <p className="text-sm text-red-500 bg-red-50 border border-red-100 rounded-xl p-2">
-            {error}
+    <div className="mx-auto mt-10 mb-20 flex h-full max-w-md animate-fade-in flex-col rounded-2xl border border-white bg-white/90 p-6 shadow-xl backdrop-blur-sm lg:mt-8 lg:mb-12 lg:max-w-4xl lg:flex-row lg:items-stretch lg:gap-10 lg:p-8 xl:max-w-5xl">
+      <div className="mb-2 shrink-0 lg:mb-0 lg:flex lg:w-44 lg:flex-col lg:pt-1">
+        <button
+          type="button"
+          onClick={onBackToLanding}
+          className="flex items-center gap-1 self-start text-left text-sm text-gray-700 hover:text-travel-primary"
+        >
+          <ChevronLeft size={18} />
+          <span>{t.back}</span>
+        </button>
+      </div>
+
+      <div className="min-w-0 flex-1">
+        <h2 className="mb-6 text-center text-2xl font-bold text-travel-dark lg:mb-8 lg:text-left lg:text-3xl">
+          {t.title}
+        </h2>
+
+        <form onSubmit={handleSubmit} className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-x-6 lg:gap-y-4 lg:space-y-0">
+          <div className="space-y-2">
+            <label className={labelClass} htmlFor="login-email">
+              {t.email}
+            </label>
+            <input
+              id="login-email"
+              type="email"
+              className={inputClass}
+              placeholder="tucorreo@ejemplo.com"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              autoComplete="email"
+            />
+          </div>
+          <div className="space-y-2">
+            <label className={labelClass} htmlFor="login-password">
+              {t.password}
+            </label>
+            <input
+              id="login-password"
+              type="password"
+              className={inputClass}
+              placeholder="••••••••"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              autoComplete="current-password"
+            />
+          </div>
+          {error && (
+            <p className="rounded-xl border border-red-100 bg-red-50 p-2 text-sm text-red-500 lg:col-span-2">
+              {error}
+            </p>
+          )}
+          <div className="lg:col-span-2 lg:flex lg:justify-end">
+            <Button type="submit" fullWidth className="lg:w-auto lg:min-w-[200px] lg:px-10" disabled={loading}>
+              {loading ? t.loggingIn : t.login}
+            </Button>
+          </div>
+        </form>
+
+        <button
+          type="button"
+          className="mt-3 self-start text-sm text-gray-700 hover:text-travel-accent hover:underline lg:mt-4"
+          onClick={() => {
+            setShowRecover((prev) => !prev);
+            setError(null);
+            setRecoverMessage(null);
+            if (!showRecover) {
+              setRecoverEmail(email);
+            }
+          }}
+        >
+          {showRecover ? t.cancelRecover : t.recover}
+        </button>
+
+        {showRecover && (
+          <form
+            onSubmit={handleRecover}
+            className="mt-4 space-y-3 border-t border-gray-200 pt-4 lg:mt-6 lg:space-y-0 lg:pt-6 lg:grid lg:grid-cols-3 lg:gap-x-4 lg:gap-y-4"
+          >
+            <h3 className="text-sm font-semibold text-gray-800 lg:col-span-3 lg:mb-0">{t.recoverTitle}</h3>
+            <input
+              type="email"
+              className={`${inputClass} lg:col-span-1`}
+              placeholder={t.accountEmail}
+              value={recoverEmail}
+              onChange={(e) => setRecoverEmail(e.target.value)}
+            />
+            <input
+              type="password"
+              className={`${inputClass} lg:col-span-1`}
+              placeholder={t.newPassword}
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+            />
+            <input
+              type="password"
+              className={`${inputClass} lg:col-span-1`}
+              placeholder={t.repeatPassword}
+              value={confirmNewPassword}
+              onChange={(e) => setConfirmNewPassword(e.target.value)}
+            />
+            <div className="lg:col-span-3 lg:flex lg:justify-end">
+              <Button type="submit" fullWidth className="lg:w-auto lg:min-w-[200px] lg:px-10" disabled={recoverLoading}>
+                {recoverLoading ? t.updating : t.updatePassword}
+              </Button>
+            </div>
+          </form>
+        )}
+
+        {recoverMessage && (
+          <p className="mt-3 rounded-xl border border-green-100 bg-green-50 p-2 text-sm text-green-700">
+            {recoverMessage}
           </p>
         )}
-        <Button type="submit" fullWidth disabled={loading}>
-          {loading ? t.loggingIn : t.login}
-        </Button>
-      </form>
-      <button
-        type="button"
-        className="mt-3 text-sm text-gray-700 hover:text-travel-accent hover:underline self-start"
-        onClick={() => {
-          setShowRecover((prev) => !prev);
-          setError(null);
-          setRecoverMessage(null);
-          if (!showRecover) {
-            setRecoverEmail(email);
-          }
-        }}
-      >
-        {showRecover ? t.cancelRecover : t.recover}
-      </button>
-      {showRecover && (
-        <form onSubmit={handleRecover} className="mt-4 space-y-3 border-t border-gray-200 pt-4">
-          <h3 className="text-sm font-semibold text-gray-800">{t.recoverTitle}</h3>
-          <input
-            type="email"
-            className={inputClass}
-            placeholder={t.accountEmail}
-            value={recoverEmail}
-            onChange={(e) => setRecoverEmail(e.target.value)}
-          />
-          <input
-            type="password"
-            className={inputClass}
-            placeholder={t.newPassword}
-            value={newPassword}
-            onChange={(e) => setNewPassword(e.target.value)}
-          />
-          <input
-            type="password"
-            className={inputClass}
-            placeholder={t.repeatPassword}
-            value={confirmNewPassword}
-            onChange={(e) => setConfirmNewPassword(e.target.value)}
-          />
-          <Button type="submit" fullWidth disabled={recoverLoading}>
-            {recoverLoading ? t.updating : t.updatePassword}
-          </Button>
-        </form>
-      )}
-      {recoverMessage && (
-        <p className="text-sm text-green-700 bg-green-50 border border-green-100 rounded-xl p-2 mt-3">
-          {recoverMessage}
-        </p>
-      )}
+      </div>
     </div>
   );
 };

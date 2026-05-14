@@ -211,7 +211,7 @@ const AppInner: React.FC = () => {
                   EN
                 </button>
               </div>
-              <div className="flex flex-1 flex-col pt-12">
+              <div className="flex flex-1 flex-col pt-12 lg:justify-center lg:pt-8 lg:pb-12 lg:px-6 xl:px-10">
                 <Login
                   onLoginSuccess={handleLoginSuccess}
                   onBackToLanding={() => setAuthView('landing')}
