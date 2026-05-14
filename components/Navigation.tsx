@@ -19,13 +19,23 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
   const t = language === 'en'
     ? { profile: 'Profile', explore: 'Explore', trip: 'Trip', chat: 'Chat', settings: 'Settings', subtitle: 'Find your next travel buddy', desktopTip: 'Desktop mode optimized for quick swipes.' }
     : { profile: 'Perfil', explore: 'Explorar', trip: 'Viaje', chat: 'Chat', settings: 'Configuración', subtitle: 'Encuentra tu próximo compañero de viaje', desktopTip: 'Modo desktop optimizado para swipes rápidos.' };
-  const navItems = [
-    { id: 'profile', icon: User, label: t.profile },
+  /** Explorar primero; Perfil va en el bloque inferior (amarillo), no en esta lista */
+  const mainNavItems = [
     { id: 'match', icon: Home, label: t.explore },
     { id: 'itinerary', icon: Map, label: t.trip },
     { id: 'chat', icon: MessageCircle, label: t.chat },
     { id: 'settings', icon: Settings, label: t.settings },
   ];
+
+  const profileCardClass = `mt-auto w-full rounded-2xl border text-left transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+    currentView === 'profile'
+      ? isDark
+        ? 'ring-2 ring-travel-accent ring-offset-2 ring-offset-slate-900 bg-slate-800 border-slate-600'
+        : 'ring-2 ring-travel-primary ring-offset-2 ring-offset-white bg-travel-secondary/60 border-travel-primary/40'
+      : isDark
+        ? 'bg-slate-800 border-slate-700 hover:bg-slate-750'
+        : 'bg-travel-secondary/50 border-travel-secondary/70 hover:bg-travel-secondary/70'
+  } ${isDark ? 'focus-visible:ring-offset-slate-900' : 'focus-visible:ring-offset-white'}`;
 
   return (
     <>
