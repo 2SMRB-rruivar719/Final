@@ -659,17 +659,17 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
           <div className={`${cardClass} p-4 rounded-xl`}>
             <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.nextDestination}</h3>
-            <div className="flex items-center gap-2 text-travel-dark font-semibold">
+            <div className={`flex items-center gap-2 font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
               <Plane size={18} className="text-travel-primary shrink-0" />
               <span>
                 {currentUser.destination}
                 {(trip.start || trip.end) && (
-                  <span className="block text-sm font-normal text-gray-600 mt-1">
+                  <span className={`block text-sm font-normal mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
                     {trip.start || '—'} → {trip.end || '—'}
                   </span>
                 )}
                 {!trip.start && !trip.end && currentUser.dates && (
-                  <span className="block text-sm font-normal text-gray-600 mt-1">{currentUser.dates}</span>
+                  <span className={`block text-sm font-normal mt-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{currentUser.dates}</span>
                 )}
               </span>
             </div>
@@ -677,7 +677,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
           <div className={`${cardClass} p-4 rounded-xl`}>
             <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.budget}</h3>
-            <p className="font-medium text-travel-dark">{currentUser.budget}</p>
+            <p className={`font-medium ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>{currentUser.budget}</p>
           </div>
 
           <div className={`${cardClass} p-4 rounded-xl lg:col-span-2`}>

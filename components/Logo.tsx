@@ -87,7 +87,7 @@ export const Logo: React.FC<LogoProps> = ({ className = "w-32 h-32", variant = '
       
       {showText && (
         <div className={`flex items-center justify-center gap-1 ${showIcon ? 'mt-2' : ''}`}>
-          <span className="text-4xl font-bold text-[#4a6fa5] tracking-tight drop-shadow-sm" style={{ fontFamily: 'sans-serif' }}>Travel</span>
+          <span className="text-4xl font-bold text-[#4a6fa5] dark:text-slate-100 tracking-tight drop-shadow-sm" style={{ fontFamily: 'sans-serif' }}>Travel</span>
           {/* Handshake Icon */}
           <div className="flex items-center justify-center">
             <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-1">
@@ -96,7 +96,7 @@ export const Logo: React.FC<LogoProps> = ({ className = "w-32 h-32", variant = '
                <path d="M9.79 15.38L7.36 11.91C6.97 11.35 7.04 10.6 7.52 10.12L13.18 4.46C13.77 3.87 14.71 3.87 15.3 4.46L16.12 5.28C15.08 3.96 13.56 2.99 11.83 2.58C9.53 2.03 7.07 2.45 5.14 3.73C4.24 4.33 3.51 5.15 3.03 6.11C2.56 7.06 2.37 8.13 2.49 9.19C2.65 10.65 3.37 11.98 4.48 12.98L7.42 16.89C7.86 17.48 8.68 17.62 9.29 17.21L9.79 15.38Z" fill="#4a6fa5"/>
             </svg>
           </div>
-          <span className="text-4xl font-bold text-[#a0c1b9] tracking-tight drop-shadow-sm" style={{ fontFamily: 'sans-serif' }}>Match</span>
+          <span className="text-4xl font-bold text-[#a0c1b9] dark:text-[#b8ddd4] tracking-tight drop-shadow-sm" style={{ fontFamily: 'sans-serif' }}>Match</span>
         </div>
       )}
     </div>

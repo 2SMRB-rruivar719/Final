@@ -20,7 +20,7 @@ interface SavedAccountEntry {
 }
 
 const AUTH_BG_CLASS =
-  "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')]";
+  "min-h-screen bg-cover bg-center bg-[url('/landing-hero.png')]";
 const AUTH_OVERLAY_CLASS =
   "min-h-screen bg-gradient-to-b from-slate-900/90 via-[#2c3e50]/88 to-travel-primary/78 backdrop-blur-md flex flex-col p-4 overflow-y-auto relative";
 

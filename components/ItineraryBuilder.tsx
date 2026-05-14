@@ -81,6 +81,11 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
   const [pacePreference, setPacePreference] = useState(language === 'en' ? 'Explorer' : 'Explorador');
   const [vibePreference, setVibePreference] = useState(language === 'en' ? 'Cultural' : 'Cultural');
 
+  const sliderTrackRest = isDark ? 'rgba(15,23,42,0.5)' : 'rgba(255,255,255,0.35)';
+  const sliderStyle = {
+    background: `linear-gradient(90deg, #70a0af ${sliderProgress}%, ${sliderTrackRest} ${sliderProgress}%)`,
+  } as React.CSSProperties;
+
   const removeRepeatedActivities = (data: Itinerary): Itinerary => {
     const globalSeen = new Set<string>();
     return {
@@ -120,14 +125,14 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
   return (
     <div className="p-4 max-w-5xl mx-auto mb-24 lg:mb-8 lg:py-8">
-      <div className="mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl text-white shadow-xl shadow-travel-primary/25 ring-1 ring-white/15">
-        <h2 className="text-2xl font-bold mb-2">{t.title}</h2>
-        <p className="opacity-90 mb-4 text-sm">{t.subtitle}</p>
+      <div className={`mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl shadow-xl shadow-travel-primary/25 ring-1 ring-white/15 ${isDark ? 'text-gray-100' : 'text-white'}`}>
+        <h2 className={`text-2xl font-bold mb-2 drop-shadow-sm ${isDark ? 'text-white' : ''}`}>{t.title}</h2>
+        <p className={`mb-4 text-sm drop-shadow-sm ${isDark ? 'text-gray-100/95' : 'opacity-90'}`}>{t.subtitle}</p>
         
         {!itinerary && (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
-              <label className="block text-xs font-medium mb-2 uppercase tracking-wide">{t.duration}</label>
+              <label className={`block text-xs font-semibold mb-2 uppercase tracking-wide drop-shadow-sm ${isDark ? 'text-gray-100' : 'text-white'}`}>{t.duration}</label>
               <div className="flex items-center gap-4">
                 <input
                   type="range"
@@ -135,17 +140,15 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                   max="14"
                   value={duration}
                   onChange={(e) => setDuration(parseInt(e.target.value, 10))}
-                  style={{
-                    background: `linear-gradient(90deg, #111827 ${sliderProgress}%, rgba(255,255,255,0.3) ${sliderProgress}%)`,
-                  }}
+                  style={sliderStyle}
                   className="w-full h-2 rounded-lg appearance-none cursor-pointer transition-all duration-300 ease-out
                   [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:w-5
-                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-black [&::-webkit-slider-thumb]:border-2
+                  [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-[#70a0af] [&::-webkit-slider-thumb]:border-2
                   [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md [&::-webkit-slider-thumb]:transition-all
-                  [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-black
+                  [&::-moz-range-thumb]:h-5 [&::-moz-range-thumb]:w-5 [&::-moz-range-thumb]:rounded-full [&::-moz-range-thumb]:bg-[#70a0af]
                   [&::-moz-range-thumb]:border-2 [&::-moz-range-thumb]:border-white"
                 />
-                <span className="font-bold text-xl w-8">{duration}</span>
+                <span className={`font-bold text-xl w-8 tabular-nums drop-shadow-sm ${isDark ? 'text-gray-100' : 'text-white'}`}>{duration}</span>
               </div>
             </div>
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20 space-y-3">
