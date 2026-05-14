@@ -478,50 +478,106 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
     );
   }
 
+  const appearanceBlock = (
+    <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
+      <h3 className={`text-xs font-bold uppercase mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`}>{t.appearanceLanguage}</h3>
+      <div className="flex items-center justify-between">
+        <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          <Globe2 size={18} className="text-travel-primary" />
+          <span className="font-medium text-sm">{t.language}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChangeLanguage(language === 'es' ? 'en' : 'es')}
+          className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+            theme === 'dark'
+              ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
+              : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
+          }`}
+        >
+          {language === 'es' ? 'Español' : 'English'}
+        </button>
+      </div>
+
+      <div className="flex items-center justify-between">
+        <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
+          {theme === 'dark' ? (
+            <Moon size={18} className="text-travel-primary" />
+          ) : (
+            <SunMedium size={18} className="text-travel-primary" />
+          )}
+          <span className="font-medium text-sm">{t.darkMode}</span>
+        </div>
+        <button
+          type="button"
+          onClick={() => onChangeTheme(theme === 'dark' ? 'light' : 'dark')}
+          className={`px-3 py-1 rounded-full text-xs font-semibold border ${
+            theme === 'dark'
+              ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
+              : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
+          }`}
+        >
+          {theme === 'dark' ? t.deactivate : t.activate}
+        </button>
+      </div>
+    </div>
+  );
+
   return (
     <div className={`p-6 max-w-3xl mx-auto min-h-screen pb-24 lg:pb-10 lg:rounded-3xl lg:border lg:shadow-sm ${
       theme === 'dark'
         ? 'bg-slate-900 text-gray-100 lg:border-slate-700'
         : 'bg-white lg:border-gray-100'
     }`}>
-      <div className="text-center mb-6 mt-6">
-        <div className="relative inline-block">
-          <img
-            src={avatarSrc}
-            className="w-28 h-28 rounded-full border-4 border-travel-secondary object-cover"
-            alt="Perfil"
-            onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
-          />
-          <button
-            type="button"
-            onClick={() => {
-              const { start, end } = deriveTripDates(currentUser);
-              setFormData({
-                ...currentUser,
-                tripStartDate: currentUser.tripStartDate || start || '',
-                tripEndDate: currentUser.tripEndDate || end || '',
-              });
-              setIsEditing(true);
-            }}
-            className="absolute bottom-0 right-0 bg-travel-accent text-white p-2 rounded-full border-2 border-white hover:bg-opacity-90 transition"
-            aria-label="Editar perfil"
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-              <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-            </svg>
-          </button>
+      {section === 'profile' && (
+        <div className="text-center mb-6 mt-6">
+          <div className="relative inline-block">
+            <img
+              src={avatarSrc}
+              className="w-28 h-28 rounded-full border-4 border-travel-secondary object-cover"
+              alt="Perfil"
+              onError={() => setAvatarSrc(getFallbackAvatar(currentUser.name))}
+            />
+            <button
+              type="button"
+              onClick={() => {
+                const { start, end } = deriveTripDates(currentUser);
+                setFormData({
+                  ...currentUser,
+                  tripStartDate: currentUser.tripStartDate || start || '',
+                  tripEndDate: currentUser.tripEndDate || end || '',
+                });
+                setIsEditing(true);
+              }}
+              className="absolute bottom-0 right-0 bg-travel-accent text-white p-2 rounded-full border-2 border-white hover:bg-opacity-90 transition"
+              aria-label="Editar perfil"
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+              </svg>
+            </button>
+          </div>
+          <h2 className={`text-2xl font-bold mt-4 ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
+            {currentUser.name}, {currentUser.age}
+          </h2>
+          <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}>{currentUser.country}</p>
+          <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm mt-1`}>{currentUser.email}</p>
         </div>
-        <h2 className={`text-2xl font-bold mt-4 ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
-          {currentUser.name}, {currentUser.age}
-        </h2>
-        <p className={theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}>{currentUser.country}</p>
-        <p className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'} text-sm mt-1`}>{currentUser.email}</p>
-      </div>
+      )}
 
-      <h3 className={`text-sm font-semibold mb-6 text-center ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
-        {section === 'profile' ? t.profile : t.settings}
-      </h3>
+      {section === 'settings' && (
+        <div className="mb-8 mt-6 text-center">
+          <h2 className={`text-2xl font-bold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>{t.settings}</h2>
+          <p className={`text-sm mt-1 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-500'}`}>{currentUser.email}</p>
+        </div>
+      )}
+
+      {section === 'profile' && (
+        <h3 className={`text-sm font-semibold mb-6 text-center ${theme === 'dark' ? 'text-gray-300' : 'text-gray-500'}`}>
+          {t.profile}
+        </h3>
+      )}
 
       {currentUser.deletionScheduledAt && (
         <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
@@ -537,6 +593,8 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'profile' && (
         <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
+          <div className="lg:col-span-2">{appearanceBlock}</div>
+
           <div className="lg:col-span-2 flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:justify-center">
             <Button
               type="button"
@@ -615,49 +673,6 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
 
       {section === 'settings' && (
         <div className="space-y-4">
-          <div className={`p-4 rounded-xl space-y-3 ${cardClass}`}>
-            <h3 className={`text-xs font-bold uppercase mb-1 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-400'}`}>{t.appearanceLanguage}</h3>
-            <div className="flex items-center justify-between">
-              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
-                <Globe2 size={18} className="text-travel-primary" />
-                <span className="font-medium text-sm">{t.language}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onChangeLanguage(language === 'es' ? 'en' : 'es')}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                  theme === 'dark'
-                    ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
-                    : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                {language === 'es' ? 'Español' : 'English'}
-              </button>
-            </div>
-
-            <div className="flex items-center justify-between">
-              <div className={`flex items-center gap-2 ${theme === 'dark' ? 'text-gray-200' : 'text-gray-700'}`}>
-                {theme === 'dark' ? (
-                  <Moon size={18} className="text-travel-primary" />
-                ) : (
-                  <SunMedium size={18} className="text-travel-primary" />
-                )}
-                <span className="font-medium text-sm">{t.darkMode}</span>
-              </div>
-              <button
-                type="button"
-                onClick={() => onChangeTheme(theme === 'dark' ? 'light' : 'dark')}
-                className={`px-3 py-1 rounded-full text-xs font-semibold border ${
-                  theme === 'dark'
-                    ? 'bg-slate-700 border-slate-600 text-gray-100 hover:bg-slate-600'
-                    : 'bg-white border-gray-200 text-gray-800 hover:bg-gray-100'
-                }`}
-              >
-                {theme === 'dark' ? t.deactivate : t.activate}
-              </button>
-            </div>
-          </div>
-
           <div className={`${cardClass} p-4 rounded-xl`}>
             <button
               type="button"
