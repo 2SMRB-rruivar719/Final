@@ -1,10 +1,9 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { UserProfile, Itinerary, LanguageCode, ThemeMode } from '../types';
 import { generateItinerary } from '../services/aiService';
 import { Button } from './Button';
-import { SafeImage } from './SafeImage';
-import { getPlaceActivityPhotoUrl, getPlaceBannerUrl } from '../services/placePhotos';
-import { Map, Clock, MapPin, Sparkles, Share2 } from 'lucide-react';
+import { TripDayCard } from './TripDayCard';
+import { Map, Sparkles, Share2 } from 'lucide-react';
 
 interface ItineraryBuilderProps {
   currentUser: UserProfile;
@@ -42,6 +41,11 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         nightlife: 'Nightlife',
         local: 'Local',
         international: 'International',
+        activities: 'activities',
+        tapDay: 'Tap a day for map details and place info',
+        aboutPlace: 'About this place',
+        openMaps: 'Open in Google Maps',
+        mapsPreview: 'Map preview',
       }
     : {
         title: 'Planificador IA',
@@ -70,9 +74,32 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         nightlife: 'Vida nocturna',
         local: 'Local',
         international: 'Internacional',
+        activities: 'actividades',
+        tapDay: 'Toca un día para ver mapas y detalle de cada sitio',
+        aboutPlace: 'Sobre el lugar',
+        openMaps: 'Abrir en Google Maps',
+        mapsPreview: 'Vista del mapa',
       };
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
+  const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (itinerary?.days.length) {
+      setExpandedDays(new Set([itinerary.days[0].day]));
+    } else {
+      setExpandedDays(new Set());
+    }
+  }, [itinerary?.id]);
+
+  const toggleDay = (dayNum: number) => {
+    setExpandedDays((prev) => {
+      const next = new Set(prev);
+      if (next.has(dayNum)) next.delete(dayNum);
+      else next.add(dayNum);
+      return next;
+    });
+  };
   const [duration, setDuration] = useState(3);
   const sliderProgress = 100 * ((duration - 1) / 13);
   const [locality, setLocality] = useState(currentUser.destination);
@@ -115,7 +142,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
     );
     const result = await generateItinerary(
       locality,
-      duration, 
+      duration,
       selectedInterests,
       pricePreference
     );
@@ -128,7 +155,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
       <div className={`mb-6 bg-gradient-to-r from-travel-primary to-travel-accent p-6 rounded-3xl shadow-xl shadow-travel-primary/25 ring-1 ring-white/15 ${isDark ? 'text-gray-100' : 'text-white'}`}>
         <h2 className={`text-2xl font-bold mb-2 drop-shadow-sm ${isDark ? 'text-white' : ''}`}>{t.title}</h2>
         <p className={`mb-4 text-sm drop-shadow-sm ${isDark ? 'text-gray-100/95' : 'opacity-90'}`}>{t.subtitle}</p>
-        
+
         {!itinerary && (
           <div className="grid gap-4 lg:grid-cols-2">
             <div className="bg-white/10 backdrop-blur-md p-4 rounded-xl border border-white/20">
@@ -213,9 +240,9 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                 </label>
               </div>
             </div>
-            <Button 
-              onClick={handleGenerate} 
-              fullWidth 
+            <Button
+              onClick={handleGenerate}
+              fullWidth
               disabled={loading}
               className="lg:col-span-2 mt-1 bg-travel-secondary text-travel-dark hover:bg-white border-none shadow-none"
             >
@@ -231,79 +258,37 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
       {itinerary && (
         <div className="space-y-6 animate-fade-in-up">
-           <div className="flex justify-between items-center">
-             <h3 className="text-xl font-bold text-travel-dark">{t.yourItinerary}</h3>
-             <button className="text-travel-accent flex items-center gap-1 text-sm font-medium hover:text-travel-primary">
-               <Share2 size={16} /> {t.share}
-             </button>
-           </div>
+          <div className="flex justify-between items-center flex-wrap gap-2">
+            <div>
+              <h3 className="text-xl font-bold text-travel-dark">{t.yourItinerary}</h3>
+              <p className={`text-sm mt-0.5 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{t.tapDay}</p>
+            </div>
+            <button type="button" className="text-travel-accent flex items-center gap-1 text-sm font-medium hover:text-travel-primary">
+              <Share2 size={16} /> {t.share}
+            </button>
+          </div>
 
-          <div className="space-y-4 lg:grid lg:grid-cols-2 lg:gap-4 lg:space-y-0">
-             {itinerary.days.map((day) => (
-               <div key={day.day} className={`rounded-2xl overflow-hidden shadow-sm border ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-100'}`}>
-                 <div className="relative h-36">
-                   <SafeImage
-                     src={getPlaceBannerUrl(itinerary.destination, day.day)}
-                     alt={`${itinerary.destination} day ${day.day}`}
-                     fallbackSeed={`${itinerary.destination}-day-${day.day}`}
-                     className="w-full h-full object-cover"
-                     variant="photo"
-                   />
-                   <div className="absolute inset-0 bg-gradient-to-t from-black/55 to-transparent" />
-                   <div className="absolute bottom-3 left-3 text-white text-xs font-semibold tracking-wide uppercase">
-                     {itinerary.destination}
-                   </div>
-                 </div>
-                <div className="p-5">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="bg-travel-primary/20 text-travel-primary font-bold w-10 h-10 rounded-full flex items-center justify-center shrink-0">
-                      {day.day}
-                    </div>
-                    <h4 className={`font-bold text-lg ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{day.title}</h4>
-                  </div>
+          <div className="space-y-3">
+            {itinerary.days.map((day) => (
+              <TripDayCard
+                key={day.day}
+                day={day}
+                destination={itinerary.destination}
+                isDark={isDark}
+                isExpanded={expandedDays.has(day.day)}
+                onToggle={() => toggleDay(day.day)}
+                bannerLocation={day.activities[0]?.location}
+                t={t}
+              />
+            ))}
+          </div>
 
-                  <div className={`space-y-6 relative pl-5 ml-5 border-l-2 ${isDark ? 'border-slate-700' : 'border-gray-100'}`}>
-                    {day.activities.map((act, idx) => (
-                      <div key={idx} className="relative">
-                        <div className="absolute -left-[27px] top-1 w-3 h-3 bg-travel-accent rounded-full border-2 border-white ring-2 ring-gray-50"></div>
-                        <div className={`rounded-xl overflow-hidden border ${
-                          isDark ? 'bg-slate-800 border-slate-700' : 'bg-white border-gray-100'
-                        }`}>
-                          <SafeImage
-                            src={getPlaceActivityPhotoUrl(itinerary.destination, day.day, idx, act.location)}
-                            alt={`${act.location} · ${itinerary.destination}`}
-                            fallbackSeed={`${itinerary.destination}-${day.day}-${idx}-${act.location}`}
-                            className="w-full h-28 object-cover"
-                            variant="photo"
-                          />
-                          <div className="p-3">
-                            <div className="flex flex-col sm:flex-row sm:items-start gap-1 sm:gap-4">
-                              <span className="text-xs font-bold text-travel-accent bg-travel-accent/10 px-2 py-1 rounded w-fit flex items-center gap-1">
-                                <Clock size={10} /> {act.time}
-                              </span>
-                              <div className="flex-1">
-                                <p className={`font-medium ${isDark ? 'text-gray-100' : 'text-gray-800'}`}>{act.description}</p>
-                                <p className={`text-sm flex items-center gap-1 mt-1 ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
-                                  <MapPin size={12} /> {act.location}
-                                </p>
-                              </div>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </div>
-             ))}
-           </div>
-           
-           <Button onClick={() => setItinerary(null)} variant="outline" fullWidth>
+          <Button onClick={() => setItinerary(null)} variant="outline" fullWidth>
             {t.newRoute}
-           </Button>
+          </Button>
         </div>
       )}
-      
+
       {!itinerary && !loading && (
         <div className={`text-center p-8 border border-dashed rounded-3xl ${isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-gray-300'}`}>
           <Map className="w-12 h-12 text-gray-300 mx-auto mb-3" />

@@ -1,6 +1,9 @@
+import { buildPlaceQuery, getGoogleStaticMapUrl } from './googleMaps';
+
 /**
  * Stable travel/place photos via Unsplash CDN (no deprecated source.unsplash.com).
  * Picks deterministically from pools so the same key maps to the same image.
+ * Uses Google Static Maps when VITE_GOOGLE_MAPS_API_KEY is configured.
  */
 
 const PLACE_BANNERS = [
@@ -51,7 +54,16 @@ function stableIndex(key: string, modulo: number): number {
   return Math.abs(h) % modulo;
 }
 
-export function getPlaceBannerUrl(destination: string, day: number): string {
+export function getPlaceBannerUrl(
+  destination: string,
+  day: number,
+  locationHint?: string
+): string {
+  const query = locationHint
+    ? buildPlaceQuery(locationHint, destination)
+    : destination;
+  const staticMap = getGoogleStaticMapUrl(query, 640, 360);
+  if (staticMap) return staticMap;
   const key = `${destination}|day|${day}`;
   return PLACE_BANNERS[stableIndex(key, PLACE_BANNERS.length)];
 }
@@ -62,6 +74,9 @@ export function getPlaceActivityPhotoUrl(
   activityIndex: number,
   locationHint: string
 ): string {
+  const query = buildPlaceQuery(locationHint, destination);
+  const staticMap = getGoogleStaticMapUrl(query, 640, 280);
+  if (staticMap) return staticMap;
   const key = `${destination}|d${day}|i${activityIndex}|${locationHint}`;
   return PLACE_CARDS[stableIndex(key, PLACE_CARDS.length)];
 }

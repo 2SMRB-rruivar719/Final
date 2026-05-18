@@ -69,6 +69,8 @@ export interface ItineraryDay {
     time: string;
     description: string;
     location: string;
+    /** Short blurb about the place (shown in expanded day detail). */
+    placeNote?: string;
   }[];
 }
 

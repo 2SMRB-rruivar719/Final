@@ -142,6 +142,26 @@ const buildDayTitle = (day: number, destination: string) => {
   return `Sabores y barrios locales`;
 };
 
+const LOCATION_TEMPLATES = [
+  (d: string) => `Plaza principal · ${d}`,
+  (d: string) => `Casco antiguo · ${d}`,
+  (d: string) => `Mercado municipal · ${d}`,
+  (d: string) => `Mirador panorámico · ${d}`,
+  (d: string) => `Museo o centro cultural · ${d}`,
+  (d: string) => `Barrio gastronómico · ${d}`,
+  (d: string) => `Paseo marítimo o parque · ${d}`,
+  (d: string) => `Zona comercial · ${d}`,
+];
+
+const buildPlaceNote = (location: string, destination: string, focus: string): string => {
+  const spot = location.replace(` · ${destination}`, '').replace(`Centro de ${destination}`, 'el centro');
+  return (
+    `${spot} en ${destination} es un punto clave para ${focus.toLowerCase()}. ` +
+    `Revisa horarios, entradas y si conviene reservar con antelación. ` +
+    `Pulsa el mapa para abrir la ubicación en Google Maps.`
+  );
+};
+
 export const generateItinerary = async (
   destination: string,
   duration: number,
@@ -155,24 +175,36 @@ export const generateItinerary = async (
   const days = Array.from({ length: duration }).map((_, idx) => {
     const day = idx + 1;
     const [interestA, interestB, interestC] = pickMany(fallbackInterests, 3, day * 93 + destination.length);
+    const locMorning = day === 1
+      ? `Centro histórico · ${destination}`
+      : LOCATION_TEMPLATES[(day * 2) % LOCATION_TEMPLATES.length](destination);
+    const locAfternoon = LOCATION_TEMPLATES[(day * 3 + 1) % LOCATION_TEMPLATES.length](destination);
+    const locEvening = LOCATION_TEMPLATES[(day * 5 + 2) % LOCATION_TEMPLATES.length](destination);
+    const focusA = interestA || 'centro histórico';
+    const focusB = interestB || 'cultura local';
+    const focusC = interestC || 'gastronomía';
+
     return {
       day,
       title: buildDayTitle(day, destination),
       activities: [
         {
           time: '09:00',
-          description: `Desayuno local y planificación del día (${interestA || 'centro histórico'})`,
-          location: `Centro de ${destination}`,
+          description: `Desayuno local y primeras visitas (${focusA})`,
+          location: locMorning,
+          placeNote: buildPlaceNote(locMorning, destination, focusA),
         },
         {
           time: '13:00',
-          description: `Actividad principal enfocada en ${interestB || 'cultura local'}`,
-          location: `Zona recomendada · ${destination}`,
+          description: `Actividad principal: ${focusB}`,
+          location: locAfternoon,
+          placeNote: buildPlaceNote(locAfternoon, destination, focusB),
         },
         {
           time: '19:30',
-          description: `Cierre del día con plan de ${interestC || 'gastronomía'} (presupuesto ${budget})`,
-          location: `Barrio gastronómico · ${destination}`,
+          description: `Cierre del día con ${focusC} (presupuesto ${budget})`,
+          location: locEvening,
+          placeNote: buildPlaceNote(locEvening, destination, focusC),
         },
       ],
     };
