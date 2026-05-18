@@ -143,3 +143,43 @@ a:focus:not(:focus-visible) {
     transform: translateY(0);
   }
 }
+
+/* Viaje — tarjetas de día */
+.trip-day-card {
+  animation: tripCardIn 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tripCardIn {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.trip-day-expanded .trip-activity-item {
+  animation: tripActivityIn 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@keyframes tripActivityIn {
+  from {
+    opacity: 0;
+    transform: translateX(-8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.trip-map-preview::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+  pointer-events: none;
+}
