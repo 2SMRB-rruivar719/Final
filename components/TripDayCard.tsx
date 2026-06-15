@@ -212,7 +212,7 @@ export const TripDayCard: React.FC<TripDayCardProps> = ({
               const mapsUrl = getGoogleMapsUrl(buildPlaceQuery(act.location, destination));
               const placeNote =
                 act.placeNote ||
-                `${act.location} en ${destination}. Pulsa el mapa para ver la ubicación en Google Maps.`;
+                `${act.location} para preparar ${destination}. Revisa los materiales y planifica tus descansos.`;
 
               return (
                 <div

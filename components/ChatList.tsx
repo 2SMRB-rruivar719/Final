@@ -9,9 +9,9 @@ interface ChatListProps {
 }
 
 const MOCK_CHATS = [
-  { id: '1', name: 'Grupo: Viaje a Japón', lastMessage: '¿Ya reservaron el hotel?', time: '10:30', unread: 2, isGroup: true, img: 'https://picsum.photos/seed/japan/100/100' },
-  { id: '2', name: 'Carlos Ruiz', lastMessage: 'Me encanta la idea de ir a Kioto.', time: 'Ayer', unread: 0, isGroup: false, img: getAvatarByName('Carlos Ruiz') },
-  { id: '3', name: 'Sarah Miller', lastMessage: '¡Hola! Vi que coincidimos en fechas.', time: 'Ayer', unread: 1, isGroup: false, img: getAvatarByName('Sarah Miller') },
+  { id: '1', name: 'Grupo: Matemáticas & Física', lastMessage: '¿Alguien ha resuelto el problema de derivadas?', time: '10:30', unread: 2, isGroup: true, img: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=100&q=80' },
+  { id: '2', name: 'Carlos Ruiz', lastMessage: 'Me apunto a repasar álgebra lineal.', time: 'Ayer', unread: 0, isGroup: false, img: getAvatarByName('Carlos Ruiz') },
+  { id: '3', name: 'Sarah Miller', lastMessage: '¡Hola! Vi que coincidimos en asignaturas.', time: 'Ayer', unread: 1, isGroup: false, img: getAvatarByName('Sarah Miller') },
 ];
 
 export const ChatList: React.FC<ChatListProps> = () => {

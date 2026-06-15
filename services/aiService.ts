@@ -5,29 +5,29 @@ const countries = ['España', 'Argentina', 'México', 'Chile', 'Portugal', 'Colo
 const budgetPool: Array<UserProfile['budget']> = ['Bajo', 'Medio', 'Alto'];
 
 const bios = [
-  'Me encanta descubrir cafeterías locales y rincones auténticos en cada ciudad.',
-  'Viajo ligero y priorizo experiencias culturales y planes espontáneos.',
-  'Busco combinar aventura con buena gastronomía y fotografías increíbles.',
-  'Prefiero planes bien organizados durante el día y relax por la noche.',
-  'Disfruto conectar con viajeros con intereses similares y buen rollo.',
-  'Siempre busco el equilibrio entre ahorro y experiencias memorables.',
-  'Me gustan las rutas con naturaleza, miradores y caminatas urbanas.',
-  'Planifico lo importante y dejo espacio para improvisar sobre la marcha.',
+  'Me encanta organizar sesiones de estudio grupales y debatir conceptos complejos.',
+  'Estudio mejor con el método Pomodoro, música lofi y buena concentración.',
+  'Busco compañeros para resolver dudas de exámenes pasados y compartir apuntes.',
+  'Combino el estudio individual intenso con descansos para tomar café y despejarme.',
+  'Siempre intento mantener mis apuntes limpios, claros y bien estructurados.',
+  'Me considero muy práctico, prefiero resolver problemas antes que memorizar teoría.',
+  'Preparando exámenes importantes. Busco constancia y motivación mutua.',
+  'Me gusta crear mapas mentales y repasar con flashcards en grupo.',
 ];
 
 const interestPool = [
-  'Fotografía',
-  'Gastronomía',
+  'Matemáticas',
+  'Programación',
+  'Medicina',
+  'Física',
+  'Derecho',
   'Historia',
-  'Senderismo',
-  'Museos',
-  'Playas',
-  'Vida nocturna',
-  'Arte',
-  'Café',
-  'Naturaleza',
-  'Arquitectura',
-  'Mercados locales',
+  'Idiomas',
+  'Química',
+  'Economía',
+  'Filosofía',
+  'Diseño UI/UX',
+  'Biología',
 ];
 
 const pickMany = <T>(list: T[], count: number, seed: number): T[] => {
@@ -71,7 +71,7 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
   const baseStyles =
     userProfile.travelStyle && userProfile.travelStyle.length
       ? userProfile.travelStyle
-      : [TravelStyle.CULTURAL, TravelStyle.ADVENTURE];
+      : [TravelStyle.THEORETICAL, TravelStyle.PRACTICAL];
 
   const usedAvatarUrls = new Set<string>();
 
@@ -115,7 +115,7 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
     return {
       id: `match-${index}-${Date.now()}`,
       name,
-      email: `${name.toLowerCase().replace(/\s+/g, '.')}@travelmatch.local`,
+      email: `${name.toLowerCase().replace(/\s+/g, '.')}@studymatch.local`,
       age,
       sex,
       country: countries[index % countries.length],
@@ -136,29 +136,29 @@ export const generatePotentialMatches = async (userProfile: UserProfile): Promis
 };
 
 const buildDayTitle = (day: number, destination: string) => {
-  if (day === 1) return `Bienvenida en ${destination}`;
-  if (day % 3 === 0) return `Aventura y naturaleza`;
-  if (day % 2 === 0) return `Ruta cultural`;
-  return `Sabores y barrios locales`;
+  if (day === 1) return `Introducción y bases de ${destination}`;
+  if (day % 3 === 0) return `Resolución de ejercicios prácticos`;
+  if (day % 2 === 0) return `Profundización teórica y dudas`;
+  return `Simulacro y repaso general`;
 };
 
 const LOCATION_TEMPLATES = [
-  (d: string) => `Plaza principal · ${d}`,
-  (d: string) => `Casco antiguo · ${d}`,
-  (d: string) => `Mercado municipal · ${d}`,
-  (d: string) => `Mirador panorámico · ${d}`,
-  (d: string) => `Museo o centro cultural · ${d}`,
-  (d: string) => `Barrio gastronómico · ${d}`,
-  (d: string) => `Paseo marítimo o parque · ${d}`,
-  (d: string) => `Zona comercial · ${d}`,
+  (d: string) => `Biblioteca Central · ${d}`,
+  (d: string) => `Café de estudio · ${d}`,
+  (d: string) => `Sala de estudio grupal · ${d}`,
+  (d: string) => `Escritorio personal / Online · ${d}`,
+  (d: string) => `Biblioteca universitaria · ${d}`,
+  (d: string) => `Aula de informática · ${d}`,
+  (d: string) => `Zona de co-working · ${d}`,
+  (d: string) => `Parque o espacio abierto · ${d}`,
 ];
 
 const buildPlaceNote = (location: string, destination: string, focus: string): string => {
   const spot = location.replace(` · ${destination}`, '').replace(`Centro de ${destination}`, 'el centro');
   return (
-    `${spot} en ${destination} es un punto clave para ${focus.toLowerCase()}. ` +
-    `Revisa horarios, entradas y si conviene reservar con antelación. ` +
-    `Pulsa el mapa para abrir la ubicación en Google Maps.`
+    `El espacio "${spot}" es excelente para enfocarse en ${focus.toLowerCase()}. ` +
+    `Consejo de Estudio: Intenta aplicar la técnica Pomodoro (25 min estudio, 5 min descanso). ` +
+    `Si estudias en grupo, hagan preguntas y explíquense conceptos difíciles mutuamente.`
   );
 };
 
@@ -170,19 +170,19 @@ export const generateItinerary = async (
 ): Promise<Itinerary> => {
   await new Promise((resolve) => setTimeout(resolve, 500));
 
-  const fallbackInterests = interests.length ? interests : ['Gastronomía', 'Historia', 'Naturaleza'];
+  const fallbackInterests = interests.length ? interests : ['Matemáticas', 'Programación', 'Historia', 'Física'];
 
   const days = Array.from({ length: duration }).map((_, idx) => {
     const day = idx + 1;
     const [interestA, interestB, interestC] = pickMany(fallbackInterests, 3, day * 93 + destination.length);
     const locMorning = day === 1
-      ? `Centro histórico · ${destination}`
+      ? `Escritorio personal · ${destination}`
       : LOCATION_TEMPLATES[(day * 2) % LOCATION_TEMPLATES.length](destination);
     const locAfternoon = LOCATION_TEMPLATES[(day * 3 + 1) % LOCATION_TEMPLATES.length](destination);
     const locEvening = LOCATION_TEMPLATES[(day * 5 + 2) % LOCATION_TEMPLATES.length](destination);
-    const focusA = interestA || 'centro histórico';
-    const focusB = interestB || 'cultura local';
-    const focusC = interestC || 'gastronomía';
+    const focusA = interestA || 'conceptos clave';
+    const focusB = interestB || 'práctica intensiva';
+    const focusC = interestC || 'resolución de dudas';
 
     return {
       day,
@@ -190,19 +190,19 @@ export const generateItinerary = async (
       activities: [
         {
           time: '09:00',
-          description: `Desayuno local y primeras visitas (${focusA})`,
+          description: `Bloque 1: Repaso teórico y mapa mental de ${focusA}`,
           location: locMorning,
           placeNote: buildPlaceNote(locMorning, destination, focusA),
         },
         {
           time: '13:00',
-          description: `Actividad principal: ${focusB}`,
+          description: `Bloque 2: Resolución de ejercicios y casos prácticos de ${focusB}`,
           location: locAfternoon,
           placeNote: buildPlaceNote(locAfternoon, destination, focusB),
         },
         {
           time: '19:30',
-          description: `Cierre del día con ${focusC} (presupuesto ${budget})`,
+          description: `Bloque 3: Sesión de autoevaluación / flashcards sobre ${focusC} (dificultad ${budget})`,
           location: locEvening,
           placeNote: buildPlaceNote(locEvening, destination, focusC),
         },

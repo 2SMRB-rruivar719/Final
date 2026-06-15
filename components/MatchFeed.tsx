@@ -10,7 +10,7 @@ import {
 } from '../services/blockedUsers';
 import { Button } from './Button';
 import { SafeImage } from './SafeImage';
-import { X, Heart, MessageCircle, MapPin, Calendar, Wallet, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
+import { X, Heart, MessageCircle, BookOpen, Calendar, Award, ChevronLeft, ChevronRight, Ban } from 'lucide-react';
 import { useToast } from './ToastProvider';
 
 interface MatchFeedProps {
@@ -39,67 +39,67 @@ interface PublicChannel {
 const PUBLIC_CHANNELS: PublicChannel[] = [
   {
     id: 'pc-1',
-    name: 'Foodies en Italia',
-    destination: 'Roma',
+    name: 'Matemáticas & Física',
+    destination: 'Álgebra / Cálculo',
     members: 128,
     posts: [
       {
         id: 'p1',
-        author: 'Lucia',
-        place: 'Trastevere',
-        comment: 'Pasta increible y ambiente super local. Muy recomendado para cena.',
-        imageUrl: 'https://images.unsplash.com/photo-1551183053-bf91a1d81141?auto=format&fit=crop&w=900&q=80',
+        author: 'Ana',
+        place: 'Biblioteca Central',
+        comment: 'Tengo unos apuntes de Cálculo en PDF excelentes. ¿Alguien para repasar la guía mañana?',
+        imageUrl: 'https://images.unsplash.com/photo-1434030216411-0b793f4b4173?auto=format&fit=crop&w=900&q=80',
       },
       {
         id: 'p2',
-        author: 'Marco',
-        place: 'Mercato Centrale',
-        comment: 'Perfecto para probar varios puestos en una sola visita.',
-        imageUrl: 'https://images.unsplash.com/photo-1521017432531-fbd92d768814?auto=format&fit=crop&w=900&q=80',
+        author: 'Carlos',
+        place: 'Sala de estudio virtual',
+        comment: 'Resolviendo ejercicios de Física Mecánica. Conéctense a la videollamada.',
+        imageUrl: 'https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?auto=format&fit=crop&w=900&q=80',
       },
     ],
   },
   {
     id: 'pc-2',
-    name: 'Miradores y fotos',
-    destination: 'Lisboa',
+    name: 'Programación & IA',
+    destination: 'Web / Data Science',
     members: 97,
     posts: [
       {
         id: 'p3',
-        author: 'Sara',
-        place: 'Miradouro da Senhora do Monte',
-        comment: 'Atardecer top. Lleva algo de abrigo porque corre viento.',
-        imageUrl: 'https://images.unsplash.com/photo-1513735492246-483525079686?auto=format&fit=crop&w=900&q=80',
+        author: 'Sofía',
+        place: 'Laboratorio de Sistemas',
+        comment: 'Montando una API en Express.js. Si quieres practicar bases de datos, ¡avísame!',
+        imageUrl: 'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?auto=format&fit=crop&w=900&q=80',
       },
       {
         id: 'p4',
-        author: 'Joao',
-        place: 'Alfama',
-        comment: 'Calles preciosas para fotos espontaneas por la mañana.',
-        imageUrl: 'https://images.unsplash.com/photo-1499856871958-5b9627545d1a?auto=format&fit=crop&w=900&q=80',
+        author: 'Juan',
+        place: 'Co-working',
+        comment: 'Trabajando en un modelo de Machine Learning con Python. Acepto consejos y reviews.',
+        imageUrl: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?auto=format&fit=crop&w=900&q=80',
       },
     ],
   },
   {
     id: 'pc-3',
-    name: 'Aventura urbana',
-    destination: 'Tokyo',
+    name: 'Medicina & Biología',
+    destination: 'Anatomía / Bioquímica',
     members: 212,
     posts: [
       {
         id: 'p5',
-        author: 'Kenji',
-        place: 'Shibuya',
-        comment: 'Para street photography este punto nunca falla.',
-        imageUrl: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?auto=format&fit=crop&w=900&q=80',
+        author: 'Elena',
+        place: 'Sala de estudio médico',
+        comment: 'Repasando histología con flashcards de Anki. La memorización espacial funciona de maravilla.',
+        imageUrl: 'https://images.unsplash.com/photo-1577896851231-70ef18881754?auto=format&fit=crop&w=900&q=80',
       },
       {
         id: 'p6',
-        author: 'Marta',
-        place: 'Asakusa',
-        comment: 'Templo precioso y zona llena de tiendas tradicionales.',
-        imageUrl: 'https://images.unsplash.com/photo-1492571350019-22de08371fd3?auto=format&fit=crop&w=900&q=80',
+        author: 'Mateo',
+        place: 'Hemisferio de Bioquímica',
+        comment: 'Preparando el examen de ciclo de Krebs. Traigo café y muchas dudas.',
+        imageUrl: 'https://images.unsplash.com/photo-1532187863486-abf9d39d66e8?auto=format&fit=crop&w=900&q=80',
       },
     ],
   },
@@ -107,68 +107,68 @@ const PUBLIC_CHANNELS: PublicChannel[] = [
 
 export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, language, theme }) => {
   const isDark = theme === 'dark';
-  const travelStyleFilters = ['Mochilero', 'Lujo', 'Aventura', 'Cultural', 'Relax', 'Fiesta'];
+  const travelStyleFilters = ['Visual', 'Práctico', 'Teórico', 'Grupal', 'Individual', 'Intensivo'];
   const budgetFilters = ['Bajo', 'Medio', 'Alto'];
   const t = language === 'en'
     ? {
-        loading: 'AI is looking for your ideal travel buddies...',
-        seenAll: 'You have seen all profiles!',
-        comeBack: `Come back later to see new travelers in ${currentUser.destination}.`,
+        loading: 'AI is looking for your ideal study buddies...',
+        seenAll: 'You have seen all student profiles!',
+        comeBack: `Come back later to see new students preparing ${currentUser.destination}.`,
         reviewAgain: 'Review again',
-        yourTrip: 'Your trip',
+        yourTrip: 'Your study',
         lookingFor: 'Looking for profiles similar to:',
         currentProfile: 'Current profile',
         matchInsight: 'Match insight',
         highlighted: 'Top compatibility',
-        insightText: 'Destination, style and budget match. Great to build a joint plan quickly.',
+        insightText: 'Subject, style and difficulty match. Great to build a study schedule quickly.',
         firstMessage: 'Send first message',
         tip: 'Tip: use the center button to break the ice instantly.',
-        searchPlaceholder: 'Search travelers...',
+        searchPlaceholder: 'Search study buddies...',
         filterBy: 'Filter by',
         filters: 'Filters',
         all: 'All',
-        filterDate: 'Date',
+        filterDate: 'Start date',
         datePlaceholder: 'Any date',
-        styleFilter: 'Travel style',
+        styleFilter: 'Study style',
         stylePlaceholder: 'Any style',
-        budgetFilter: 'Budget',
-        budgetPlaceholder: 'Any budget',
+        budgetFilter: 'Difficulty level',
+        budgetPlaceholder: 'Any difficulty',
         noResults: 'No profiles match your search.',
         clearSearch: 'Clear filters',
-        loadingHint: 'Curating profiles that fit your trip…',
+        loadingHint: 'Curating profiles that fit your subject…',
         blockTraveler: 'Block',
-        blockConfirm: 'Block this traveler? Their chat will be removed and they will not appear in Explore.',
-        blockedToast: 'Traveler blocked.',
+        blockConfirm: 'Block this student? Their chat will be removed and they will not appear in Explore.',
+        blockedToast: 'Student blocked.',
       }
     : {
         loading: 'La IA está buscando a tus compañeros ideales...',
         seenAll: '¡Has visto todos los perfiles!',
-        comeBack: `Vuelve más tarde para ver nuevos viajeros en ${currentUser.destination}.`,
+        comeBack: `Vuelve más tarde para ver nuevos estudiantes preparando ${currentUser.destination}.`,
         reviewAgain: 'Revisar de nuevo',
-        yourTrip: 'Tu viaje',
+        yourTrip: 'Tu estudio',
         lookingFor: 'Buscando perfiles afines a:',
         currentProfile: 'Perfil actual',
         matchInsight: 'Match insight',
         highlighted: 'Compatibilidad destacada',
-        insightText: 'Coinciden en destino, estilo y presupuesto. Ideal para armar plan conjunto rápidamente.',
+        insightText: 'Coinciden en materia, estilo y nivel. Ideal para armar plan de estudio conjunto rápidamente.',
         firstMessage: 'Enviar primer mensaje',
         tip: 'Tip: usa el botón central para romper el hielo al instante.',
-        searchPlaceholder: 'Buscar viajeros...',
+        searchPlaceholder: 'Buscar estudiantes...',
         filterBy: 'Filtrar por',
         filters: 'Filtrar',
         all: 'Todo',
-        filterDate: 'Fecha',
+        filterDate: 'Fecha inicio',
         datePlaceholder: 'Cualquier fecha',
-        styleFilter: 'Estilo de viaje',
+        styleFilter: 'Estilo de estudio',
         stylePlaceholder: 'Cualquier estilo',
-        budgetFilter: 'Presupuesto',
-        budgetPlaceholder: 'Cualquier presupuesto',
+        budgetFilter: 'Nivel/Dificultad',
+        budgetPlaceholder: 'Cualquier nivel',
         noResults: 'No hay perfiles que coincidan con tu búsqueda.',
         clearSearch: 'Limpiar filtros',
-        loadingHint: 'Seleccionando perfiles que encajan con tu viaje…',
+        loadingHint: 'Seleccionando perfiles que encajan con tu asignatura…',
         blockTraveler: 'Bloquear',
-        blockConfirm: '¿Bloquear a este viajero? Se borrará el chat y no aparecerá en Explorar.',
-        blockedToast: 'Viajero bloqueado.',
+        blockConfirm: '¿Bloquear a este estudiante? Se borrará el chat y no aparecerá en Explorar.',
+        blockedToast: 'Estudiante bloqueado.',
       };
   const { showToast } = useToast();
   const [blockRev, setBlockRev] = useState(0);
@@ -277,8 +277,8 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
 
   const welcomeLine =
     language === 'en'
-      ? `Hey, ${currentUser.name} — travelers heading to ${currentUser.destination} are one tap away.`
-      : `Hola, ${currentUser.name} — viajeros con destino a ${currentUser.destination} a un solo gesto.`;
+      ? `Hey, ${currentUser.name} — study buddies preparing ${currentUser.destination} are one tap away.`
+      : `Hola, ${currentUser.name} — estudiantes preparando ${currentUser.destination} a un solo gesto.`;
 
   if (loading) {
     return (
@@ -438,9 +438,9 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                   }`}
                 >
                   <option value="">{t.budgetPlaceholder}</option>
-                  {budgetFilters.map((budget) => (
-                    <option key={budget} value={budget}>{budget}</option>
-                  ))}
+                  <option value="Bajo">{language === 'en' ? 'Easy' : 'Inicial'}</option>
+                  <option value="Medio">{language === 'en' ? 'Medium' : 'Intermedio'}</option>
+                  <option value="Alto">{language === 'en' ? 'Hard' : 'Avanzado'}</option>
                 </select>
               </div>
             </div>
@@ -487,7 +487,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                   {currentCandidate.name}, {currentCandidate.age}
                 </h2>
                 <div className="flex items-center text-white/90 text-sm gap-2">
-                  <MapPin size={14} /> {currentCandidate.country}
+                  <BookOpen size={14} /> {currentCandidate.country}
                 </div>
               </div>
             </div>
@@ -498,7 +498,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                   <Calendar size={14} className="text-travel-accent" /> {currentCandidate.dates}
                 </span>
                 <span className={`flex items-center gap-1 px-2 py-1 rounded-lg border ${isDark ? 'bg-slate-800 border-slate-700' : 'bg-gray-50 border-gray-100'}`}>
-                  <Wallet size={14} className="text-travel-accent" /> {currentCandidate.budget}
+                  <Award size={14} className="text-travel-accent" /> {currentCandidate.budget === 'Bajo' ? (language === 'en' ? 'Easy' : 'Inicial') : currentCandidate.budget === 'Medio' ? (language === 'en' ? 'Medium' : 'Intermedio') : (language === 'en' ? 'Hard' : 'Avanzado')}
                 </span>
               </div>
 
@@ -664,7 +664,7 @@ export const MatchFeed: React.FC<MatchFeedProps> = ({ currentUser, onStartChat, 
                 </Button>
               </div>
               <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
-                Foro de viajeros con fotos compartidas y reseñas reales de lugares.
+                Foro de estudiantes con apuntes compartidos, recursos y consejos de estudio.
               </p>
             </article>
           ))}

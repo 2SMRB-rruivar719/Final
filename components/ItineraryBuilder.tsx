@@ -3,7 +3,8 @@ import { UserProfile, Itinerary, LanguageCode, ThemeMode } from '../types';
 import { generateItinerary } from '../services/aiService';
 import { Button } from './Button';
 import { TripDayCard } from './TripDayCard';
-import { Map, Sparkles, Share2, Compass, CalendarDays, Route } from 'lucide-react';
+import { BookOpen, Sparkles, Share2, GraduationCap, CalendarDays, Award } from 'lucide-react';
+import { useToast } from './ToastProvider';
 
 interface ItineraryBuilderProps {
   currentUser: UserProfile;
@@ -15,82 +16,117 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
   const isDark = theme === 'dark';
   const t = language === 'en'
     ? {
-        title: 'AI Planner',
-        subtitle: `Create the perfect trip to ${currentUser.destination} based on your preferences.`,
+        title: 'AI Study Planner',
+        subtitle: `Create the perfect study schedule to prepare ${currentUser.destination} based on your preferences.`,
         duration: 'Duration (days)',
         generating: 'Generating...',
-        generate: 'Generate Route',
-        yourItinerary: 'Your Itinerary',
+        generate: 'Generate Plan',
+        yourItinerary: 'Your Study Plan',
         share: 'Share',
-        newRoute: 'Generate New Route',
-        empty: 'Configure your trip and let AI plan it for you.',
-        emptyHint: 'Pick duration, tastes and vibe — we map your days.',
-        preferences: 'Trip Preferences',
-        localityCountry: 'Locality / Country',
-        food: 'Food',
-        price: 'Price',
-        pace: 'Pace',
-        vibe: 'Travel Vibe',
-        budgetFriendly: 'Budget friendly',
-        balanced: 'Balanced',
-        premium: 'Premium',
+        newRoute: 'Generate New Plan',
+        empty: 'Configure your study and let AI plan it for you.',
+        emptyHint: 'Pick duration, methods and level — we map your study days.',
+        preferences: 'Study Preferences',
+        localityCountry: 'Subject / Exam',
+        food: 'Study Method',
+        price: 'Difficulty Level',
+        pace: 'Intensity',
+        vibe: 'Focus',
+        budgetFriendly: 'Easy',
+        balanced: 'Medium',
+        premium: 'Hard',
         relaxed: 'Relaxed',
-        explorer: 'Explorer',
+        explorer: 'Moderate',
         intense: 'Intense',
-        cultural: 'Cultural',
-        adventure: 'Adventure',
-        nightlife: 'Nightlife',
-        local: 'Local',
-        international: 'International',
-        activities: 'activities',
-        tapDay: 'Tap a day to explore maps and hidden gems',
-        aboutPlace: 'About this place',
-        openMaps: 'Open in Google Maps',
-        mapsPreview: 'Map preview',
-        dayLabel: 'Day',
-        daysCount: 'days planned',
-        destination: 'Destination',
+        cultural: 'Theoretical',
+        adventure: 'Practical',
+        nightlife: 'Mixed',
+        local: 'Pomodoro',
+        international: 'Flipped classroom',
+        activities: 'sessions',
+        tapDay: 'Tap a day to explore study resources and tips',
+        aboutPlace: 'Study Tip',
+        openMaps: 'Open Map',
+        mapsPreview: 'Location preview',
+        dayLabel: 'Study Day',
+        daysCount: 'study days planned',
+        destination: 'Subject',
       }
     : {
-        title: 'Planificador IA',
-        subtitle: `Crea el viaje perfecto a ${currentUser.destination} basado en tus gustos.`,
+        title: 'Planificador de Estudio IA',
+        subtitle: `Crea el plan de estudio ideal para preparar ${currentUser.destination} según tu estilo.`,
         duration: 'Duración (días)',
         generating: 'Generando...',
-        generate: 'Generar Ruta',
-        yourItinerary: 'Tu Itinerario',
+        generate: 'Generar Plan',
+        yourItinerary: 'Tu Plan de Estudio',
         share: 'Compartir',
-        newRoute: 'Generar Nueva Ruta',
-        empty: 'Configura tu viaje y deja que la IA planifique por ti.',
-        emptyHint: 'Elige días, gustos y estilo — nosotros trazamos la ruta.',
-        preferences: 'Preferencias del viaje',
-        localityCountry: 'Localidad / País',
-        food: 'Comida',
-        price: 'Precio',
-        pace: 'Ritmo',
-        vibe: 'Estilo de viaje',
-        budgetFriendly: 'Económico',
-        balanced: 'Equilibrado',
-        premium: 'Premium',
+        newRoute: 'Generar Nuevo Plan',
+        empty: 'Configura tu estudio y deja que la IA planifique por ti.',
+        emptyHint: 'Elige días, método y nivel — nosotros trazamos las sesiones.',
+        preferences: 'Preferencias del estudio',
+        localityCountry: 'Asignatura / Examen',
+        food: 'Método de estudio',
+        price: 'Nivel/Dificultad',
+        pace: 'Intensidad',
+        vibe: 'Enfoque',
+        budgetFriendly: 'Inicial',
+        balanced: 'Intermedio',
+        premium: 'Avanzado',
         relaxed: 'Relajado',
-        explorer: 'Explorador',
-        intense: 'Intenso',
-        cultural: 'Cultural',
-        adventure: 'Aventura',
-        nightlife: 'Vida nocturna',
-        local: 'Local',
-        international: 'Internacional',
-        activities: 'actividades',
-        tapDay: 'Toca un día para explorar mapas y rincones',
-        aboutPlace: 'Sobre el lugar',
-        openMaps: 'Abrir en Google Maps',
-        mapsPreview: 'Vista del mapa',
-        dayLabel: 'Día',
-        daysCount: 'días planificados',
-        destination: 'Destino',
+        explorer: 'Moderado',
+        intense: 'Intensivo',
+        cultural: 'Teórico',
+        adventure: 'Práctico',
+        nightlife: 'Mixto',
+        local: 'Pomodoro',
+        international: 'Clase invertida',
+        activities: 'sesiones',
+        tapDay: 'Toca un día para explorar recursos y consejos de estudio',
+        aboutPlace: 'Consejo de Estudio',
+        openMaps: 'Ver Mapa',
+        mapsPreview: 'Vista del lugar',
+        dayLabel: 'Día de Estudio',
+        daysCount: 'días de estudio planificados',
+        destination: 'Asignatura',
       };
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [expandedDays, setExpandedDays] = useState<Set<number>>(new Set());
   const [loading, setLoading] = useState(false);
+  const { showToast } = useToast();
+
+  const handleShare = async () => {
+    if (!itinerary) return;
+    
+    let planText = `🎓 Plan de Estudio: ${itinerary.destination}\n`;
+    planText += language === 'en' ? `Organized by StudyMatch\n\n` : `Organizado por StudyMatch\n\n`;
+    
+    itinerary.days.forEach((day) => {
+      planText += `📅 ${language === 'en' ? 'Day' : 'Día'} ${day.day}: ${day.title}\n`;
+      day.activities.forEach((act) => {
+        planText += `- [${act.time}] ${act.description} (${act.location})\n`;
+      });
+      planText += `\n`;
+    });
+
+    try {
+      if (navigator.share) {
+        await navigator.share({
+          title: `StudyMatch - ${itinerary.destination}`,
+          text: planText,
+        });
+      } else {
+        await navigator.clipboard.writeText(planText);
+        showToast(
+          language === 'en'
+            ? 'Study plan copied to clipboard! 🎓'
+            : '¡Plan de estudio copiado al portapapeles! 🎓',
+          'success'
+        );
+      }
+    } catch (err) {
+      console.warn('Share cancelled or failed', err);
+    }
+  };
 
   useEffect(() => {
     if (itinerary?.days.length) {
@@ -183,7 +219,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
         <div className="relative z-10">
           <div className="flex items-start gap-3 mb-3">
             <span className="flex items-center justify-center w-11 h-11 rounded-2xl bg-white/20 backdrop-blur-md border border-white/25 text-white shadow-inner">
-              <Compass size={22} strokeWidth={2} />
+              <GraduationCap size={22} strokeWidth={2} />
             </span>
             <div>
               <h2 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight drop-shadow-sm">
@@ -224,7 +260,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
 
                 <div className="bg-white/12 backdrop-blur-xl p-4 sm:p-5 rounded-2xl border border-white/20 shadow-lg space-y-3 sm:col-span-2 lg:col-span-1">
                   <h4 className="flex items-center gap-2 text-xs font-bold uppercase tracking-widest text-travel-secondary">
-                    <Route size={14} />
+                    <Award size={14} />
                     {t.preferences}
                   </h4>
                   <div className="grid sm:grid-cols-2 gap-3 text-sm">
@@ -245,8 +281,8 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
                       >
                         <option>{t.local}</option>
                         <option>{t.international}</option>
-                        <option>Fusion</option>
-                        <option>Street food</option>
+                        <option>Active recall</option>
+                        <option>Spaced repetition</option>
                       </select>
                     </label>
                     <label className="space-y-1.5">
@@ -323,7 +359,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
           >
             <div className="flex items-center gap-3 flex-1 min-w-0">
               <span className="flex items-center justify-center w-12 h-12 rounded-2xl bg-gradient-to-br from-travel-primary to-travel-accent text-white shadow-md">
-                <Map size={22} />
+                <BookOpen size={22} />
               </span>
               <div className="min-w-0">
                 <p className="text-[10px] font-bold uppercase tracking-widest text-travel-accent">
@@ -339,6 +375,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
             </div>
             <button
               type="button"
+              onClick={handleShare}
               className={`inline-flex items-center gap-1.5 text-sm font-semibold px-4 py-2 rounded-xl transition-colors
                 ${isDark
                   ? 'bg-travel-accent/20 text-travel-secondary hover:bg-travel-accent hover:text-white'
@@ -398,7 +435,7 @@ export const ItineraryBuilder: React.FC<ItineraryBuilderProps> = ({ currentUser,
               className={`inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4 mx-auto
                 ${isDark ? 'bg-slate-800 text-travel-primary' : 'bg-travel-secondary/50 text-travel-accent'}`}
             >
-              <Map className="w-8 h-8" strokeWidth={1.5} />
+              <BookOpen className="w-8 h-8" strokeWidth={1.5} />
             </span>
             <p className={`font-semibold text-base mb-1 ${isDark ? 'text-gray-200' : 'text-travel-dark'}`}>
               {t.empty}

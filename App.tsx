@@ -1,17 +1,19 @@
 import React, { useState } from 'react';
-import { Sparkles, Users, MapPin, Moon, SunMedium } from 'lucide-react';
+import { Sparkles, Users, BookOpen, Moon, SunMedium } from 'lucide-react';
 import { Navigation } from './components/Navigation';
 import { Onboarding } from './components/Onboarding';
 import { MatchFeed } from './components/MatchFeed';
 import { ItineraryBuilder } from './components/ItineraryBuilder';
 import { ChatInterface } from './components/ChatInterface';
 import { ProfileView } from './components/ProfileView';
-import { LikesView } from './components/LikesView';
+import { FlashcardsView } from './components/FlashcardsView';
 import { Login } from './components/Login';
 import { LanguageCode, ThemeMode, UserProfile } from './types';
 import { Logo } from './components/Logo';
 import { Button } from './components/Button';
 import { ToastProvider, useToast } from './components/ToastProvider';
+import { PomodoroTimer } from './components/PomodoroTimer';
+import { StickyNotes } from './components/StickyNotes';
 import { updateUserProfile } from './services/api';
 import { syncPersonalizationRoot } from './utils/personalization';
 
@@ -22,7 +24,7 @@ interface SavedAccountEntry {
 }
 
 const AUTH_BG_CLASS =
-  "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1600&q=80')]";
+  "min-h-screen bg-cover bg-center bg-[url('https://images.unsplash.com/photo-1497633762265-9d179a990aa6?auto=format&fit=crop&w=1600&q=80')]";
 
 /** Panel de autenticación: oscuro o claro según el tema de la app. */
 const authOverlayClass = (isDark: boolean) =>
@@ -49,20 +51,20 @@ const AuthDesktopHero: React.FC<{
   const features = [
     { Icon: Sparkles, label: t.featureAi },
     { Icon: Users, label: t.featureMatch },
-    { Icon: MapPin, label: t.featurePlaces },
+    { Icon: BookOpen, label: t.featurePlaces },
   ] as const;
 
   const loginTitle = language === 'en' ? 'Welcome back' : 'Bienvenido de nuevo';
   const loginLead =
     language === 'en'
-      ? 'Pick up your trips, chats and itineraries where you left them.'
-      : 'Retoma tus viajes, chats e itinerarios justo donde los dejaste.';
+      ? 'Pick up your study schedules, chats and plans where you left them.'
+      : 'Retoma tus planes de estudio, chats y cronogramas justo donde los dejaste.';
 
   const registerTitle = language === 'en' ? 'Create your account' : 'Crea tu cuenta';
   const registerLead =
     language === 'en'
-      ? 'Tell us how you travel and we will match you with people on your wavelength.'
-      : 'Cuéntanos cómo viajas y te conectaremos con gente afín.';
+      ? 'Tell us how you study and we will match you with people on your wavelength.'
+      : 'Cuéntanos cómo estudias y te conectaremos con estudiantes afines.';
 
   const asideShell = isDark
     ? 'border-r border-white/10 bg-black/25 shadow-[inset_-1px_0_0_rgba(255,255,255,0.08)]'
@@ -204,24 +206,26 @@ const AppInner: React.FC = () => {
   const [theme, setTheme] = useState<ThemeMode>('light');
   const [isNavCollapsed, setIsNavCollapsed] = useState(false);
   const [chatTargetUser, setChatTargetUser] = useState<UserProfile | null>(null);
+  const [isPomodoroOpen, setIsPomodoroOpen] = useState(false);
+  const [isNotesOpen, setIsNotesOpen] = useState(false);
   const t = language === 'en'
     ? {
-        tagline: 'Find travel buddies, plan with AI and explore the world.',
+        tagline: 'Find study buddies, plan with AI and ace your exams.',
         login: 'Sign in',
         register: 'Create account',
         beta: 'Preview',
-        featureAi: 'AI itineraries in seconds',
-        featureMatch: 'Match with travelers like you',
-        featurePlaces: 'Places tailored to your style',
+        featureAi: 'AI study plans in seconds',
+        featureMatch: 'Match with students like you',
+        featurePlaces: 'Subjects tailored to your style',
       }
     : {
-        tagline: 'Encuentra compañeros de viaje, planifica con IA y explora el mundo.',
+        tagline: 'Encuentra compañeros de estudio, planifica con IA y aprueba tus exámenes.',
         login: 'Iniciar sesión',
         register: 'Crear cuenta',
         beta: 'Vista previa',
-        featureAi: 'Rutas con IA en segundos',
-        featureMatch: 'Match con viajeros afines',
-        featurePlaces: 'Lugares según tu estilo',
+        featureAi: 'Planes con IA en segundos',
+        featureMatch: 'Match con estudiantes afines',
+        featurePlaces: 'Materias según tu estilo',
       };
 
   React.useEffect(() => {
@@ -270,7 +274,7 @@ const AppInner: React.FC = () => {
   const handleOnboardingComplete = (profile: UserProfile) => {
     const normalized = normalizeUser(profile);
     console.log('[FLOW] Registro completado, usuario creado', normalized);
-    showToast('Cuenta creada correctamente. ¡Bienvenido a TravelMatch! 🌍', 'success');
+    showToast('Cuenta creada correctamente. ¡Bienvenido a StudyMatch! 🎓', 'success');
     setCurrentUser(normalized);
     setLanguage(normalized.language);
     setTheme(normalized.theme || 'light');
@@ -644,16 +648,12 @@ const AppInner: React.FC = () => {
         return <ItineraryBuilder currentUser={currentUser} language={language} theme={theme} />;
       case 'chat':
         return <ChatInterface currentUser={currentUser} language={language} theme={theme} initialTargetUser={chatTargetUser} />;
-      case 'likes':
+      case 'flashcards':
         return (
-          <LikesView
+          <FlashcardsView
             currentUser={currentUser}
             language={language}
             theme={theme}
-            onStartChat={(user) => {
-              setChatTargetUser(user);
-              setCurrentView('chat');
-            }}
           />
         );
       case 'profile':
@@ -747,6 +747,21 @@ const AppInner: React.FC = () => {
           theme={theme}
           collapsed={isNavCollapsed}
           onToggleCollapse={() => setIsNavCollapsed((prev) => !prev)}
+          onTogglePomodoro={() => setIsPomodoroOpen((prev) => !prev)}
+          onToggleNotes={() => setIsNotesOpen((prev) => !prev)}
+        />
+      )}
+      {isPomodoroOpen && (
+        <PomodoroTimer 
+          isDark={isDark} 
+          onClose={() => setIsPomodoroOpen(false)} 
+        />
+      )}
+      {isNotesOpen && (
+        <StickyNotes
+          isDark={isDark}
+          onClose={() => setIsNotesOpen(false)}
+          userId={currentUser?.id || 'guest'}
         />
       )}
     </div>

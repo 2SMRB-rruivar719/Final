@@ -1,5 +1,5 @@
-import React from 'react';
-import { Home, MessageCircle, Map, Settings, Heart, ChevronLeft, ChevronRight } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Home, MessageCircle, BookOpen, Settings, BrainCircuit, ChevronLeft, ChevronRight, Timer, StickyNote, Award } from 'lucide-react';
 import { LanguageCode, ThemeMode, UserProfile } from '../types';
 import { Logo } from './Logo';
 import { SafeImage } from './SafeImage';
@@ -13,37 +13,71 @@ interface NavigationProps {
   theme: ThemeMode;
   collapsed: boolean;
   onToggleCollapse: () => void;
+  onTogglePomodoro: () => void;
+  onToggleNotes: () => void;
 }
 
-export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language, theme, collapsed, onToggleCollapse }) => {
+export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeView, currentUser, language, theme, collapsed, onToggleCollapse, onTogglePomodoro, onToggleNotes }) => {
   const isDark = theme === 'dark';
+  
+  // Gamification State
+  const [xp, setXp] = useState(0);
+  
+  useEffect(() => {
+    if (currentUser) {
+      const savedXp = parseInt(localStorage.getItem(`tm_xp_${currentUser.id}`) || '0', 10);
+      setXp(savedXp);
+      
+      const handleXpGain = (e: any) => {
+        const amount = e.detail?.amount || 50;
+        setXp(prev => {
+          const newXp = prev + amount;
+          localStorage.setItem(`tm_xp_${currentUser.id}`, newXp.toString());
+          return newXp;
+        });
+      };
+      
+      window.addEventListener('tm_xp_gain', handleXpGain);
+      return () => window.removeEventListener('tm_xp_gain', handleXpGain);
+    }
+  }, [currentUser]);
+
+  const level = Math.floor(xp / 100) + 1;
+  const xpInCurrentLevel = xp % 100;
+
   const t = language === 'en'
     ? {
         profile: 'Profile',
         explore: 'Explore',
-        trip: 'Trip',
+        trip: 'Study Plan',
         chat: 'Chat',
-        likes: 'Likes',
+        flashcards: 'Flashcards',
         settings: 'Settings',
-        subtitle: 'Find your next travel buddy',
+        pomodoro: 'Focus Timer',
+        notes: 'Study Notes',
+        level: 'Level',
+        subtitle: 'Find your ideal study buddy',
         desktopTip: 'Desktop mode optimized for quick swipes.',
       }
     : {
         profile: 'Perfil',
         explore: 'Explorar',
-        trip: 'Viaje',
+        trip: 'Plan IA',
         chat: 'Chat',
-        likes: 'Me gusta',
+        flashcards: 'Flashcards',
         settings: 'Configuración',
-        subtitle: 'Encuentra tu próximo compañero de viaje',
+        pomodoro: 'Focus Timer',
+        notes: 'Notas Rápidas',
+        level: 'Nivel',
+        subtitle: 'Encuentra tu compañero de estudio ideal',
         desktopTip: 'Modo desktop optimizado para swipes rápidos.',
       };
   /** Explorar primero; Perfil va en el bloque inferior (amarillo), no en esta lista */
   const mainNavItems = [
     { id: 'match', icon: Home, label: t.explore },
-    { id: 'itinerary', icon: Map, label: t.trip },
+    { id: 'itinerary', icon: BookOpen, label: t.trip },
     { id: 'chat', icon: MessageCircle, label: t.chat },
-    { id: 'likes', icon: Heart, label: t.likes },
+    { id: 'flashcards', icon: BrainCircuit, label: t.flashcards },
     { id: 'settings', icon: Settings, label: t.settings },
   ];
 
@@ -116,10 +150,58 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
               </button>
             );
           })}
+          
+          {/* Pomodoro Action Button */}
+          <div className="pt-2 mt-2 border-t border-travel-primary/10 dark:border-white/10 space-y-1">
+            <button
+              type="button"
+              onClick={onTogglePomodoro}
+              className={`group relative w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark ? 'focus-visible:ring-offset-slate-900 text-travel-accent hover:bg-slate-800/90' : 'focus-visible:ring-offset-white text-travel-primary hover:bg-white/90'
+              }`}
+              title={collapsed ? t.pomodoro : undefined}
+            >
+              <Timer size={20} strokeWidth={2.5} className={collapsed ? '' : 'ml-1'} />
+              {!collapsed && <span className="font-bold text-sm">{t.pomodoro}</span>}
+            </button>
+            <button
+              type="button"
+              onClick={onToggleNotes}
+              className={`group relative w-full flex items-center ${collapsed ? 'justify-center' : 'gap-3'} px-4 py-3 rounded-2xl text-left transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark ? 'focus-visible:ring-offset-slate-900 text-amber-400 hover:bg-slate-800/90' : 'focus-visible:ring-offset-white text-amber-500 hover:bg-amber-50'
+              }`}
+              title={collapsed ? t.notes : undefined}
+            >
+              <StickyNote size={20} strokeWidth={2.5} className={collapsed ? '' : 'ml-1'} />
+              {!collapsed && <span className="font-bold text-sm">{t.notes}</span>}
+            </button>
+          </div>
         </nav>
 
         {currentUser && !collapsed && (
-          <button type="button" onClick={() => onChangeView('profile')} className={`${profileCardClass} p-4`}>
+          <div className="mt-auto pt-4 flex flex-col gap-3">
+            {/* XP Gamification Bar */}
+            <div className={`px-4 py-3 rounded-2xl border ${isDark ? 'bg-slate-800/50 border-slate-700' : 'bg-slate-50 border-slate-200/60'}`}>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-1.5">
+                  <Award size={14} className={isDark ? 'text-travel-accent' : 'text-travel-primary'} />
+                  <span className={`text-xs font-bold ${isDark ? 'text-gray-300' : 'text-travel-dark'}`}>
+                    {t.level} {level}
+                  </span>
+                </div>
+                <span className={`text-[10px] font-medium ${isDark ? 'text-gray-500' : 'text-gray-500'}`}>
+                  {xpInCurrentLevel} / 100 XP
+                </span>
+              </div>
+              <div className={`h-1.5 w-full rounded-full overflow-hidden ${isDark ? 'bg-slate-700' : 'bg-gray-200'}`}>
+                <div 
+                  className="h-full bg-gradient-to-r from-travel-accent to-travel-primary transition-all duration-500 ease-out"
+                  style={{ width: `${xpInCurrentLevel}%` }}
+                />
+              </div>
+            </div>
+
+            <button type="button" onClick={() => onChangeView('profile')} className={`${profileCardClass} p-4`}>
             <div className="flex items-center gap-3 mb-2">
               <SafeImage
                 src={currentUser.avatarUrl}
@@ -205,6 +287,28 @@ export const Navigation: React.FC<NavigationProps> = ({ currentView, onChangeVie
                 </button>
               );
             })}
+            {/* Mobile Pomodoro Button */}
+            <button
+              type="button"
+              onClick={onTogglePomodoro}
+              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark ? 'focus-visible:ring-offset-slate-900 text-travel-accent hover:text-travel-primary' : 'focus-visible:ring-offset-white text-travel-primary hover:text-travel-dark'
+              }`}
+            >
+              <Timer size={22} strokeWidth={2.5} />
+              <span className="text-[9px] font-bold text-center leading-tight line-clamp-2">{t.pomodoro}</span>
+            </button>
+            {/* Mobile Notes Button */}
+            <button
+              type="button"
+              onClick={onToggleNotes}
+              className={`flex min-w-0 flex-1 flex-col items-center gap-0.5 rounded-xl px-0.5 py-1 transition-all duration-200 active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-travel-accent focus-visible:ring-offset-2 ${
+                isDark ? 'focus-visible:ring-offset-slate-900 text-amber-400 hover:text-amber-500' : 'focus-visible:ring-offset-white text-amber-500 hover:text-amber-600'
+              }`}
+            >
+              <StickyNote size={22} strokeWidth={2.5} />
+              <span className="text-[9px] font-bold text-center leading-tight line-clamp-2">{t.notes}</span>
+            </button>
           </div>
         </div>
       </nav>

@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "dev:server": "node server/index.js",
-    "dev:full": "npm run dev:server & npm run dev",
+    "dev:full": "concurrently \"npm run dev:server\" \"npm run dev\"",
     "build": "vite build",
     "preview": "vite preview",
     "server": "node server/index.js",
@@ -14,7 +14,7 @@
     "clean": "rm -rf dist",
     "test:register": "node test-register.mjs",
     "start": "npm run server",
-    "start:full": "npm run server & npm run preview"
+    "start:full": "concurrently \"npm run server\" \"npm run preview\""
   },
   "dependencies": {
     "bcryptjs": "^3.0.3",
@@ -29,6 +29,7 @@
   "devDependencies": {
     "@types/node": "^25.3.0",
     "@vitejs/plugin-react": "^5.1.4",
+    "concurrently": "^8.2.2",
     "typescript": "^5.9.3",
     "vite": "^7.3.1"
   }

@@ -25,9 +25,9 @@ interface ChatInterfaceProps {
 const INITIAL_CHATS: ChatThreadType[] = [
   {
     id: '1',
-    name: 'Grupo: Viaje a Japón',
-    avatarUrl: 'https://picsum.photos/seed/japan/300/300',
-    lastMessage: '¿Ya reservaron el hotel?',
+    name: 'Grupo: Matemáticas & Física',
+    avatarUrl: 'https://images.unsplash.com/photo-1635070041078-e363dbe005cb?auto=format&fit=crop&w=300&q=80',
+    lastMessage: '¿Alguien ha resuelto el problema de derivadas?',
     lastMessageTime: '10:30',
     unread: 2,
     isGroup: true,
@@ -39,8 +39,8 @@ const INITIAL_CHATS: ChatThreadType[] = [
         avatarUrl: 'https://images.unsplash.com/photo-1542909168-82c3e7fdca5c?auto=format&fit=crop&w=300&q=80',
         age: 31,
         sex: 'hombre',
-        destination: 'Tokio',
-        bio: 'Fan de la cultura japonesa y rutas urbanas con fotos al atardecer.',
+        destination: 'Álgebra y Cálculo',
+        bio: 'Estudiante de ingeniería, enfocado en dominar cálculo y física. ¡Vamos a estudiar juntos!',
       },
       {
         id: 'gm-2',
@@ -48,8 +48,8 @@ const INITIAL_CHATS: ChatThreadType[] = [
         avatarUrl: 'https://images.unsplash.com/photo-1541534401786-2077eed87a72?auto=format&fit=crop&w=300&q=80',
         age: 28,
         sex: 'mujer',
-        destination: 'Osaka',
-        bio: 'Me encanta descubrir cafeterias y templos con un plan flexible.',
+        destination: 'Física cuántica',
+        bio: 'Me gusta estudiar en grupo con pausas activas. Organizada y orientada a resolver dudas.',
       },
       {
         id: 'gm-3',
@@ -57,48 +57,48 @@ const INITIAL_CHATS: ChatThreadType[] = [
         avatarUrl: 'https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=300&q=80',
         age: 30,
         sex: 'hombre',
-        destination: 'Kioto',
-        bio: 'Busco grupo para combinar gastronomia local y visitas culturales.',
+        destination: 'Estadística descriptiva',
+        bio: 'Preparándome para los finales de física. Busco resolver exámenes de años anteriores.',
       },
     ],
     messages: [
-      { id: 'm1', text: '¡Hola a todos! ¿Emocionados por el viaje?', sender: 'them', timestamp: '10:00' },
-      { id: 'm2', text: '¡Sí! Ya tengo mis pasajes.', sender: 'me', timestamp: '10:05' },
-      { id: 'm3', text: '¿Ya reservaron el hotel?', sender: 'them', timestamp: '10:30' }
+      { id: 'm1', text: '¡Hola a todos! ¿Listos para la sesión de estudio?', sender: 'them', timestamp: '10:00' },
+      { id: 'm2', text: '¡Sí! Ya repasé los primeros dos temas.', sender: 'me', timestamp: '10:05' },
+      { id: 'm3', text: '¿Alguien ha resuelto el problema de derivadas?', sender: 'them', timestamp: '10:30' }
     ]
   },
   {
     id: '2',
     name: 'Carlos Ruiz',
     avatarUrl: getAvatarByName('Carlos Ruiz'),
-    lastMessage: 'Me encanta la idea de ir a Kioto.',
+    lastMessage: 'Me apunto a repasar álgebra lineal.',
     lastMessageTime: 'Ayer',
     unread: 0,
     isGroup: false,
     age: 29,
     sex: 'hombre',
-    destination: 'Kioto',
-    bio: 'Me gusta viajar con planificación flexible, comida local y rutas culturales con buen ritmo.',
+    destination: 'Álgebra lineal',
+    bio: 'Estudiante de ciencias. Busco compañeros para resolver ejercicios prácticos de álgebra.',
     messages: [
-      { id: 'c1', text: 'Vi que también quieres ir a Kioto.', sender: 'them', timestamp: 'Yesterday' },
-      { id: 'c2', text: '¡Sí! Es mi parte favorita del plan.', sender: 'me', timestamp: 'Yesterday' },
-      { id: 'c3', text: 'Me encanta la idea de ir a Kioto.', sender: 'them', timestamp: 'Yesterday' }
+      { id: 'c1', text: 'Vi que también estás preparando álgebra lineal.', sender: 'them', timestamp: 'Yesterday' },
+      { id: 'c2', text: '¡Sí! Se me dificulta la parte de matrices.', sender: 'me', timestamp: 'Yesterday' },
+      { id: 'c3', text: 'Me apunto a repasar álgebra lineal.', sender: 'them', timestamp: 'Yesterday' }
     ]
   },
   {
     id: '3',
     name: 'Sarah Miller',
     avatarUrl: getAvatarByName('Sarah Miller'),
-    lastMessage: '¡Hola! Vi que coincidimos en fechas.',
+    lastMessage: '¡Hola! Vi que coincidimos en asignaturas.',
     lastMessageTime: 'Ayer',
     unread: 1,
     isGroup: false,
     age: 27,
     sex: 'mujer',
-    destination: 'Kioto',
-    bio: 'Busco compañia para descubrir barrios autenticos, tomar fotos y probar cafeterias locales.',
+    destination: 'Programación & IA',
+    bio: 'Aprendiendo Python y desarrollo de algoritmos de inteligencia artificial.',
     messages: [
-      { id: 's1', text: '¡Hola! Vi que coincidimos en fechas.', sender: 'them', timestamp: 'Yesterday' }
+      { id: 's1', text: '¡Hola! Vi que coincidimos en asignaturas.', sender: 'them', timestamp: 'Yesterday' }
     ]
   },
 ];
@@ -149,7 +149,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         profile: 'Profile',
         publicInfo: 'Public information',
         gender: 'Gender',
-        destination: 'Destination',
+        destination: 'Subject',
         groupMembers: 'Group members',
         participants: 'participants',
         noDescription: 'This user has no description yet.',
@@ -157,15 +157,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         blockConfirm: 'Block this user? Their chat will be deleted and they will not appear in your inbox.',
         blockedOk: 'User blocked.',
         newGroup: 'New group',
-        newGroupSubtitle: 'Name your trip crew and invite travelers you already chat with.',
+        newGroupSubtitle: 'Name your study group and invite classmates you already chat with.',
         groupNameLabel: 'Group name',
-        groupNamePlaceholder: 'e.g. Weekend in Lisbon',
-        pickTravelers: 'Add travelers',
+        groupNamePlaceholder: 'e.g. Calculus Study Crew',
+        pickTravelers: 'Add students',
         pickTravelersHint: 'Pick from your direct chats (at least one).',
         noDirectChats: 'No direct chats yet. Say hi to someone in Explore first.',
         createGroup: 'Create group',
         cancel: 'Cancel',
-        needMembers: 'Add at least one traveler to the group.',
+        needMembers: 'Add at least one student to the group.',
         groupCreated: 'Group created.',
       }
     : {
@@ -180,7 +180,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         profile: 'Perfil',
         publicInfo: 'Informacion publica',
         gender: 'Genero',
-        destination: 'Destino',
+        destination: 'Asignatura principal',
         groupMembers: 'Integrantes del grupo',
         participants: 'participantes',
         noDescription: 'Este usuario aun no tiene descripcion.',
@@ -188,15 +188,15 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         blockConfirm: '¿Bloquear a esta persona? Se eliminará el chat y no aparecerá en tu bandeja.',
         blockedOk: 'Usuario bloqueado.',
         newGroup: 'Nuevo grupo',
-        newGroupSubtitle: 'Pon nombre a la tripulación e invita a viajeros con los que ya chateas.',
+        newGroupSubtitle: 'Pon nombre al grupo de estudio e invita a compañeros con los que ya chateas.',
         groupNameLabel: 'Nombre del grupo',
-        groupNamePlaceholder: 'Ej. Fin de semana en Lisboa',
-        pickTravelers: 'Añadir viajeros',
+        groupNamePlaceholder: 'Ej. Equipo de Álgebra Lineal',
+        pickTravelers: 'Añadir compañeros',
         pickTravelersHint: 'Elige de tus chats directos (al menos uno).',
         noDirectChats: 'Aún no tienes chats directos. Saluda a alguien en Explorar primero.',
         createGroup: 'Crear grupo',
         cancel: 'Cancelar',
-        needMembers: 'Añade al menos un viajero al grupo.',
+        needMembers: 'Añade al menos un compañero al grupo.',
         groupCreated: 'Grupo creado.',
       };
   const [chats, setChats] = useState<ChatThreadType[]>(() => {
@@ -318,7 +318,7 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
         sex: initialTargetUser.sex,
         destination: initialTargetUser.destination,
         bio: initialTargetUser.bio,
-        lastMessage: language === 'en' ? 'Say hi and start planning the trip.' : 'Saluda y empieza a planear el viaje.',
+        lastMessage: language === 'en' ? 'Say hi and start planning your study plan.' : 'Saluda y empieza a planear vuestra sesión de estudio.',
         lastMessageTime: t.now,
         unread: 0,
         isGroup: false,
@@ -525,8 +525,8 @@ export const ChatInterface: React.FC<ChatInterfaceProps> = ({ currentUser, langu
     const nMembers = members.length;
     const welcome =
       language === 'en'
-        ? `You created "${groupName}". ${nMembers} traveler${nMembers === 1 ? ' is' : 's are'} in — break the ice!`
-        : `Has creado "${groupName}". ${nMembers} viajero${nMembers === 1 ? '' : 's'} dentro — ¡romped el hielo!`;
+        ? `You created "${groupName}". ${nMembers} classmate${nMembers === 1 ? ' is' : 's are'} in — break the ice!`
+        : `Has creado "${groupName}". ${nMembers} compañero${nMembers === 1 ? '' : 's'} dentro — ¡romped el hielo!`;
     const newGroup: ChatThreadType = {
       id: gid,
       name: groupName,

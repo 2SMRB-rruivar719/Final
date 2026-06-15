@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { UserProfile, LanguageCode, ThemeMode } from '../types';
 import {
-  Plane,
+  BookOpen,
   Save,
   Globe2,
   ChevronLeft,
@@ -153,13 +153,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         editProfile: 'Edit profile',
         saveChanges: 'Save changes',
         saving: 'Saving...',
-        nextDestination: 'Next destination',
-        budget: 'Budget',
+        nextDestination: 'Subject / Exam',
+        budget: 'Difficulty',
         bio: 'Bio',
         interests: 'Interests',
-        tripDates: 'Travel dates',
-        outbound: 'Outbound',
-        return: 'Return',
+        tripDates: 'Study period',
+        outbound: 'Start',
+        return: 'End',
         appearanceLanguage: 'Appearance and language',
         language: 'Language',
         darkMode: 'Dark mode',
@@ -186,9 +186,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         vibeSectionSubtitle: 'Backdrop, a short line, and a fun emoji next to your name.',
         profileBackdropLabel: 'Header backdrop',
         profileTaglineLabel: 'Tagline under your name',
-        profileTaglinePlaceholder: 'e.g. Chasing sunsets & cheap flights',
+        profileTaglinePlaceholder: 'e.g. CS Major · coffee & algorithms',
         profileEmojiLabel: 'Emoji badge',
-        profileEmojiPlaceholder: '✈️',
+        profileEmojiPlaceholder: '🎓',
         passwordSection: 'Password',
         currentPasswordLabel: 'Current password',
         newPasswordLabel: 'New password',
@@ -199,7 +199,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         pwdMismatch: 'The new passwords do not match.',
         logout: 'Log out',
         blockedAccounts: 'Blocked accounts',
-        blockedAccountsHint: 'These travelers cannot message you. You can unblock them or delete the saved chat only.',
+        blockedAccountsHint: 'These students cannot message you. You can unblock them or delete the saved chat only.',
         noBlocked: 'No blocked accounts.',
         unblock: 'Unblock',
         deleteChat: 'Delete chat',
@@ -223,13 +223,13 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         editProfile: 'Editar perfil',
         saveChanges: 'Guardar cambios',
         saving: 'Guardando...',
-        nextDestination: 'Próximo destino',
-        budget: 'Presupuesto',
+        nextDestination: 'Asignatura / Examen',
+        budget: 'Dificultad',
         bio: 'Bio',
         interests: 'Intereses',
-        tripDates: 'Fechas del viaje',
-        outbound: 'Ida',
-        return: 'Vuelta',
+        tripDates: 'Periodo de estudio',
+        outbound: 'Inicio',
+        return: 'Fin',
         appearanceLanguage: 'Apariencia e idioma',
         language: 'Idioma',
         darkMode: 'Modo oscuro',
@@ -256,9 +256,9 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         vibeSectionSubtitle: 'Fondo del encabezado, una frase corta y un emoji junto al nombre.',
         profileBackdropLabel: 'Fondo del perfil',
         profileTaglineLabel: 'Frase bajo tu nombre',
-        profileTaglinePlaceholder: 'ej. Nómada digital · café y mapas',
+        profileTaglinePlaceholder: 'ej. Estudiante de Medicina · café y lofi',
         profileEmojiLabel: 'Emoji junto al nombre',
-        profileEmojiPlaceholder: '✈️',
+        profileEmojiPlaceholder: '🎓',
         passwordSection: 'Contraseña',
         currentPasswordLabel: 'Contraseña actual',
         newPasswordLabel: 'Nueva contraseña',
@@ -269,7 +269,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
         pwdMismatch: 'Las nuevas contraseñas no coinciden.',
         logout: 'Cerrar sesión',
         blockedAccounts: 'Cuentas bloqueadas',
-        blockedAccountsHint: 'Estas personas no pueden escribirte. Puedes desbloquearlas o borrar solo el chat guardado.',
+        blockedAccountsHint: 'Estos estudiantes no pueden escribirte. Puedes desbloquearlos o borrar solo el chat guardado.',
         noBlocked: 'No tienes cuentas bloqueadas.',
         unblock: 'Desbloquear',
         deleteChat: 'Eliminar chat',
@@ -944,7 +944,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           </div>
 
           <div className="space-y-2">
-            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>Próximo destino</label>
+            <label className={`text-sm font-medium ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>{t.nextDestination}</label>
             <input
               type="text"
               value={formData.destination}
@@ -1132,7 +1132,7 @@ export const ProfileView: React.FC<ProfileViewProps> = ({
           <div className={`${cardClass} p-4 rounded-xl`}>
             <h3 className={`text-xs font-bold uppercase mb-2 ${headingClass}`}>{t.nextDestination}</h3>
             <div className={`flex items-center gap-2 font-semibold ${theme === 'dark' ? 'text-gray-100' : 'text-travel-dark'}`}>
-              <Plane size={18} className="text-travel-primary shrink-0" />
+              <BookOpen size={18} className="text-travel-primary shrink-0" />
               <span>
                 {currentUser.destination}
                 {(trip.start || trip.end) && (

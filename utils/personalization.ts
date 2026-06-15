@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react';
 import type { UserProfile } from '../types';
 
-/** Color de acento global (botones, envío en chat, etc.). Vacío = marca TravelMatch. */
+/** Color de acento global (botones, envío en chat, etc.). Vacío = marca StudyMatch. */
 export const UI_ACCENT_PRESETS: { key: string; hex: string }[] = [
   { key: 'brand', hex: '' },
   { key: 'mint', hex: '#14b8a6' },

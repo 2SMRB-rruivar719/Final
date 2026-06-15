@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { UserProfile, TravelStyle, UserRole, LanguageCode, UserSex, ThemeMode } from '../types';
 import { Button } from './Button';
-import { Compass, Calendar, DollarSign, MapPin, User, Check, ChevronLeft } from 'lucide-react';
+import { GraduationCap, Calendar, Award, BookOpen, User, Check, ChevronLeft } from 'lucide-react';
 import { registerUser, RegisterPayload } from '../services/api';
 import { useToast } from './ToastProvider';
 
@@ -18,43 +18,43 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         back: 'Back',
         aboutYou: 'Tell us about you',
         name: 'Name',
-        whereTo: 'Where do you want to go?',
-        travelDates: 'Travel dates',
-        outbound: 'Outbound',
-        return: 'Return',
+        whereTo: 'What subject or exam are you preparing?',
+        travelDates: 'Study period',
+        outbound: 'Start',
+        return: 'End',
         accountType: 'Account type',
         sex: 'Sex',
         male: 'Male',
         female: 'Female',
-        client: 'Client',
-        company: 'Company',
+        client: 'Student',
+        company: 'Tutor / Center',
         next: 'Next',
-        interests: 'Interests',
-        travelStyle: 'Your travel style',
-        begin: 'Start Adventure',
+        interests: 'Topics & Subjects',
+        travelStyle: 'Your study style',
+        begin: 'Start StudyMatch',
         creating: 'Creating account...',
-        invalidTripDates: 'Return date must be on or after departure. Please enter valid travel dates.',
+        invalidTripDates: 'End date must be on or after start date. Please enter valid study dates.',
       }
     : {
         back: 'Volver',
         aboutYou: 'Cuéntanos sobre ti',
         name: 'Nombre',
-        whereTo: '¿A dónde quieres ir?',
-        travelDates: 'Fechas del viaje',
-        outbound: 'Ida',
-        return: 'Vuelta',
+        whereTo: '¿Qué materia o examen estás preparando?',
+        travelDates: 'Periodo de estudio',
+        outbound: 'Inicio',
+        return: 'Fin',
         accountType: 'Tipo de cuenta',
         sex: 'Sexo',
         male: 'Hombre',
         female: 'Mujer',
-        client: 'Cliente',
-        company: 'Empresa',
+        client: 'Estudiante',
+        company: 'Tutor / Academia',
         next: 'Siguiente',
-        interests: 'Intereses',
-        travelStyle: 'Tu estilo de viaje',
-        begin: 'Comenzar Aventura',
+        interests: 'Temas y Asignaturas',
+        travelStyle: 'Tu estilo de estudio',
+        begin: 'Comenzar StudyMatch',
         creating: 'Creando cuenta...',
-        invalidTripDates: 'La fecha de ida no puede ser posterior a la fecha de vuelta. Indica fechas de viaje válidas.',
+        invalidTripDates: 'La fecha de inicio no puede ser posterior a la de fin. Indica fechas de estudio válidas.',
       };
   const [step, setStep] = useState(1);
   const [formData, setFormData] = useState<Partial<UserProfile>>({
@@ -118,6 +118,20 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
     if (step === 1) {
       setError(null);
       
+      if (!formData.name || formData.name.trim() === '') {
+        const msg = language === 'en' ? 'Name is required.' : 'El nombre es obligatorio.';
+        console.warn('[VALIDATION][REGISTER] Fallo validación', { msg, snapshot: buildDebugSnapshot() });
+        setError(msg);
+        return;
+      }
+
+      if (!formData.destination || formData.destination.trim() === '') {
+        const msg = language === 'en' ? 'Subject or exam is required.' : 'La materia o examen es obligatorio.';
+        console.warn('[VALIDATION][REGISTER] Fallo validación', { msg, snapshot: buildDebugSnapshot() });
+        setError(msg);
+        return;
+      }
+
       if (!email || email.trim() === '') {
         const msg = 'El email es obligatorio.';
         console.warn('[VALIDATION][REGISTER] Fallo validación', { msg, snapshot: buildDebugSnapshot() });
@@ -176,6 +190,20 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
     setError(null);
     
     // Validaciones completas antes de enviar
+    if (!formData.name || formData.name.trim() === '') {
+      const msg = language === 'en' ? 'Name is required.' : 'El nombre es obligatorio.';
+      console.warn('[VALIDATION][REGISTER] Fallo validación final', { msg, snapshot: buildDebugSnapshot() });
+      setError(msg);
+      return;
+    }
+
+    if (!formData.destination || formData.destination.trim() === '') {
+      const msg = language === 'en' ? 'Subject or exam is required.' : 'La materia o examen es obligatorio.';
+      console.warn('[VALIDATION][REGISTER] Fallo validación final', { msg, snapshot: buildDebugSnapshot() });
+      setError(msg);
+      return;
+    }
+
     if (!email || email.trim() === '') {
       const msg = 'El email es obligatorio.';
       console.warn('[VALIDATION][REGISTER] Fallo validación final', { msg, snapshot: buildDebugSnapshot() });
@@ -352,12 +380,12 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
             <div className="space-y-2">
               <label className={`${labelClass} flex items-center gap-2`}>
-                <MapPin size={16} /> {t.whereTo}
+                <BookOpen size={16} /> {t.whereTo}
               </label>
               <input
                 type="text"
                 className={inputClass}
-                placeholder="Ej. Japón, Perú, Italia..."
+                placeholder="Ej. Matemáticas, Medicina, Selectividad..."
                 value={formData.destination || ''}
                 onChange={e => setFormData({...formData, destination: e.target.value})}
               />
@@ -520,7 +548,7 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
             
             <div className="space-y-2">
               <label className={`${labelClass} flex items-center gap-2`}>
-                <Compass size={16} /> ¿Qué tipo de viajero eres?
+                <GraduationCap size={16} /> ¿Cuál es tu estilo de estudio?
               </label>
               <div className="grid grid-cols-2 gap-3">
                 {Object.values(TravelStyle).map(style => (
@@ -541,20 +569,20 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
 
             <div className="space-y-2">
               <label className={`${labelClass} flex items-center gap-2`}>
-                <DollarSign size={16} /> Presupuesto
+                <Award size={16} /> Nivel de dificultad
               </label>
               <div className="flex gap-2 bg-gray-100 p-1 rounded-xl">
-                {['Bajo', 'Medio', 'Alto'].map(b => (
+                {[{key: 'Bajo', label: 'Inicial'}, {key: 'Medio', label: 'Intermedio'}, {key: 'Alto', label: 'Avanzado'}].map(b => (
                   <button
-                    key={b}
-                    onClick={() => setFormData({...formData, budget: b as any})}
+                    key={b.key}
+                    onClick={() => setFormData({...formData, budget: b.key as any})}
                     className={`flex-1 py-2 rounded-lg text-sm font-medium transition-all ${
-                      formData.budget === b
+                      formData.budget === b.key
                         ? 'bg-white shadow-sm text-travel-accent'
                         : 'text-gray-700'
                     }`}
                   >
-                    {b}
+                    {b.label}
                   </button>
                 ))}
               </div>
@@ -565,11 +593,11 @@ export const Onboarding: React.FC<OnboardingProps> = ({ onComplete, onCancel, la
         {step === 3 && (
           <div className="space-y-6">
             <h2 className={stepTitleClass}>{t.interests}</h2>
-            <p className="text-gray-700 text-center text-sm">Escribe tus intereses separados por comas para mejorar el matching con IA.</p>
+            <p className="text-gray-700 text-center text-sm">Escribe tus asignaturas o temas separados por comas para mejorar el matching.</p>
             
             <textarea
               className={`${inputClass} h-32 resize-none`}
-              placeholder="Ej. Gastronomía, Museos, Senderismo, Fotografía..."
+              placeholder="Ej. Programación, Matemáticas, Física, Idiomas, Algoritmos..."
               value={formData.interests?.join(', ') || ''}
               onChange={e => setFormData({
                 ...formData, 

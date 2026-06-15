@@ -3,7 +3,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile.frontend
-    container_name: travelmatch-frontend
+    container_name: studymatch-frontend
     restart: unless-stopped
     ports:
       - "127.0.0.1:3000:80"
@@ -11,40 +11,40 @@ services:
       api:
         condition: service_started
     networks:
-      - travelmatch-net
+      - studymatch-net
 
   api:
     build:
       context: ./server
       dockerfile: Dockerfile
-    container_name: travelmatch-api
+    container_name: studymatch-api
     restart: unless-stopped
     environment:
       NODE_ENV: production
       PORT: 4000
-      MONGODB_URI: mongodb://mongo:27017/travelmatch
+      MONGODB_URI: mongodb://mongo:27017/studymatch
     ports:
       - "127.0.0.1:4000:4000"
     depends_on:
       - mongo
     networks:
-      - travelmatch-net
+      - studymatch-net
   mongo:
     image: mongo:4.4
-    container_name: travelmatch-mongo
+    container_name: studymatch-mongo
     restart: unless-stopped
     environment:
-      MONGO_INITDB_DATABASE: travelmatch
+      MONGO_INITDB_DATABASE: studymatch
     volumes:
       - mongo_data:/data/db
     networks:
-      - travelmatch-net
+      - studymatch-net
     
 volumes:
   mongo_data:
 
 networks:
-  travelmatch-net:
+  studymatch-net:
     driver: bridge
 
 

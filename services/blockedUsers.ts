@@ -7,8 +7,8 @@ export interface BlockedUserEntry {
 
 const storageKey = (currentUserId: string) => `tm_blocked_${currentUserId}`;
 
-export const CHATS_STORAGE_MUTATED_EVENT = 'travelmatch:chats-storage-mutated';
-export const BLOCKLIST_CHANGED_EVENT = 'travelmatch:blocklist-changed';
+export const CHATS_STORAGE_MUTATED_EVENT = 'studymatch:chats-storage-mutated';
+export const BLOCKLIST_CHANGED_EVENT = 'studymatch:blocklist-changed';
 
 export function readBlockedUsers(currentUserId: string): BlockedUserEntry[] {
   try {

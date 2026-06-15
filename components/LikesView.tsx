@@ -23,25 +23,25 @@ export const LikesView: React.FC<LikesViewProps> = ({ currentUser, language, the
       language === 'en'
         ? {
             title: 'Likes',
-            subtitle: 'Travelers you liked from Explore. Chat with them anytime.',
+            subtitle: 'Students you liked from Explore. Chat with them anytime.',
             empty: 'You have not liked anyone yet.',
-            emptyHint: 'Open Explore and tap the heart on profiles you are interested in.',
+            emptyHint: 'Open Explore and tap the heart on students you are interested in.',
             chat: 'Chat',
             remove: 'Remove',
             block: 'Block',
-            blockConfirm: 'Block this traveler? Their chat will be deleted.',
-            blockedToast: 'Traveler blocked.',
+            blockConfirm: 'Block this student? Their chat will be deleted.',
+            blockedToast: 'Student blocked.',
           }
         : {
             title: 'Me gusta',
-            subtitle: 'Viajeros a los que diste me gusta en Explorar. Escríbeles cuando quieras.',
+            subtitle: 'Estudiantes a los que diste me gusta en Explorar. Escríbeles cuando quieras.',
             empty: 'Aún no has dado me gusta a nadie.',
-            emptyHint: 'Abre Explorar y pulsa el corazón en los perfiles que te interesen.',
+            emptyHint: 'Abre Explorar y pulsa el corazón en los estudiantes que te interesen.',
             chat: 'Chat',
             remove: 'Quitar',
             block: 'Bloquear',
-            blockConfirm: '¿Bloquear a este viajero? Se eliminará el chat.',
-            blockedToast: 'Viajero bloqueado.',
+            blockConfirm: '¿Bloquear a este estudiante? Se eliminará el chat.',
+            blockedToast: 'Estudiante bloqueado.',
           },
     [language]
   );

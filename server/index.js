@@ -12,7 +12,7 @@ const PORT = Number(process.env.PORT || 4000);
 
 // MongoDB connection (default port 27017)
 const MONGODB_URI =
-  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/travelmatch";
+  process.env.MONGODB_URI || "mongodb://127.0.0.1:27017/studymatch";
 
 mongoose.connection.on("connected", () => {
   console.log("✅ MongoDB conectado", {
@@ -38,7 +38,7 @@ app.use(express.json({ limit: "6mb" }));
 app.get("/api/health", (_req, res) => {
   res.json({
     ok: true,
-    service: "travelmatch-api",
+    service: "studymatch-api",
     mongoState: mongoose.connection.readyState,
     mongoStateLabel:
       mongoose.connection.readyState === 1
@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema(
     age: { type: Number, default: 25 },
     sex: { type: String, enum: ["hombre", "mujer"], default: "hombre" },
     country: { type: String, default: "Global" },
-    bio: { type: String, default: "Listo para viajar!" },
+    bio: { type: String, default: "Listo para estudiar!" },
     budget: { type: String, enum: ["Bajo", "Medio", "Alto"], default: "Medio" },
     travelStyle: { type: [String], default: [] },
     interests: { type: [String], default: [] },
@@ -130,11 +130,11 @@ app.post("/api/auth/register", async (req, res) => {
     const normalizedEmail = typeof email === "string" ? email.trim().toLowerCase() : "";
     const normalizedName = typeof name === "string" && name.trim()
       ? name.trim()
-      : (normalizedEmail.split("@")[0] || "Viajero");
+      : (normalizedEmail.split("@")[0] || "Estudiante");
     const normalizedRole = role === "empresa" ? "empresa" : "cliente";
     const normalizedDestination = typeof destination === "string" && destination.trim()
       ? destination.trim()
-      : "Sin destino";
+      : "Sin asignatura";
 
     console.log("[SERVER][REGISTER] Request entrante", {
       path: req.path,
@@ -529,7 +529,7 @@ const connectMongoWithRetry = async () => {
       });
 
       await mongoose.connect(MONGODB_URI, {
-        dbName: "travelmatch",
+        dbName: "studymatch",
         serverSelectionTimeoutMS: 5000,
       });
       return;
@@ -546,7 +546,7 @@ const connectMongoWithRetry = async () => {
 const startServer = async () => {
   await connectMongoWithRetry();
   app.listen(PORT, () => {
-    console.log(`🚀 API de TravelMatch escuchando en http://localhost:${PORT}`);
+    console.log(`🚀 API de StudyMatch escuchando en http://localhost:${PORT}`);
   });
   setInterval(runScheduledAccountDeletions, 60 * 60 * 1000);
   runScheduledAccountDeletions();

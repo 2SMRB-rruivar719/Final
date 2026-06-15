@@ -1,10 +1,10 @@
 export enum TravelStyle {
-  BACKPACKER = 'Mochilero',
-  LUXURY = 'Lujo',
-  ADVENTURE = 'Aventura',
-  CULTURAL = 'Cultural',
-  RELAX = 'Relax',
-  PARTY = 'Fiesta'
+  VISUAL = 'Visual',
+  PRACTICAL = 'Práctico',
+  THEORETICAL = 'Teórico',
+  COLLABORATIVE = 'Grupal',
+  AUTONOMOUS = 'Individual',
+  INTENSIVE = 'Intensivo'
 }
 
 export type UserRole = 'cliente' | 'empresa';
