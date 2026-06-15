@@ -2,9 +2,9 @@
 <img width="1200" height="475" alt="GHBanner" src="https://raw.githubusercontent.com/2SMRB-rruivar719/travelmatch/refs/heads/main/logo.PNG" />
 </div>
 
-# StudyMatch
+# TravelMatch
 
-Aplicación para matching de estudiantes + planificador de estudio con IA + backend Express/MongoDB.
+Aplicación para matching de viajeros + planificador de viajes con IA + backend Express/MongoDB.
 
 ## Requisitos
 
@@ -19,7 +19,7 @@ Crear `.env.local` en la raíz:
 # opcional: sobreescribir API base
 # VITE_API_BASE_URL=http://localhost:4000/api
 # opcional: sobreescribir URI Mongo
-# MONGODB_URI=mongodb://127.0.0.1:27017/studymatch
+# MONGODB_URI=mongodb://127.0.0.1:27017/travelmatch
 ```
 
 ## Instalación
